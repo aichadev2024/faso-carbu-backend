@@ -17,7 +17,13 @@ public class RegisterRequest {
     @NotBlank
     private String role; // exemple : "GESTIONNAIRE", "CHAUFFEUR", "AGENT_STATION"
 
-    // getters et setters
+    @NotBlank
+    private String nom;
+
+    @NotBlank
+    private String prenom;
+
+    // Getters et setters
 
     public String getEmail() {
         return email;
@@ -41,5 +47,21 @@ public class RegisterRequest {
 
     public void setRole(String role) {
         this.role = role;
+    }
+
+    public String getNom() {
+        return nom;
+    }
+
+    public void setNom(String nom) {
+        this.nom = nom;
+    }
+
+    public String getPrenom() {
+        return prenom;
+    }
+
+    public void setPrenom(String prenom) {
+        this.prenom = prenom;
     }
 }

@@ -14,7 +14,7 @@ public abstract class Utilisateur{
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Integer id_utilisateur;
+    private Integer id;
 
     private String nom;
     private String prenom;
@@ -22,6 +22,9 @@ public abstract class Utilisateur{
     private String motDePasse;
     @Enumerated(EnumType.STRING)
     private Role role;
+    @Column(nullable = false)
+    private Boolean actif = true; 
+
 
     public Utilisateur() {
     }
@@ -34,8 +37,8 @@ public abstract class Utilisateur{
 
     }
 
-    public Integer getId() { return id_utilisateur; }
-    public void setId(Long id) { this.id_utilisateur= Math.toIntExact(id); }
+    public Integer getId() { return id; }
+    public void setId(Long id) { this.id= Math.toIntExact(id); }
 
     public String getNom() { return nom; }
     public void setNom(String nom) { this.nom = nom; }
@@ -57,6 +60,9 @@ public abstract class Utilisateur{
             this.role = Role.AGENT_STATION; // Valeur par défaut si le rôle est invalide
             log.error("Rôle invalide: {}. Défaut à ROLE_ADMIN", role);
         }
+     }
+         public void setActif(boolean actif) {
+        this.actif = actif;
     }
 
    public abstract void initialiserProfil();

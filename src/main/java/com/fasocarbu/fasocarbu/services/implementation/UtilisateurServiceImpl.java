@@ -53,6 +53,13 @@ public class UtilisateurServiceImpl implements UtilisateurService {
         utilisateur.setEmail(registerRequest.getEmail());
         utilisateur.setMotDePasse(passwordEncoder.encode(registerRequest.getMotDePasse()));
         utilisateur.setRole(roleStr);
+        utilisateur.setNom(registerRequest.getNom());
+        utilisateur.setPrenom(registerRequest.getPrenom());
+        utilisateur.setEmail(registerRequest.getEmail());
+        utilisateur.setMotDePasse(passwordEncoder.encode(registerRequest.getMotDePasse()));
+        utilisateur.setActif(true);  // si tu as ce champ
+
+
 
         return utilisateurRepository.save(utilisateur);
     }
