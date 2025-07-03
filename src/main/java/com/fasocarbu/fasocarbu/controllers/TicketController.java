@@ -3,8 +3,6 @@ package com.fasocarbu.fasocarbu.controllers;
 import com.fasocarbu.fasocarbu.models.Ticket;
 import com.fasocarbu.fasocarbu.services.interfaces.TicketService;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.MediaType;
-import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;

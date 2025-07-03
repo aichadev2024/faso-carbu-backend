@@ -8,11 +8,13 @@ import jakarta.persistence.PrimaryKeyJoinColumn;
 @PrimaryKeyJoinColumn(name = "utilisateur_id")
 public class Gestionnaire extends Utilisateur {
 
-    private int niveauAcces;
+
+    public Gestionnaire() {
+        super();
+    }
 
     public Gestionnaire(String nom, String prenom, String email, String motDePasse, int niveauAcces) {
         super(nom, prenom, email, motDePasse);
-        this.niveauAcces = niveauAcces;
         this.initialiserProfil(); // 👈 définit automatiquement le rôle
     }
 

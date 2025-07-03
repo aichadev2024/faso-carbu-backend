@@ -54,7 +54,7 @@ public abstract class Utilisateur{
         try {
             this.role = Role.valueOf(role.toUpperCase()); // Convertit en majuscules pour éviter la casse
         } catch (IllegalArgumentException e) {
-            this.role = Role.ADMIN; // Valeur par défaut si le rôle est invalide
+            this.role = Role.AGENT_STATION; // Valeur par défaut si le rôle est invalide
             log.error("Rôle invalide: {}. Défaut à ROLE_ADMIN", role);
         }
     }

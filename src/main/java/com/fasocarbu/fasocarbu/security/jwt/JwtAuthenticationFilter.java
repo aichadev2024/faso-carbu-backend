@@ -23,14 +23,14 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
     @Autowired
     private UserDetailsServiceImpl userDetailsService;
+@Override
+protected void doFilterInternal(HttpServletRequest request,
+                                HttpServletResponse response,
+                                FilterChain filterChain) throws ServletException, IOException {
 
-    @Override
-    protected void doFilterInternal(HttpServletRequest request,
-                                    HttpServletResponse response,
-                                    FilterChain filterChain) throws ServletException, IOException {
+    String authHeader = request.getHeader("Authorization");
 
-        String authHeader = request.getHeader("Authorization");
-
+    try {
         if (authHeader != null && authHeader.startsWith("Bearer ")) {
             String token = authHeader.substring(7);
             String username = jwtUtils.getUsernameFromJwtToken(token);
@@ -49,7 +49,12 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
                 }
             }
         }
-
-        filterChain.doFilter(request, response);
+    } catch (Exception e) {
+    
+        System.out.println("JWT processing failed: " + e.getMessage());
     }
+
+    filterChain.doFilter(request, response);
+}
+
 }
