@@ -2,14 +2,16 @@ package com.fasocarbu.fasocarbu.models;
 
 import com.fasocarbu.fasocarbu.enums.Role;
 import jakarta.persistence.*;
+import org.hibernate.annotations.CreationTimestamp;
+import org.hibernate.annotations.UpdateTimestamp;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.time.LocalDateTime;
 
 @Entity
-
 @Inheritance(strategy = InheritanceType.JOINED)
-public abstract class Utilisateur{
+public abstract class Utilisateur {
     private static final Logger log = LoggerFactory.getLogger(Utilisateur.class);
 
     @Id
@@ -20,25 +22,31 @@ public abstract class Utilisateur{
     private String prenom;
     private String email;
     private String motDePasse;
+
     @Enumerated(EnumType.STRING)
     private Role role;
+
     @Column(nullable = false)
-    private Boolean actif = true; 
+    private Boolean actif = true;
 
+    @CreationTimestamp
+    @Column(updatable = false)
+    private LocalDateTime dateCreation;
 
-    public Utilisateur() {
-    }
+    @UpdateTimestamp
+    private LocalDateTime dateModification;
+
+    public Utilisateur() {}
 
     public Utilisateur(String nom, String prenom, String email, String motDePasse) {
         this.nom = nom;
         this.prenom = prenom;
         this.email = email;
         this.motDePasse = motDePasse;
-
     }
 
     public Integer getId() { return id; }
-    public void setId(Long id) { this.id= Math.toIntExact(id); }
+    public void setId(Long id) { this.id = Math.toIntExact(id); }
 
     public String getNom() { return nom; }
     public void setNom(String nom) { this.nom = nom; }
@@ -55,15 +63,18 @@ public abstract class Utilisateur{
     public Role getRole() { return role; }
     public void setRole(String role) {
         try {
-            this.role = Role.valueOf(role.toUpperCase()); // Convertit en majuscules pour éviter la casse
+            this.role = Role.valueOf(role.toUpperCase());
         } catch (IllegalArgumentException e) {
-            this.role = Role.AGENT_STATION; // Valeur par défaut si le rôle est invalide
+            this.role = Role.AGENT_STATION;
             log.error("Rôle invalide: {}. Défaut à ROLE_ADMIN", role);
         }
-     }
-         public void setActif(boolean actif) {
-        this.actif = actif;
     }
 
-   public abstract void initialiserProfil();
+    public Boolean getActif() { return actif; }
+    public void setActif(boolean actif) { this.actif = actif; }
+
+    public LocalDateTime getDateCreation() { return dateCreation; }
+    public LocalDateTime getDateModification() { return dateModification; }
+
+    public abstract void initialiserProfil();
 }
