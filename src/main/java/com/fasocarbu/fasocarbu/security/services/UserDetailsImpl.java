@@ -18,7 +18,6 @@ public class UserDetailsImpl implements UserDetails {
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
         return List.of(new SimpleGrantedAuthority("ROLE_" + utilisateur.getRole().name()));
-
     }
 
     @Override
@@ -30,10 +29,18 @@ public class UserDetailsImpl implements UserDetails {
     public String getUsername() {
         return utilisateur.getEmail();
     }
+
     public Integer getId() {
         return utilisateur.getId();
     }
 
+    public String getNom() {
+        return utilisateur.getNom();
+    }
+
+    public String getPrenom() {
+        return utilisateur.getPrenom();
+    }
 
     @Override
     public boolean isAccountNonExpired() {
@@ -54,5 +61,4 @@ public class UserDetailsImpl implements UserDetails {
     public boolean isEnabled() {
         return true;
     }
-
 }

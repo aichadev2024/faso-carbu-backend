@@ -50,7 +50,9 @@ public class AuthController {
                 jwt,
                 userDetails.getId(),
                 userDetails.getUsername(),
-                userDetails.getAuthorities().stream().findFirst().get().getAuthority()
+                userDetails.getAuthorities().stream().findFirst().get().getAuthority(),
+                userDetails.getNom(),
+                userDetails.getPrenom()
         ));
     }
 
