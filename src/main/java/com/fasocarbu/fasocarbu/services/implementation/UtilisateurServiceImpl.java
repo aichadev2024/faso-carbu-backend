@@ -43,7 +43,7 @@ public class UtilisateurServiceImpl implements UtilisateurService {
             case "CHAUFFEUR":
                 utilisateur = new Chauffeur();
                 break;
-            case "ADMIN":
+            case "AGENT_STATION":
                 utilisateur = new AgentStation();
                 break;
             default:
