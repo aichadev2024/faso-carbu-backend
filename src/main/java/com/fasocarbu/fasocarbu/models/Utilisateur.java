@@ -6,7 +6,6 @@ import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
 import java.time.LocalDateTime;
 
 @Entity
@@ -61,14 +60,22 @@ public abstract class Utilisateur {
     public void setMotDePasse(String motDePasse) { this.motDePasse = motDePasse; }
 
     public Role getRole() { return role; }
-    public void setRole(String role) {
-        try {
-            this.role = Role.valueOf(role.toUpperCase());
-        } catch (IllegalArgumentException e) {
-            this.role = Role.AGENT_STATION;
-            log.error("Rôle invalide: {}. Défaut à ROLE_ADMIN", role);
+    public void setRole(String roleStr) {
+    if (roleStr == null) {
+        log.error("Rôle null reçu.");
+        return;
+    }
+
+    for (Role r : Role.values()) {
+        if (r.name().equalsIgnoreCase(roleStr.trim())) {
+            this.role = r;
+            return;
         }
     }
+
+    log.error("Rôle inconnu: '{}'. Aucun rôle défini.", roleStr);
+}
+
 
     public Boolean getActif() { return actif; }
     public void setActif(boolean actif) { this.actif = actif; }

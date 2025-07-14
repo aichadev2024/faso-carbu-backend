@@ -2,21 +2,19 @@ package com.fasocarbu.fasocarbu.models;
 
 import jakarta.persistence.Entity;
 import jakarta.persistence.Table;
+import jakarta.persistence.PrimaryKeyJoinColumn;
 
 @Entity
 @Table(name = "agent_station")
+@PrimaryKeyJoinColumn(name = "id_utilisateur")
 public class AgentStation extends Utilisateur {
-
     public AgentStation() {
         super();
-        this.setRole("AGENTSTATION");  // Définit automatiquement le rôle
+        this.setRole("AGENT_STATION");
     }
 
     @Override
     public void initialiserProfil() {
-        // Ici tu peux initialiser des valeurs spécifiques à l'agent de station
-        // Exemple : initialiser des champs spécifiques ou des permissions
+        // Initialisation personnalisée ici
     }
-
-    // Ajoute ici des attributs et méthodes spécifiques à AgentStation si besoin
 }
