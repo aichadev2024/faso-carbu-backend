@@ -65,4 +65,8 @@ public class AuthController {
             return ResponseEntity.badRequest().body(e.getMessage());
         }
     }
+     @GetMapping("/")
+    public String home() {
+        return "🚀 API FasoCarbu est en ligne avec succès !";
+    }
 }
