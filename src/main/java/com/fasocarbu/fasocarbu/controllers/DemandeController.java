@@ -10,7 +10,7 @@ import java.util.List;
 
 @RestController
 @RequestMapping("/api/demandes")
-@CrossOrigin(origins = "*")
+@CrossOrigin(origins = "*") // ou ton domaine exact
 public class DemandeController {
 
     @Autowired
@@ -18,6 +18,11 @@ public class DemandeController {
 
     @PostMapping
     public ResponseEntity<Demande> creerDemande(@RequestBody Demande demande) {
+        if (demande == null) {
+            return ResponseEntity.badRequest().build();
+        }
+
+        System.out.println("📩 Demande reçue : " + demande);
         Demande nouvelle = demandeService.creerDemande(demande);
         return ResponseEntity.status(201).body(nouvelle);
     }
