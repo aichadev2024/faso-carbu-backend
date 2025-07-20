@@ -24,7 +24,6 @@ public class Demande {
         this.quantite = quantite;
     }
 
-    // Getters et setters
     public Long getId() {
         return id;
     }
@@ -59,5 +58,16 @@ public class Demande {
 
     public void setQuantite(Double quantite) {
         this.quantite = quantite;
+    }
+
+    @Override
+    public String toString() {
+        return "Demande{" +
+                "id=" + id +
+                ", demandeur='" + demandeur + '\'' +
+                ", station='" + station + '\'' +
+                ", dateDemande='" + dateDemande + '\'' +
+                ", quantite=" + quantite +
+                '}';
     }
 }

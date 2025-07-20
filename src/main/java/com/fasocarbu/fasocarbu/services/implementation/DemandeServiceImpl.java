@@ -16,7 +16,13 @@ public class DemandeServiceImpl implements DemandeService {
 
     @Override
     public Demande creerDemande(Demande demande) {
-        return demandeRepository.save(demande);
+        if (demande.getDemandeur() == null || demande.getStation() == null || demande.getQuantite() == null) {
+            throw new IllegalArgumentException("❌ Données manquantes dans la demande.");
+        }
+
+        Demande saved = demandeRepository.save(demande);
+        System.out.println("✅ Nouvelle demande enregistrée : " + saved);
+        return saved;
     }
 
     @Override
