@@ -38,6 +38,15 @@ public class JwtUtils {
                 .getBody()
                 .getSubject();
     }
+    public String getEmailFromJwtToken(String token) {
+        return Jwts.parserBuilder()
+            .setSigningKey(jwtSecret.getBytes())
+            .build()
+            .parseClaimsJws(token)
+            .getBody()
+            .getSubject();
+    }
+
 
     public boolean validateJwtToken(String token) {
         try {

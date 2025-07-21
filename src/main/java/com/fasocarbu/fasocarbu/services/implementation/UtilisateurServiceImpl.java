@@ -80,4 +80,16 @@ public class UtilisateurServiceImpl implements UtilisateurService {
             utilisateurRepository.deleteById(id);
         }
     }
+    public void changerMotDePasse(String email, String ancien, String nouveau) {
+    Utilisateur utilisateur = utilisateurRepository.findByEmail(email)
+            .orElseThrow(() -> new RuntimeException("Utilisateur non trouvé"));
+
+    if (!passwordEncoder.matches(ancien, utilisateur.getMotDePasse())) {
+        throw new RuntimeException("Ancien mot de passe incorrect");
+    }
+
+    utilisateur.setMotDePasse(passwordEncoder.encode(nouveau));
+    utilisateurRepository.save(utilisateur);
+}
+
 }

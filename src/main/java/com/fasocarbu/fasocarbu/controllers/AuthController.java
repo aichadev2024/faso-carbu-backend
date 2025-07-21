@@ -2,6 +2,7 @@ package com.fasocarbu.fasocarbu.controllers;
 
 import com.fasocarbu.fasocarbu.dtos.LoginRequest;
 import com.fasocarbu.fasocarbu.dtos.RegisterRequest;
+import com.fasocarbu.fasocarbu.dtos.ChangePasswordRequest;
 import com.fasocarbu.fasocarbu.dtos.JwtResponse;
 import com.fasocarbu.fasocarbu.models.Utilisateur;
 import com.fasocarbu.fasocarbu.security.jwt.JwtUtils;
@@ -69,4 +70,20 @@ public class AuthController {
     public String home() {
         return "🚀 API FasoCarbu est en ligne avec succès !";
     }
+    @PutMapping("/changer-mot-de-passe")
+public ResponseEntity<?> changerMotDePasse(@RequestBody ChangePasswordRequest request,
+                                           @RequestHeader("Authorization") String tokenHeader) {
+    try {
+        String token = tokenHeader.replace("Bearer ", "");
+        String email = jwtUtils.getEmailFromJwtToken(token);
+
+        utilisateurService.changerMotDePasse(email, request.getAncienMotDePasse(), request.getNouveauMotDePasse());
+
+        return ResponseEntity.ok().body("Mot de passe changé avec succès ✅");
+    } catch (Exception e) {
+        return ResponseEntity.badRequest().body("Erreur : " + e.getMessage());
+    }
+}
+
+    
 }

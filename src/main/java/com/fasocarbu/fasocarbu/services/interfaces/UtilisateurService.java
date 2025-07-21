@@ -21,4 +21,7 @@ public interface UtilisateurService {
     List<Utilisateur> getAllUtilisateurs();
 
     void supprimerUtilisateur(Integer id);
+    
+    void changerMotDePasse(String email, String ancien, String nouveau);
+
 }
