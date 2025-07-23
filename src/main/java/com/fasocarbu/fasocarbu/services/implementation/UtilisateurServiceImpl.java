@@ -4,7 +4,7 @@ import com.fasocarbu.fasocarbu.dtos.RegisterRequest;
 import com.fasocarbu.fasocarbu.models.Utilisateur;
 import com.fasocarbu.fasocarbu.models.Gestionnaire;
 import com.fasocarbu.fasocarbu.models.Chauffeur;
-import com.fasocarbu.fasocarbu.models.AgentStation;  
+import com.fasocarbu.fasocarbu.models.AgentStation;
 import com.fasocarbu.fasocarbu.repositories.UtilisateurRepository;
 import com.fasocarbu.fasocarbu.services.interfaces.UtilisateurService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -12,6 +12,7 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+import java.util.Optional;
 
 @Service
 public class UtilisateurServiceImpl implements UtilisateurService {
@@ -21,7 +22,7 @@ public class UtilisateurServiceImpl implements UtilisateurService {
 
     @Autowired
     private PasswordEncoder passwordEncoder;
-    
+
     @Override
     public void enregistrerUtilisateur(Utilisateur utilisateur) {
         utilisateurRepository.save(utilisateur);
@@ -55,11 +56,7 @@ public class UtilisateurServiceImpl implements UtilisateurService {
         utilisateur.setRole(roleStr);
         utilisateur.setNom(registerRequest.getNom());
         utilisateur.setPrenom(registerRequest.getPrenom());
-        utilisateur.setEmail(registerRequest.getEmail());
-        utilisateur.setMotDePasse(passwordEncoder.encode(registerRequest.getMotDePasse()));
-        utilisateur.setActif(true);  // si tu as ce champ
-
-
+        utilisateur.setActif(true); // si ce champ est bien défini dans la classe
 
         return utilisateurRepository.save(utilisateur);
     }
@@ -80,16 +77,22 @@ public class UtilisateurServiceImpl implements UtilisateurService {
             utilisateurRepository.deleteById(id);
         }
     }
-    public void changerMotDePasse(String email, String ancien, String nouveau) {
-    Utilisateur utilisateur = utilisateurRepository.findByEmail(email)
-            .orElseThrow(() -> new RuntimeException("Utilisateur non trouvé"));
 
-    if (!passwordEncoder.matches(ancien, utilisateur.getMotDePasse())) {
-        throw new RuntimeException("Ancien mot de passe incorrect");
+    @Override
+    public void changerMotDePasse(String email, String ancien, String nouveau) {
+        Utilisateur utilisateur = utilisateurRepository.findByEmail(email)
+                .orElseThrow(() -> new RuntimeException("Utilisateur non trouvé"));
+
+        if (!passwordEncoder.matches(ancien, utilisateur.getMotDePasse())) {
+            throw new RuntimeException("Ancien mot de passe incorrect");
+        }
+
+        utilisateur.setMotDePasse(passwordEncoder.encode(nouveau));
+        utilisateurRepository.save(utilisateur);
     }
 
-    utilisateur.setMotDePasse(passwordEncoder.encode(nouveau));
-    utilisateurRepository.save(utilisateur);
-}
-
+    @Override
+    public Optional<Utilisateur> findByEmail(String email) {
+        return utilisateurRepository.findByEmail(email);
+    }
 }

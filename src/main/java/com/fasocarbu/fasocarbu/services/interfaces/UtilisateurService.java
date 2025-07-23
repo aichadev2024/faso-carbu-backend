@@ -4,6 +4,8 @@ import com.fasocarbu.fasocarbu.dtos.RegisterRequest;
 import com.fasocarbu.fasocarbu.models.Utilisateur;
 
 import java.util.List;
+import java.util.Optional;
+
 
 public interface UtilisateurService {
     
@@ -23,5 +25,7 @@ public interface UtilisateurService {
     void supprimerUtilisateur(Integer id);
     
     void changerMotDePasse(String email, String ancien, String nouveau);
+    Optional<Utilisateur> findByEmail(String email);
+
 
 }

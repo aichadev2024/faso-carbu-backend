@@ -11,22 +11,25 @@ import java.util.List;
 @Service
 public class DemandeServiceImpl implements DemandeService {
 
+    private final DemandeRepository demandeRepository;
+
     @Autowired
-    private DemandeRepository demandeRepository;
+    public DemandeServiceImpl(DemandeRepository demandeRepository) {
+        this.demandeRepository = demandeRepository;
+    }
 
     @Override
-    public Demande creerDemande(Demande demande) {
-        if (demande.getDemandeur() == null || demande.getStation() == null || demande.getQuantite() == null) {
-            throw new IllegalArgumentException("❌ Données manquantes dans la demande.");
-        }
-
-        Demande saved = demandeRepository.save(demande);
-        System.out.println("✅ Nouvelle demande enregistrée : " + saved);
-        return saved;
+    public Demande saveDemande(Demande demande) {
+        return demandeRepository.save(demande);
     }
 
     @Override
     public List<Demande> getAllDemandes() {
         return demandeRepository.findAll();
+    }
+
+    @Override
+    public List<Demande> getDemandesParDemandeur(String demandeur) {
+        return demandeRepository.findByDemandeur(demandeur);
     }
 }
