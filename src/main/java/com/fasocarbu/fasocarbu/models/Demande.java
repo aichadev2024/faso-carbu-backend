@@ -13,6 +13,9 @@ public class Demande {
     private String station;
     private String dateDemande;
     private Double quantite;
+    @ManyToOne
+    @JoinColumn(name="carburant_id")
+    private Carburant carburant;
 
     public Demande() {
     }
@@ -59,15 +62,23 @@ public class Demande {
     public void setQuantite(Double quantite) {
         this.quantite = quantite;
     }
-
-    @Override
-    public String toString() {
-        return "Demande{" +
-                "id=" + id +
-                ", demandeur='" + demandeur + '\'' +
-                ", station='" + station + '\'' +
-                ", dateDemande='" + dateDemande + '\'' +
-                ", quantite=" + quantite +
-                '}';
+    public Carburant getCarburant(){
+        return carburant;
     }
+    public void setCarburant(Carburant carburant){
+        this.carburant = carburant;
+    }
+
+   @Override
+public String toString() {
+    return "Demande{" +
+            "id=" + id +
+            ", demandeur='" + demandeur + '\'' +
+            ", station='" + station + '\'' +
+            ", dateDemande='" + dateDemande + '\'' +
+            ", quantite=" + quantite +
+            ", carburant=" + (carburant != null ? carburant.getNom() : "null") +
+       '}';
+    }
+    
 }

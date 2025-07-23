@@ -14,7 +14,8 @@ public class Carburant {
 
     public Carburant() {}
 
-    public Carburant(String nom, Double prix) {
+    public Carburant( Long id,String nom, Double prix) {
+        this.id= id;
         this.nom = nom;
         this.prix = prix;
     }
