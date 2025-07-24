@@ -18,89 +18,57 @@ public class Demande {
 
     private double quantite;
 
+    @Column(nullable = false)
+    private String nomStation;  // ✅ Nouveau champ à la place de l'entité Station
+
     @ManyToOne
     @JoinColumn(name = "chauffeur_id")
-    @JsonIgnoreProperties({"password", "role", "email", "telephone", "dateNaissance", "cin", "username", "authorities", "enabled", "accountNonExpired", "credentialsNonExpired", "accountNonLocked"})
+    @JsonIgnoreProperties({
+        "password", "role", "email", "telephone", "dateNaissance",
+        "cin", "username", "authorities", "enabled", "accountNonExpired",
+        "credentialsNonExpired", "accountNonLocked"
+    })
     private Chauffeur chauffeur;
 
     @ManyToOne
     @JoinColumn(name = "carburant_id")
     private Carburant carburant;
 
-    @ManyToOne
-    @JoinColumn(name = "station_id")
-    private Station station;
-
     @Column(nullable = false)
-    private String statut = "EN_ATTENTE"; // Ajout du champ statut avec valeur par défaut
+    private String statut = "EN_ATTENTE";
 
-    public Demande() {
-    }
+    public Demande() {}
 
-    public Demande(LocalDate dateDemande, double quantite, Chauffeur chauffeur, Carburant carburant, Station station) {
+    public Demande(LocalDate dateDemande, double quantite, String nomStation,
+                   Chauffeur chauffeur, Carburant carburant) {
         this.dateDemande = dateDemande;
         this.quantite = quantite;
+        this.nomStation = nomStation;
         this.chauffeur = chauffeur;
         this.carburant = carburant;
-        this.station = station;
         this.statut = "EN_ATTENTE";
     }
 
-    // Getters et Setters
+    // ✅ Getters et Setters
 
-    public Long getId() {
-        return id;
-    }
+    public Long getId() { return id; }
+    public void setId(Long id) { this.id = id; }
 
-    public void setId(Long id) {
-        this.id = id;
-    }
+    public LocalDate getDateDemande() { return dateDemande; }
+    public void setDateDemande(LocalDate dateDemande) { this.dateDemande = dateDemande; }
 
-    public LocalDate getDateDemande() {
-        return dateDemande;
-    }
+    public double getQuantite() { return quantite; }
+    public void setQuantite(double quantite) { this.quantite = quantite; }
 
-    public void setDateDemande(LocalDate dateDemande) {
-        this.dateDemande = dateDemande;
-    }
+    public String getNomStation() { return nomStation; }
+    public void setNomStation(String nomStation) { this.nomStation = nomStation; }
 
-    public double getQuantite() {
-        return quantite;
-    }
+    public Chauffeur getChauffeur() { return chauffeur; }
+    public void setChauffeur(Chauffeur chauffeur) { this.chauffeur = chauffeur; }
 
-    public void setQuantite(double quantite) {
-        this.quantite = quantite;
-    }
+    public Carburant getCarburant() { return carburant; }
+    public void setCarburant(Carburant carburant) { this.carburant = carburant; }
 
-    public Chauffeur getChauffeur() {
-        return chauffeur;
-    }
-
-    public void setChauffeur(Chauffeur chauffeur) {
-        this.chauffeur = chauffeur;
-    }
-
-    public Carburant getCarburant() {
-        return carburant;
-    }
-
-    public void setCarburant(Carburant carburant) {
-        this.carburant = carburant;
-    }
-
-    public Station getStation() {
-        return station;
-    }
-
-    public void setStation(Station station) {
-        this.station = station;
-    }
-
-    public String getStatut() {
-        return statut;
-    }
-
-    public void setStatut(String statut) {
-        this.statut = statut;
-    }
+    public String getStatut() { return statut; }
+    public void setStatut(String statut) { this.statut = statut; }
 }
