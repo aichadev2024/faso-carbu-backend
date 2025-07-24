@@ -1,6 +1,10 @@
 package com.fasocarbu.fasocarbu.models;
 
+import com.fasterxml.jackson.annotation.JsonFormat;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import jakarta.persistence.*;
+
+import java.time.LocalDate;
 
 @Entity
 public class Demande {
@@ -9,63 +13,71 @@ public class Demande {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    private String demandeur;
-    private String station;
-    private String dateDemande;
-    private Double quantite;
+    @JsonFormat(pattern = "yyyy-MM-dd")
+    private LocalDate dateDemande;
+
+    private double quantite;
+
+    @ManyToOne
+    @JoinColumn(name = "chauffeur_id")
+    @JsonIgnoreProperties({"password", "role", "email", "telephone", "dateNaissance", "cin", "username", "authorities", "enabled", "accountNonExpired", "credentialsNonExpired", "accountNonLocked"})
+    private Chauffeur chauffeur;
 
     @ManyToOne
     @JoinColumn(name = "carburant_id")
     private Carburant carburant;
 
     @ManyToOne
-    @JoinColumn(name = "chauffeur_id")
-    private Utilisateur chauffeur; // ✅ ajout du chauffeur
+    @JoinColumn(name = "station_id")
+    private Station station;
+
+    @Column(nullable = false)
+    private String statut = "EN_ATTENTE"; // Ajout du champ statut avec valeur par défaut
 
     public Demande() {
     }
 
-    public Demande(String demandeur, String station, String dateDemande, Double quantite) {
-        this.demandeur = demandeur;
-        this.station = station;
+    public Demande(LocalDate dateDemande, double quantite, Chauffeur chauffeur, Carburant carburant, Station station) {
         this.dateDemande = dateDemande;
         this.quantite = quantite;
+        this.chauffeur = chauffeur;
+        this.carburant = carburant;
+        this.station = station;
+        this.statut = "EN_ATTENTE";
     }
+
+    // Getters et Setters
 
     public Long getId() {
         return id;
     }
 
-    public String getDemandeur() {
-        return demandeur;
+    public void setId(Long id) {
+        this.id = id;
     }
 
-    public void setDemandeur(String demandeur) {
-        this.demandeur = demandeur;
-    }
-
-    public String getStation() {
-        return station;
-    }
-
-    public void setStation(String station) {
-        this.station = station;
-    }
-
-    public String getDateDemande() {
+    public LocalDate getDateDemande() {
         return dateDemande;
     }
 
-    public void setDateDemande(String dateDemande) {
+    public void setDateDemande(LocalDate dateDemande) {
         this.dateDemande = dateDemande;
     }
 
-    public Double getQuantite() {
+    public double getQuantite() {
         return quantite;
     }
 
-    public void setQuantite(Double quantite) {
+    public void setQuantite(double quantite) {
         this.quantite = quantite;
+    }
+
+    public Chauffeur getChauffeur() {
+        return chauffeur;
+    }
+
+    public void setChauffeur(Chauffeur chauffeur) {
+        this.chauffeur = chauffeur;
     }
 
     public Carburant getCarburant() {
@@ -76,24 +88,19 @@ public class Demande {
         this.carburant = carburant;
     }
 
-    public Utilisateur getChauffeur() {
-        return chauffeur;
+    public Station getStation() {
+        return station;
     }
 
-    public void setChauffeur(Utilisateur chauffeur) {
-        this.chauffeur = chauffeur;
+    public void setStation(Station station) {
+        this.station = station;
     }
 
-    @Override
-    public String toString() {
-        return "Demande{" +
-                "id=" + id +
-                ", demandeur='" + demandeur + '\'' +
-                ", station='" + station + '\'' +
-                ", dateDemande='" + dateDemande + '\'' +
-                ", quantite=" + quantite +
-                ", carburant=" + (carburant != null ? carburant.getNom() : "null") +
-                ", chauffeur=" + (chauffeur != null ? chauffeur.getEmail() : "null") +
-                '}';
+    public String getStatut() {
+        return statut;
+    }
+
+    public void setStatut(String statut) {
+        this.statut = statut;
     }
 }
