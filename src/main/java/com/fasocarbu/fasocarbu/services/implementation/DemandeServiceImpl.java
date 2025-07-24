@@ -27,9 +27,10 @@ public class DemandeServiceImpl implements DemandeService {
     public List<Demande> getAllDemandes() {
         return demandeRepository.findAll();
     }
+  @Override
+  public List<Demande> getDemandesParDemandeur(Long chauffeurId) {
+    return demandeRepository.findByChauffeurId(chauffeurId);
+}
 
-    @Override
-    public List<Demande> getDemandesParDemandeur(String demandeur) {
-        return demandeRepository.findByDemandeur(demandeur);
-    }
+
 }

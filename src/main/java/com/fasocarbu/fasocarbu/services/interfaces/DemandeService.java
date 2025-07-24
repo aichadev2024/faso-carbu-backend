@@ -7,5 +7,6 @@ import java.util.List;
 public interface DemandeService {
     Demande saveDemande(Demande demande);
     List<Demande> getAllDemandes();
-    List<Demande> getDemandesParDemandeur(String demandeur);
+    List<Demande> getDemandesParDemandeur(Long chauffeurId);
+
 }
