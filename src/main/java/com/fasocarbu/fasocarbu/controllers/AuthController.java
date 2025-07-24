@@ -33,7 +33,7 @@ public class AuthController {
 
     @PostMapping("/login")
     public ResponseEntity<?> authenticateUser(@Valid @RequestBody LoginRequest loginRequest) {
-        
+
         Authentication authentication = authenticationManager.authenticate(
                 new UsernamePasswordAuthenticationToken(
                         loginRequest.getEmail(),
@@ -66,24 +66,24 @@ public class AuthController {
             return ResponseEntity.badRequest().body(e.getMessage());
         }
     }
-     @GetMapping("/")
+
+    @GetMapping("/")
     public String home() {
         return "🚀 API FasoCarbu est en ligne avec succès !";
     }
+
     @PutMapping("/changer-mot-de-passe")
-public ResponseEntity<?> changerMotDePasse(@RequestBody ChangePasswordRequest request,
-                                           @RequestHeader("Authorization") String tokenHeader) {
-    try {
-        String token = tokenHeader.replace("Bearer ", "");
-        String email = jwtUtils.getEmailFromJwtToken(token);
+    public ResponseEntity<?> changerMotDePasse(@RequestBody ChangePasswordRequest request,
+                                               @RequestHeader("Authorization") String tokenHeader) {
+        try {
+            String token = tokenHeader.replace("Bearer ", "");
+            String email = jwtUtils.getEmailFromJwtToken(token);
 
-        utilisateurService.changerMotDePasse(email, request.getAncienMotDePasse(), request.getNouveauMotDePasse());
+            utilisateurService.changerMotDePasse(email, request.getAncienMotDePasse(), request.getNouveauMotDePasse());
 
-        return ResponseEntity.ok().body("Mot de passe changé avec succès ✅");
-    } catch (Exception e) {
-        return ResponseEntity.badRequest().body("Erreur : " + e.getMessage());
+            return ResponseEntity.ok().body("Mot de passe changé avec succès ✅");
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body("Erreur : " + e.getMessage());
+        }
     }
-}
-
-    
 }

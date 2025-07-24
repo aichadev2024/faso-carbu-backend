@@ -12,7 +12,6 @@ import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.*;
 import com.fasocarbu.fasocarbu.enums.Role;
 
-
 import java.util.List;
 
 @RestController
@@ -34,7 +33,11 @@ public class DemandeController {
                                            @AuthenticationPrincipal UserDetails userDetails) {
         try {
             Utilisateur user = utilisateurService.findByEmail(userDetails.getUsername()).orElse(null);
-            if (user.getRole() == Role.CHAUFFEUR) {
+            if (user == null) {
+                return ResponseEntity.status(401).body("Utilisateur non authentifié");
+            }
+
+            if (user.getRole() != Role.CHAUFFEUR) {
                 return ResponseEntity.status(403).body("Seuls les chauffeurs peuvent créer des demandes");
             }
 
