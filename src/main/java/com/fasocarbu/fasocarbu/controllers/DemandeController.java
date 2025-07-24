@@ -1,10 +1,7 @@
 package com.fasocarbu.fasocarbu.controllers;
 
 import com.fasocarbu.fasocarbu.models.*;
-import com.fasocarbu.fasocarbu.repositories.CarburantRepository;
-import com.fasocarbu.fasocarbu.repositories.DemandeRepository;
-import com.fasocarbu.fasocarbu.repositories.StationRepository;
-import com.fasocarbu.fasocarbu.repositories.UtilisateurRepository;
+import com.fasocarbu.fasocarbu.repositories.*;
 import com.fasocarbu.fasocarbu.security.services.UserDetailsImpl;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
@@ -31,6 +28,10 @@ public class DemandeController {
     @Autowired
     private StationRepository stationRepository;
 
+    @Autowired
+    private VehiculeRepository vehiculeRepository;
+
+    // POST pour créer une demande
     @PostMapping
     public ResponseEntity<?> createDemande(@RequestBody Demande demande, Authentication authentication) {
         UserDetailsImpl userDetails = (UserDetailsImpl) authentication.getPrincipal();
@@ -50,37 +51,28 @@ public class DemandeController {
         demande.setChauffeur(chauffeur);
         demande.setDateDemande(LocalDate.now());
 
-        // Gestion de la station (avec id_station)
+        // Gestion station
         Station stationFromRequest = demande.getStation();
+        Station station = null;
         if (stationFromRequest != null) {
-            Station station;
             if (stationFromRequest.getId() != 0L) {
-                // Si l'ID est fourni, cherche en base
                 station = stationRepository.findById(stationFromRequest.getId()).orElse(null);
             } else {
-                // Sinon, cherche par nom, ville et adresse (attention à la virgule entre les params)
                 Optional<Station> stationOpt = stationRepository.findByNomAndVilleAndAdresse(
                     stationFromRequest.getNom(),
                     stationFromRequest.getVille(),
-                    stationFromRequest.getAdresse()  // <-- virgule corrigée ici
+                    stationFromRequest.getAdresse()
                 );
                 if (stationOpt.isPresent()) {
                     station = stationOpt.get();
                 } else {
-                    // Créer une nouvelle station
-                    station = new Station();
-                    station.setNom(stationFromRequest.getNom());
-                    station.setVille(stationFromRequest.getVille());
-                    station.setAdresse(stationFromRequest.getAdresse());
-                    station = stationRepository.save(station);
+                    station = stationRepository.save(stationFromRequest);
                 }
             }
-            demande.setStation(station);
-        } else {
-            demande.setStation(null);
         }
+        demande.setStation(station);
 
-        // Gestion carburant (idem que précédemment)
+        // Gestion carburant
         if (demande.getCarburant() != null && demande.getCarburant().getId() != null) {
             Carburant carburant = carburantRepository.findById(demande.getCarburant().getId()).orElse(null);
             demande.setCarburant(carburant);
@@ -88,7 +80,28 @@ public class DemandeController {
             demande.setCarburant(null);
         }
 
+        // Gestion véhicule (similaire station)
+        Vehicule vehiculeFromRequest = demande.getVehicule();
+        Vehicule vehicule = null;
+        if (vehiculeFromRequest != null) {
+            if (vehiculeFromRequest.getId() != 0L) {
+                vehicule = vehiculeRepository.findById(vehiculeFromRequest.getId()).orElse(null);
+            } else {
+                // Recherche par immatriculation par exemple
+                Optional<Vehicule> vehiculeOpt = vehiculeRepository.findByImmatriculation(vehiculeFromRequest.getImmatriculation());
+                if (vehiculeOpt.isPresent()) {
+                    vehicule = vehiculeOpt.get();
+                } else {
+                    vehicule = vehiculeRepository.save(vehiculeFromRequest);
+                }
+            }
+        }
+        demande.setVehicule(vehicule);
+
         Demande savedDemande = demandeRepository.save(demande);
         return ResponseEntity.ok(savedDemande);
     }
+
+    // Autres méthodes possibles : getAll, getById, updateStatut, etc.
+
 }

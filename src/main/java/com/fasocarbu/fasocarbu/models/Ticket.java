@@ -7,31 +7,45 @@ import java.math.BigDecimal;
 import java.time.LocalDate;
 
 @Entity
-
 public class Ticket {
+
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private long id_ticket;
+
     private LocalDate dateEmission;
+
     @ManyToOne
     @JoinColumn(name = "carburant_id")
     private Carburant carburant;
 
     private BigDecimal montant;
     private BigDecimal quantite;
+
     @Enumerated(EnumType.STRING)
     private StatutTicket statut;
+
     @ManyToOne
     @JoinColumn(name = "id_utilisateur")
     private Utilisateur utilisateur;
+
     @ManyToOne
     @JoinColumn(name = "id_vehicule")
     private Vehicule vehicule;
+
     @ManyToOne
     @JoinColumn(name = "id_station")
     private Station station;
+
     @Column(columnDefinition = "TEXT")
     private String codeQr;
+
+    // Relation vers la demande correspondante
+    @OneToOne
+    @JoinColumn(name = "demande_id", unique = true)
+    private Demande demande;
+
+    public Ticket() {}
 
     public long getId() {
         return id_ticket;
@@ -48,7 +62,6 @@ public class Ticket {
     public void setDateEmission(LocalDate dateEmission) {
         this.dateEmission = dateEmission;
     }
-
 
     public Carburant getCarburant() {
         return carburant;
@@ -114,4 +127,11 @@ public class Ticket {
         this.codeQr = codeQr;
     }
 
+    public Demande getDemande() {
+        return demande;
+    }
+
+    public void setDemande(Demande demande) {
+        this.demande = demande;
+    }
 }

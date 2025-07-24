@@ -35,17 +35,27 @@ public class Demande {
     @JoinColumn(name = "station_id")
     private Station station;
 
+    @ManyToOne
+    @JoinColumn(name = "vehicule_id")
+    private Vehicule vehicule;
+
     @Column(nullable = false)
     private String statut = "EN_ATTENTE";
 
+    // Relation bidirectionnelle optionnelle vers Ticket
+    @OneToOne(mappedBy = "demande", cascade = CascadeType.ALL)
+    private Ticket ticket;
+
     public Demande() {}
 
-    public Demande(LocalDate dateDemande, double quantite, Chauffeur chauffeur, Carburant carburant, Station station) {
+    public Demande(LocalDate dateDemande, double quantite, Chauffeur chauffeur,
+                   Carburant carburant, Station station, Vehicule vehicule) {
         this.dateDemande = dateDemande;
         this.quantite = quantite;
         this.chauffeur = chauffeur;
         this.carburant = carburant;
         this.station = station;
+        this.vehicule = vehicule;
         this.statut = "EN_ATTENTE";
     }
 
@@ -69,6 +79,12 @@ public class Demande {
     public Station getStation() { return station; }
     public void setStation(Station station) { this.station = station; }
 
+    public Vehicule getVehicule() { return vehicule; }
+    public void setVehicule(Vehicule vehicule) { this.vehicule = vehicule; }
+
     public String getStatut() { return statut; }
     public void setStatut(String statut) { this.statut = statut; }
+
+    public Ticket getTicket() { return ticket; }
+    public void setTicket(Ticket ticket) { this.ticket = ticket; }
 }
