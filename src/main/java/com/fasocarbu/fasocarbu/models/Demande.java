@@ -14,7 +14,7 @@ public class Demande {
     private Long id;
 
     // Format ISO avec date + heure (ajuste si besoin)
-    @JsonFormat(pattern = "yyyy-MM-dd'T'HH:mm:ss")
+    @JsonFormat(pattern = "yyyy-MM-dd'T'HH:mm:ss.SSSSSS")
     private LocalDateTime dateDemande;
 
     private double quantite;
