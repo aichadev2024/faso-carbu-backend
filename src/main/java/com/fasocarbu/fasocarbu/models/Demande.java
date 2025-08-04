@@ -4,7 +4,7 @@ import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import jakarta.persistence.*;
 
-import java.time.LocalDate;
+import java.time.LocalDateTime;
 
 @Entity
 public class Demande {
@@ -13,8 +13,9 @@ public class Demande {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @JsonFormat(pattern = "yyyy-MM-dd")
-    private LocalDate dateDemande;
+    // Format ISO avec date + heure (ajuste si besoin)
+    @JsonFormat(pattern = "yyyy-MM-dd'T'HH:mm:ss.SSS")
+    private LocalDateTime dateDemande;
 
     private double quantite;
 
@@ -42,13 +43,12 @@ public class Demande {
     @Column(nullable = false)
     private String statut = "EN_ATTENTE";
 
-    // Relation bidirectionnelle optionnelle vers Ticket
     @OneToOne(mappedBy = "demande", cascade = CascadeType.ALL)
     private Ticket ticket;
 
     public Demande() {}
 
-    public Demande(LocalDate dateDemande, double quantite, Chauffeur chauffeur,
+    public Demande(LocalDateTime dateDemande, double quantite, Chauffeur chauffeur,
                    Carburant carburant, Station station, Vehicule vehicule) {
         this.dateDemande = dateDemande;
         this.quantite = quantite;
@@ -64,8 +64,8 @@ public class Demande {
     public Long getId() { return id; }
     public void setId(Long id) { this.id = id; }
 
-    public LocalDate getDateDemande() { return dateDemande; }
-    public void setDateDemande(LocalDate dateDemande) { this.dateDemande = dateDemande; }
+    public LocalDateTime getDateDemande() { return dateDemande; }
+    public void setDateDemande(LocalDateTime dateDemande) { this.dateDemande = dateDemande; }
 
     public double getQuantite() { return quantite; }
     public void setQuantite(double quantite) { this.quantite = quantite; }
