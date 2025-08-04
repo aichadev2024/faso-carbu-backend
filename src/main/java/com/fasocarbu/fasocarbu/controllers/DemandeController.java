@@ -8,7 +8,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 
-import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.Optional;
 
 @RestController
@@ -49,7 +49,7 @@ public class DemandeController {
 
         Chauffeur chauffeur = (Chauffeur) utilisateur;
         demande.setChauffeur(chauffeur);
-        demande.setDateDemande(LocalDate.now());
+        demande.setDateDemande(LocalDateTime.now());
 
         // Gestion station
         Station stationFromRequest = demande.getStation();

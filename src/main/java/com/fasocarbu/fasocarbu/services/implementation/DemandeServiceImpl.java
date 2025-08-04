@@ -6,7 +6,7 @@ import com.fasocarbu.fasocarbu.services.interfaces.DemandeService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.List;
 
 @Service
@@ -39,7 +39,7 @@ public class DemandeServiceImpl implements DemandeService {
         }
 
         Demande demande = new Demande();
-        demande.setDateDemande(LocalDate.now());
+        demande.setDateDemande(LocalDateTime.now());
         demande.setQuantite(quantite);
         demande.setChauffeur(chauffeur);
         demande.setCarburant(carburant);
