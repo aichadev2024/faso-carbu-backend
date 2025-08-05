@@ -8,6 +8,7 @@ import org.springframework.stereotype.Service;
 
 import java.util.List;
 import java.util.Optional;
+import java.util.UUID;
 
 @Service
 public class GestionnaireServiceImpl implements GestionnaireService {
@@ -21,7 +22,7 @@ public class GestionnaireServiceImpl implements GestionnaireService {
     }
 
     @Override
-    public Gestionnaire obtenirGestionnaire(Long id) {
+    public Gestionnaire obtenirGestionnaire(UUID id) {
         return repository.findById(id).orElse(null);
     }
 
@@ -31,7 +32,7 @@ public class GestionnaireServiceImpl implements GestionnaireService {
     }
 
     @Override
-    public Gestionnaire modifierGestionnaire(Long id, Gestionnaire gestionnaire) {
+    public Gestionnaire modifierGestionnaire(UUID id, Gestionnaire gestionnaire) {
         Optional<Gestionnaire> optional = repository.findById(id);
         if (optional.isPresent()) {
             gestionnaire.setId(id);
@@ -41,7 +42,7 @@ public class GestionnaireServiceImpl implements GestionnaireService {
     }
 
     @Override
-    public void supprimerGestionnaire(Long id) {
+    public void supprimerGestionnaire(UUID id) {
         repository.deleteById(id);
     }
 }

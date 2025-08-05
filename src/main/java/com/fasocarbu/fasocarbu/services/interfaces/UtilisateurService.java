@@ -5,7 +5,7 @@ import com.fasocarbu.fasocarbu.models.Utilisateur;
 
 import java.util.List;
 import java.util.Optional;
-
+import java.util.UUID;
 
 public interface UtilisateurService {
     
@@ -18,16 +18,16 @@ public interface UtilisateurService {
     Utilisateur registerUser(RegisterRequest registerRequest) throws RuntimeException;
     void enregistrerUtilisateur(Utilisateur utilisateur);
 
-    Utilisateur getUtilisateurById(Integer id);
+    Utilisateur getUtilisateurById(UUID id);
 
     List<Utilisateur> getAllUtilisateurs();
 
-    void supprimerUtilisateur(Integer id);
+    void supprimerUtilisateur(UUID id);
     
     void changerMotDePasse(String email, String ancien, String nouveau);
     Optional<Utilisateur> findByEmail(String email);
 
-    void updateFcmToken(Long userId, String fcmToken);
+    void updateFcmToken(UUID userId, String fcmToken);
 
 
 }

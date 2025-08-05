@@ -3,7 +3,7 @@ package com.fasocarbu.fasocarbu.controllers;
 import com.fasocarbu.fasocarbu.models.*;
 import com.fasocarbu.fasocarbu.repositories.*;
 import com.fasocarbu.fasocarbu.security.services.UserDetailsImpl;
-import com.fasocarbu.fasocarbu.services.NotificationService; // <-- À ajouter
+import com.fasocarbu.fasocarbu.services.interfaces.NotificationService; // <-- À ajouter
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;

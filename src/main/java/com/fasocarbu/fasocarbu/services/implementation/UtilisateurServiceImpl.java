@@ -13,6 +13,8 @@ import org.springframework.stereotype.Service;
 
 import java.util.List;
 import java.util.Optional;
+import java.util.UUID;
+
 
 @Service
 public class UtilisateurServiceImpl implements UtilisateurService {
@@ -62,7 +64,7 @@ public class UtilisateurServiceImpl implements UtilisateurService {
     }
 
     @Override
-    public Utilisateur getUtilisateurById(Integer id) {
+    public Utilisateur getUtilisateurById(UUID id) {
         return utilisateurRepository.findById(id).orElse(null);
     }
 
@@ -72,7 +74,7 @@ public class UtilisateurServiceImpl implements UtilisateurService {
     }
 
     @Override
-    public void supprimerUtilisateur(Integer id) {
+    public void supprimerUtilisateur(UUID id) {
         if (utilisateurRepository.existsById(id)) {
             utilisateurRepository.deleteById(id);
         }
@@ -96,7 +98,7 @@ public class UtilisateurServiceImpl implements UtilisateurService {
         return utilisateurRepository.findByEmail(email);
     }
      @Override
-    public void updateFcmToken(Long userId, String fcmToken) {
+    public void updateFcmToken(UUID userId, String fcmToken) {
         Utilisateur utilisateur = utilisateurRepository.findById(userId)
             .orElseThrow(() -> new RuntimeException("Utilisateur non trouvé"));
         utilisateur.setFcmToken(fcmToken);

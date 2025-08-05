@@ -6,6 +6,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.UUID;
 
 @RestController
 @RequestMapping("/api/chauffeurs")
@@ -20,7 +21,7 @@ public class ChauffeurController {
     }
 
     @GetMapping("/{id}")
-    public Chauffeur getChauffeur(@PathVariable Long id) {
+    public Chauffeur getChauffeur(@PathVariable UUID id) {
         return chauffeurService.getChauffeur(id);
     }
 
@@ -30,12 +31,12 @@ public class ChauffeurController {
     }
 
     @PutMapping("/{id}")
-    public Chauffeur updateChauffeur(@PathVariable Long id, @RequestBody Chauffeur chauffeur) {
+    public Chauffeur updateChauffeur(@PathVariable UUID id, @RequestBody Chauffeur chauffeur) {
         return chauffeurService.updateChauffeur(id, chauffeur);
     }
 
     @DeleteMapping("/{id}")
-    public void supprimerChauffeur(@PathVariable Long id) {
+    public void supprimerChauffeur(@PathVariable UUID id) {
         chauffeurService.supprimerChauffeur(id);
     }
 }

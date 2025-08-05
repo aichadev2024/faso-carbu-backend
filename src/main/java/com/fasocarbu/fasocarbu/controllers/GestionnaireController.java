@@ -6,6 +6,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.UUID;
 
 @RestController
 @RequestMapping("/api/gestionnaires")
@@ -20,7 +21,7 @@ public class GestionnaireController {
     }
 
     @GetMapping("/{id}")
-    public Gestionnaire obtenir(@PathVariable Long id) {
+    public Gestionnaire obtenir(@PathVariable UUID id) {
         return service.obtenirGestionnaire(id);
     }
 
@@ -30,12 +31,12 @@ public class GestionnaireController {
     }
 
     @PutMapping("/{id}")
-    public Gestionnaire modifier(@PathVariable Long id, @RequestBody Gestionnaire gestionnaire) {
+    public Gestionnaire modifier(@PathVariable UUID id, @RequestBody Gestionnaire gestionnaire) {
         return service.modifierGestionnaire(id, gestionnaire);
     }
 
     @DeleteMapping("/{id}")
-    public void supprimer(@PathVariable Long id) {
+    public void supprimer(@PathVariable UUID id) {
         service.supprimerGestionnaire(id);
     }
 }

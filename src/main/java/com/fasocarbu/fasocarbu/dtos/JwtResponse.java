@@ -1,8 +1,10 @@
 package com.fasocarbu.fasocarbu.dtos;
 
+import java.util.UUID;
+
 public class JwtResponse {
     private String token;
-    private Integer id;
+    private UUID id;
     private String email;
     private String role;
     private String nom;
@@ -10,7 +12,7 @@ public class JwtResponse {
     
 
 
-   public JwtResponse(String token, Integer id, String email, String role, String nom, String prenom) {
+   public JwtResponse(String token, UUID id, String email, String role, String nom, String prenom) {
     this.token = token;
     this.id = id;
     this.email = email;
@@ -27,11 +29,11 @@ public class JwtResponse {
         this.token = token;
     }
 
-    public Integer getId() {
+    public UUID getId() {
         return id;
     }
 
-    public void setId(Integer id) {
+    public void setId(UUID id) {
         this.id = id;
     }
 

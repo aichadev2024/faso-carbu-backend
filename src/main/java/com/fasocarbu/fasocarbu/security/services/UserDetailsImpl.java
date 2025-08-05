@@ -7,6 +7,7 @@ import org.springframework.security.core.userdetails.UserDetails;
 
 import java.util.Collection;
 import java.util.List;
+import java.util.UUID;
 
 public class UserDetailsImpl implements UserDetails {
     private final Utilisateur utilisateur;
@@ -30,7 +31,7 @@ public class UserDetailsImpl implements UserDetails {
         return utilisateur.getEmail();
     }
 
-    public Integer getId() {
+    public UUID getId() {
         return utilisateur.getId();
     }
 

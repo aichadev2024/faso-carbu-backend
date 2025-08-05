@@ -3,11 +3,11 @@ package com.fasocarbu.fasocarbu.services.interfaces;
 import com.fasocarbu.fasocarbu.models.Gestionnaire;
 
 import java.util.List;
-
+import java.util.UUID;
 public interface GestionnaireService {
     Gestionnaire ajouterGestionnaire(Gestionnaire gestionnaire);
-    Gestionnaire obtenirGestionnaire(Long id);
+    Gestionnaire obtenirGestionnaire(UUID id);
     List<Gestionnaire> obtenirTousLesGestionnaires();
-    Gestionnaire modifierGestionnaire(Long id, Gestionnaire gestionnaire);
-    void supprimerGestionnaire(Long id);
+    Gestionnaire modifierGestionnaire(UUID id, Gestionnaire gestionnaire);
+    void supprimerGestionnaire(UUID id);
 }

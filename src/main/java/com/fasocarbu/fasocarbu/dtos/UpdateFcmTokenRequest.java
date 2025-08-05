@@ -1,14 +1,16 @@
 package com.fasocarbu.fasocarbu.dtos;
 
+import java.util.UUID;
+
 public class UpdateFcmTokenRequest {
-    private Integer userId;
+    private UUID userId;
     private String fcmToken;
 
-    public Integer getUserId() {
+    public UUID getUserId() {
         return userId;
     }
 
-    public void setUserId(Integer userId) {
+    public void setUserId(UUID userId) {
         this.userId = userId;
     }
 

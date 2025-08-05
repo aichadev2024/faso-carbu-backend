@@ -3,9 +3,10 @@ package com.fasocarbu.fasocarbu.services.interfaces;
 import com.fasocarbu.fasocarbu.models.Demande;
 
 import java.util.List;
+import java.util.UUID;
 
 public interface DemandeService {
-    Demande creerDemandeAvecTicket(Long chauffeurId, Long carburantId, Long stationId, Long vehiculeId, double quantite);
+    Demande creerDemandeAvecTicket(UUID chauffeurId, Long carburantId, Long stationId, Long vehiculeId, double quantite);
     Demande saveDemande(Demande demande);
     List<Demande> getAllDemandes();
     List<Demande> getDemandesParDemandeur(Long chauffeurId);

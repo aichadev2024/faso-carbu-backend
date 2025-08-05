@@ -1,14 +1,14 @@
 package com.fasocarbu.fasocarbu.controllers;
 
 import org.springframework.http.ResponseEntity;
-import com.fasocarbu.fasocarbu.payload.UpdateFcmTokenRequest;
+import com.fasocarbu.fasocarbu.dtos.UpdateFcmTokenRequest;
 import com.fasocarbu.fasocarbu.models.Utilisateur;
 import com.fasocarbu.fasocarbu.services.interfaces.UtilisateurService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
-
+import java.util.UUID;
 @RestController
 @RequestMapping("/api/utilisateurs")
 public class UtilisateurController {
@@ -22,7 +22,7 @@ public class UtilisateurController {
     }
 
     @GetMapping("/{id}")
-    public Utilisateur getUtilisateurById(@PathVariable Integer id) {
+    public Utilisateur getUtilisateurById(@PathVariable UUID id) {
         return utilisateurService.getUtilisateurById(id);
     }
 
@@ -32,7 +32,7 @@ public class UtilisateurController {
     }
 
     @DeleteMapping("/{id}")
-    public void supprimerUtilisateur(@PathVariable Integer id) {
+    public void supprimerUtilisateur(@PathVariable UUID id) {
         utilisateurService.supprimerUtilisateur(id);
     }
     

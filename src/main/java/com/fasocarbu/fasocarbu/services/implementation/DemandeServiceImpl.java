@@ -9,6 +9,7 @@ import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.UUID;
 
 @Service
 public class DemandeServiceImpl implements DemandeService {
@@ -31,11 +32,9 @@ public class DemandeServiceImpl implements DemandeService {
     @Autowired
     private NotificationService notificationService;
 
-    @Autowired
-    private GestionnaireRepository gestionnaireRepository;
 
     @Override
-    public Demande creerDemandeAvecTicket(Long chauffeurId, Long carburantId, Long stationId, Long vehiculeId, double quantite) {
+    public Demande creerDemandeAvecTicket(UUID chauffeurId, Long carburantId, Long stationId, Long vehiculeId, double quantite) {
         Chauffeur chauffeur = chauffeurRepository.findById(chauffeurId).orElse(null);
         Carburant carburant = carburantRepository.findById(carburantId).orElse(null);
         Station station = stationRepository.findById(stationId).orElse(null);

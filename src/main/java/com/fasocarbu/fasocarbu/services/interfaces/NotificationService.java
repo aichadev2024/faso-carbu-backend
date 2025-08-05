@@ -1,7 +1,10 @@
-package com.fasocarbu.fasocarbu.service;
+package com.fasocarbu.fasocarbu.services.interfaces;
 
-import java.util.List;
+import com.fasocarbu.fasocarbu.models.Demande;
 
 public interface NotificationService {
-    void sendNotification(List<String> fcmTokens, String title, String body);
+
+    void notifierGestionnairesNouvelleDemande(Demande demande);
+
+    void sendNotificationToGestionnaires(String title, String body);
 }

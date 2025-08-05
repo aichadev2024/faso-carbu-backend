@@ -8,6 +8,7 @@ import org.springframework.stereotype.Service;
 
 import java.util.List;
 import java.util.Optional;
+import java.util.UUID;
 
 @Service
 public class ChauffeurServiceImpl implements ChauffeurService {
@@ -21,7 +22,7 @@ public class ChauffeurServiceImpl implements ChauffeurService {
     }
 
     @Override
-    public Chauffeur getChauffeur(Long id) {
+    public Chauffeur getChauffeur(UUID id) {
         return chauffeurRepository.findById(id).orElse(null);
     }
 
@@ -31,7 +32,7 @@ public class ChauffeurServiceImpl implements ChauffeurService {
     }
 
     @Override
-    public Chauffeur updateChauffeur(Long id, Chauffeur chauffeur) {
+    public Chauffeur updateChauffeur(UUID id, Chauffeur chauffeur) {
         Optional<Chauffeur> existing = chauffeurRepository.findById(id);
         if (existing.isPresent()) {
             chauffeur.setId(id); // Long et non int
@@ -41,7 +42,7 @@ public class ChauffeurServiceImpl implements ChauffeurService {
     }
 
     @Override
-    public void supprimerChauffeur(Long id) {
+    public void supprimerChauffeur(UUID id) {
         chauffeurRepository.deleteById(id);
     }
 
