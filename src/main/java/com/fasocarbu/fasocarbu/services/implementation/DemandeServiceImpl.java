@@ -3,6 +3,7 @@ package com.fasocarbu.fasocarbu.services.implementation;
 import com.fasocarbu.fasocarbu.models.*;
 import com.fasocarbu.fasocarbu.repositories.*;
 import com.fasocarbu.fasocarbu.services.interfaces.DemandeService;
+import com.fasocarbu.fasocarbu.services.interfaces.NotificationService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -27,6 +28,12 @@ public class DemandeServiceImpl implements DemandeService {
     @Autowired
     private VehiculeRepository vehiculeRepository;
 
+    @Autowired
+    private NotificationService notificationService;
+
+    @Autowired
+    private GestionnaireRepository gestionnaireRepository;
+
     @Override
     public Demande creerDemandeAvecTicket(Long chauffeurId, Long carburantId, Long stationId, Long vehiculeId, double quantite) {
         Chauffeur chauffeur = chauffeurRepository.findById(chauffeurId).orElse(null);
@@ -47,7 +54,15 @@ public class DemandeServiceImpl implements DemandeService {
         demande.setVehicule(vehicule);
         demande.setStatut("EN_ATTENTE");
 
-        return demandeRepository.save(demande);
+        Demande savedDemande = demandeRepository.save(demande);
+
+        // Envoyer une notification aux gestionnaires
+        String titre = "Nouvelle demande de ticket";
+        String message = "Le chauffeur " + chauffeur.getNom() + " " + chauffeur.getPrenom() + " a soumis une demande.";
+
+        notificationService.sendNotificationToGestionnaires(titre, message);
+
+        return savedDemande;
     }
 
     @Override

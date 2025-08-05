@@ -27,5 +27,7 @@ public interface UtilisateurService {
     void changerMotDePasse(String email, String ancien, String nouveau);
     Optional<Utilisateur> findByEmail(String email);
 
+    void updateFcmToken(Long userId, String fcmToken);
+
 
 }

@@ -1,5 +1,7 @@
 package com.fasocarbu.fasocarbu.controllers;
 
+import org.springframework.http.ResponseEntity;
+import com.fasocarbu.fasocarbu.payload.UpdateFcmTokenRequest;
 import com.fasocarbu.fasocarbu.models.Utilisateur;
 import com.fasocarbu.fasocarbu.services.interfaces.UtilisateurService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -32,5 +34,11 @@ public class UtilisateurController {
     @DeleteMapping("/{id}")
     public void supprimerUtilisateur(@PathVariable Integer id) {
         utilisateurService.supprimerUtilisateur(id);
+    }
+    
+    @PostMapping("/update-token")
+    public ResponseEntity<?> updateToken(@RequestBody UpdateFcmTokenRequest request) {
+        utilisateurService.updateFcmToken(request.getUserId(), request.getFcmToken());
+        return ResponseEntity.ok("Token mis à jour avec succès !");
     }
 }

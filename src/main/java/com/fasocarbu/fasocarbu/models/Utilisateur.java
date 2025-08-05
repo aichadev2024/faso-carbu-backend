@@ -28,6 +28,8 @@ public abstract class Utilisateur {
     @Column(nullable = false)
     private Boolean actif = true;
 
+    private String fcmToken;
+
     @CreationTimestamp
     @Column(updatable = false)
     private LocalDateTime dateCreation;
@@ -82,6 +84,13 @@ public abstract class Utilisateur {
 
     public LocalDateTime getDateCreation() { return dateCreation; }
     public LocalDateTime getDateModification() { return dateModification; }
+     public String getFcmToken() {
+        return fcmToken;
+    }
+
+    public void setFcmToken(String fcmToken) {
+        this.fcmToken = fcmToken;
+    }
 
     public abstract void initialiserProfil();
 }

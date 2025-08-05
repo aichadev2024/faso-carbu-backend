@@ -95,4 +95,11 @@ public class UtilisateurServiceImpl implements UtilisateurService {
     public Optional<Utilisateur> findByEmail(String email) {
         return utilisateurRepository.findByEmail(email);
     }
+     @Override
+    public void updateFcmToken(Long userId, String fcmToken) {
+        Utilisateur utilisateur = utilisateurRepository.findById(userId)
+            .orElseThrow(() -> new RuntimeException("Utilisateur non trouvé"));
+        utilisateur.setFcmToken(fcmToken);
+        utilisateurRepository.save(utilisateur);
+    }
 }

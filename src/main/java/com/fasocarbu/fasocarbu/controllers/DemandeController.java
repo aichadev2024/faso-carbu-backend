@@ -3,6 +3,7 @@ package com.fasocarbu.fasocarbu.controllers;
 import com.fasocarbu.fasocarbu.models.*;
 import com.fasocarbu.fasocarbu.repositories.*;
 import com.fasocarbu.fasocarbu.security.services.UserDetailsImpl;
+import com.fasocarbu.fasocarbu.services.NotificationService; // <-- À ajouter
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
@@ -30,6 +31,9 @@ public class DemandeController {
 
     @Autowired
     private VehiculeRepository vehiculeRepository;
+
+    @Autowired
+    private NotificationService notificationService; // <-- Injection du service
 
     // POST pour créer une demande
     @PostMapping
@@ -59,9 +63,9 @@ public class DemandeController {
                 station = stationRepository.findById(stationFromRequest.getId()).orElse(null);
             } else {
                 Optional<Station> stationOpt = stationRepository.findByNomAndVilleAndAdresse(
-                    stationFromRequest.getNom(),
-                    stationFromRequest.getVille(),
-                    stationFromRequest.getAdresse()
+                        stationFromRequest.getNom(),
+                        stationFromRequest.getVille(),
+                        stationFromRequest.getAdresse()
                 );
                 if (stationOpt.isPresent()) {
                     station = stationOpt.get();
@@ -87,21 +91,19 @@ public class DemandeController {
             if (vehiculeFromRequest.getId() != 0L) {
                 vehicule = vehiculeRepository.findById(vehiculeFromRequest.getId()).orElse(null);
             } else {
-                // Recherche par immatriculation par exemple
                 Optional<Vehicule> vehiculeOpt = vehiculeRepository.findByImmatriculation(vehiculeFromRequest.getImmatriculation());
-                if (vehiculeOpt.isPresent()) {
-                    vehicule = vehiculeOpt.get();
-                } else {
-                    vehicule = vehiculeRepository.save(vehiculeFromRequest);
-                }
+                vehicule = vehiculeOpt.orElseGet(() -> vehiculeRepository.save(vehiculeFromRequest));
             }
         }
         demande.setVehicule(vehicule);
 
+        // 🔥 Enregistrement de la demande
         Demande savedDemande = demandeRepository.save(demande);
+
+        // ✅ Envoi de la notification FCM aux gestionnaires
+        notificationService.notifierGestionnairesNouvelleDemande(savedDemande);
+
         return ResponseEntity.ok(savedDemande);
     }
-
-    // Autres méthodes possibles : getAll, getById, updateStatut, etc.
 
 }
