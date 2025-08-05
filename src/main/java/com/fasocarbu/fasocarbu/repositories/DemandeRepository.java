@@ -4,9 +4,10 @@ import com.fasocarbu.fasocarbu.models.Demande;
 
 import java.util.List;
 import org.springframework.data.jpa.repository.JpaRepository;
+import java.util.UUID;
 
 public interface DemandeRepository extends JpaRepository<Demande, Long> {
-    List<Demande> findByChauffeurId(Long chauffeurId);
+    List<Demande> findByChauffeurId(UUID chauffeurId);
 
 
 }

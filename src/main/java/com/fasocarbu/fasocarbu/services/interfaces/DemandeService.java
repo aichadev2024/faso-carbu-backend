@@ -9,7 +9,7 @@ public interface DemandeService {
     Demande creerDemandeAvecTicket(UUID chauffeurId, Long carburantId, Long stationId, Long vehiculeId, double quantite);
     Demande saveDemande(Demande demande);
     List<Demande> getAllDemandes();
-    List<Demande> getDemandesParDemandeur(Long chauffeurId);
+    List<Demande> getDemandesParDemandeur(UUID chauffeurId);
     
 
 }

@@ -75,7 +75,7 @@ public class DemandeServiceImpl implements DemandeService {
     }
 
     @Override
-    public List<Demande> getDemandesParDemandeur(Long chauffeurId) {
+    public List<Demande> getDemandesParDemandeur(UUID chauffeurId) {
         return demandeRepository.findByChauffeurId(chauffeurId);
     }
 }
