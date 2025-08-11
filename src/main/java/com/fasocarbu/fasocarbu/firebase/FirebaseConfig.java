@@ -21,6 +21,9 @@ public FirebaseMessaging firebaseMessaging() throws IOException {
         throw new IllegalArgumentException("❌ Variable d’environnement FIREBASE_CONFIG_JSON non définie !");
     }
 
+    // Remplace les séquences \n par de vrais retours à la ligne
+    firebaseConfigJson = firebaseConfigJson.replace("\\n", "\n");
+
     try (ByteArrayInputStream serviceAccount = new ByteArrayInputStream(firebaseConfigJson.getBytes(StandardCharsets.UTF_8))) {
         FirebaseOptions options = FirebaseOptions.builder()
                 .setCredentials(GoogleCredentials.fromStream(serviceAccount))
@@ -35,5 +38,6 @@ public FirebaseMessaging firebaseMessaging() throws IOException {
 
         return FirebaseMessaging.getInstance(app);
     }
-   }
+}
+
 }
