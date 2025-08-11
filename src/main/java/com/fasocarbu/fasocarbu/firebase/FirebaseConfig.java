@@ -1,5 +1,10 @@
 package com.fasocarbu.fasocarbu.firebase;
 
+import java.io.FileInputStream;
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+
 import com.google.auth.oauth2.GoogleCredentials;
 import com.google.firebase.FirebaseApp;
 import com.google.firebase.FirebaseOptions;
@@ -7,35 +12,28 @@ import com.google.firebase.messaging.FirebaseMessaging;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
-import java.io.ByteArrayInputStream;
-import java.nio.charset.StandardCharsets;
-
 @Configuration
 public class FirebaseConfig {
 
     @Bean
-    public FirebaseMessaging firebaseMessaging() throws Exception {
-        // Lire le contenu JSON depuis la variable d'environnement
-        String firebaseConfig = System.getenv("FIREBASE_CONFIG");
-
-        if (firebaseConfig == null) {
-            throw new IllegalStateException("❌ Variable d'environnement FIREBASE_CONFIG non définie !");
+    public FirebaseMessaging firebaseMessaging() throws IOException {
+        String firebaseConfigJson = System.getenv("FIREBASE_CONFIG_JSON");
+        if (firebaseConfigJson == null) {
+            throw new IllegalArgumentException("❌ Variable d’environnement FIREBASE_CONFIG_JSON non définie !");
         }
 
-        // Charger les credentials à partir de la chaîne JSON
-        GoogleCredentials credentials = GoogleCredentials.fromStream(
-                new ByteArrayInputStream(firebaseConfig.getBytes(StandardCharsets.UTF_8))
-        );
+        // Création d’un fichier temporaire contenant la clé JSON
+        Path tempFile = Files.createTempFile("firebase-service-account", ".json");
+        Files.writeString(tempFile, firebaseConfigJson);
 
-        FirebaseOptions options = FirebaseOptions.builder()
-                .setCredentials(credentials)
-                .build();
-
-        // Initialiser Firebase si ce n’est pas déjà fait
-        if (FirebaseApp.getApps().isEmpty()) {
-            FirebaseApp.initializeApp(options);
+        try (FileInputStream serviceAccount = new FileInputStream(tempFile.toFile())) {
+            FirebaseOptions options = FirebaseOptions.builder()
+                    .setCredentials(GoogleCredentials.fromStream(serviceAccount))
+                    .build();
+            FirebaseApp app = FirebaseApp.initializeApp(options);
+            return FirebaseMessaging.getInstance(app);
+        } finally {
+            Files.deleteIfExists(tempFile);  // Supprime le fichier temporaire après usage
         }
-
-        return FirebaseMessaging.getInstance();
     }
 }
