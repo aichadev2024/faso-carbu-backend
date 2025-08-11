@@ -179,7 +179,7 @@ public Demandeur creerDemandeur(Demandeur demandeur) {
 
 @Override
 public List<Consommation> consulterHistoriqueConsommationParVehicule(Long vehiculeId) {
-    return consommationRepository.findByVehiculeId(vehiculeId);
+    return consommationRepository.findByAttribution_Ticket_Vehicule_Id(vehiculeId);
 }
 @Override
 public Vehicule definirQuotaPourVehicule(Long vehiculeId, double quota) {

@@ -8,6 +8,7 @@ import org.springframework.stereotype.Service;
 
 import java.util.List;
 import java.util.Optional;
+import java.util.UUID;
 
 @Service
 public class ConsommationServiceImpl implements ConsommationService {
@@ -21,7 +22,7 @@ public class ConsommationServiceImpl implements ConsommationService {
     }
 
     @Override
-    public Consommation getConsommationById(Long id) {
+    public Consommation getConsommationById(UUID id) {
         Optional<Consommation> optional = consommationRepository.findById(id);
         return optional.orElse(null);
     }
@@ -32,7 +33,7 @@ public class ConsommationServiceImpl implements ConsommationService {
     }
 
     @Override
-    public void supprimerConsommation(Long id) {
+    public void supprimerConsommation(UUID id) {
         consommationRepository.deleteById(id);
     }
 }
