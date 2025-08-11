@@ -11,6 +11,8 @@ public class Vehicule {
     private String marque;
     private String modele;
     private String immatriculation;
+    @Column
+    private double quotaCarburant;
 
     @ManyToOne
     @JoinColumn(name = "carburant_id")
@@ -53,4 +55,12 @@ public class Vehicule {
 
     public Utilisateur getUtilisateur() { return utilisateur; }
     public void setUtilisateur(Utilisateur utilisateur) { this.utilisateur = utilisateur; }
+    public double getQuotaCarburant() {
+    return quotaCarburant;
+}
+
+    public void setQuotaCarburant(double quotaCarburant) {
+      this.quotaCarburant = quotaCarburant;
+}
+
 }

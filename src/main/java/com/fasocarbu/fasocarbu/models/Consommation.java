@@ -1,62 +1,46 @@
 package com.fasocarbu.fasocarbu.models;
 
 import jakarta.persistence.*;
-
-import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.util.UUID;
 
 @Entity
-
 public class Consommation {
+
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private long id_consommation;
-    private LocalDate date;
-    private Double quantite;
+    @GeneratedValue(strategy = GenerationType.AUTO)
+    private UUID id;
+
     @ManyToOne
-    @JoinColumn(name="id_ticket")
-    private Ticket ticket;
+    @JoinColumn(name = "attribution_id", nullable = false)
+    private Attribution attribution; // lien avec l'attribution
+
     @ManyToOne
-    @JoinColumn(name="id_vehicule")
-    private Vehicule vehicule;
-    public Consommation(){}
+    @JoinColumn(name = "carburant_id", nullable = false)
+    private Carburant carburant; // type de carburant utilisé
 
-    public long getId() {
-        return id_consommation;
-    }
+    private LocalDateTime dateConsommation;
 
-    public void setId(long id) {
-        this.id_consommation = id;
-    }
+    private double quantiteUtilisee;
 
-    public LocalDate getDate() {
-        return date;
-    }
+    private String commentaire; // facultatif
 
-    public void setDate(LocalDate date) {
-        this.date = date;
-    }
+    // Getters et Setters
+    public UUID getId() { return id; }
+    public void setId(UUID id) { this.id = id; }
 
-    public Double getQuantite() {
-        return quantite;
-    }
+    public Attribution getAttribution() { return attribution; }
+    public void setAttribution(Attribution attribution) { this.attribution = attribution; }
 
-    public void setQuantite(Double quantite) {
-        this.quantite = quantite;
-    }
+    public Carburant getCarburant() { return carburant; }
+    public void setCarburant(Carburant carburant) { this.carburant = carburant; }
 
-    public Ticket getTicket() {
-        return ticket;
-    }
+    public LocalDateTime getDateConsommation() { return dateConsommation; }
+    public void setDateConsommation(LocalDateTime dateConsommation) { this.dateConsommation = dateConsommation; }
 
-    public void setTicket(Ticket ticket) {
-        this.ticket = ticket;
-    }
+    public double getQuantiteUtilisee() { return quantiteUtilisee; }
+    public void setQuantiteUtilisee(double quantiteUtilisee) { this.quantiteUtilisee = quantiteUtilisee; }
 
-    public Vehicule getVehicule() {
-        return vehicule;
-    }
-
-    public void setVehicule(Vehicule vehicule) {
-        this.vehicule = vehicule;
-    }
+    public String getCommentaire() { return commentaire; }
+    public void setCommentaire(String commentaire) { this.commentaire = commentaire; }
 }

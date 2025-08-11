@@ -10,6 +10,9 @@ public interface DemandeService {
     Demande saveDemande(Demande demande);
     List<Demande> getAllDemandes();
     List<Demande> getDemandesParDemandeur(UUID chauffeurId);
+
+    Demande validerDemande(Long demandeId, UUID gestionnaireId);
+    Demande rejeterDemande(Long demandeId);
     
 
 }

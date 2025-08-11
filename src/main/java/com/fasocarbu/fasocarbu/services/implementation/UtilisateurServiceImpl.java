@@ -1,10 +1,7 @@
 package com.fasocarbu.fasocarbu.services.implementation;
 
 import com.fasocarbu.fasocarbu.dtos.RegisterRequest;
-import com.fasocarbu.fasocarbu.models.Utilisateur;
-import com.fasocarbu.fasocarbu.models.Gestionnaire;
-import com.fasocarbu.fasocarbu.models.Chauffeur;
-import com.fasocarbu.fasocarbu.models.AgentStation;
+import com.fasocarbu.fasocarbu.models.*;
 import com.fasocarbu.fasocarbu.repositories.UtilisateurRepository;
 import com.fasocarbu.fasocarbu.services.interfaces.UtilisateurService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -14,7 +11,6 @@ import org.springframework.stereotype.Service;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
-
 
 @Service
 public class UtilisateurServiceImpl implements UtilisateurService {
@@ -49,16 +45,20 @@ public class UtilisateurServiceImpl implements UtilisateurService {
             case "AGENT_STATION":
                 utilisateur = new AgentStation();
                 break;
+            case "DEMANDEUR":
+                utilisateur = new Demandeur(); // pas besoin de classe spéciale
+                break;
             default:
                 throw new RuntimeException("Rôle inconnu : " + roleStr);
         }
 
         utilisateur.setEmail(registerRequest.getEmail());
         utilisateur.setMotDePasse(passwordEncoder.encode(registerRequest.getMotDePasse()));
-        utilisateur.setRole(roleStr);
         utilisateur.setNom(registerRequest.getNom());
         utilisateur.setPrenom(registerRequest.getPrenom());
-        utilisateur.setActif(true); // si ce champ est bien défini dans la classe
+        utilisateur.setTelephone(registerRequest.getTelephone());
+        utilisateur.setRole(roleStr);
+        utilisateur.setActif(true);
 
         return utilisateurRepository.save(utilisateur);
     }
@@ -97,7 +97,8 @@ public class UtilisateurServiceImpl implements UtilisateurService {
     public Optional<Utilisateur> findByEmail(String email) {
         return utilisateurRepository.findByEmail(email);
     }
-     @Override
+
+    @Override
     public void updateFcmToken(UUID userId, String fcmToken) {
         Utilisateur utilisateur = utilisateurRepository.findById(userId)
             .orElseThrow(() -> new RuntimeException("Utilisateur non trouvé"));

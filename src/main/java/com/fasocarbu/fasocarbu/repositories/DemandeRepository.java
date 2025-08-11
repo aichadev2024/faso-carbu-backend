@@ -1,5 +1,6 @@
 package com.fasocarbu.fasocarbu.repositories;
 
+import com.fasocarbu.fasocarbu.enums.StatutDemande;
 import com.fasocarbu.fasocarbu.models.Demande;
 
 import java.util.List;
@@ -8,6 +9,8 @@ import java.util.UUID;
 
 public interface DemandeRepository extends JpaRepository<Demande, Long> {
     List<Demande> findByChauffeurId(UUID chauffeurId);
+    List<Demande> findByStatut(StatutDemande statut);
+
 
 
 }

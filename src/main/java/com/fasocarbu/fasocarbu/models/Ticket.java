@@ -4,7 +4,7 @@ import com.fasocarbu.fasocarbu.enums.StatutTicket;
 import jakarta.persistence.*;
 
 import java.math.BigDecimal;
-import java.time.LocalDate;
+import java.time.LocalDateTime;
 
 @Entity
 public class Ticket {
@@ -13,13 +13,19 @@ public class Ticket {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private long id_ticket;
 
-    private LocalDate dateEmission;
+    private LocalDateTime dateEmission;
+
+    private LocalDateTime dateValidation; 
 
     @ManyToOne
     @JoinColumn(name = "carburant_id")
     private Carburant carburant;
+    @ManyToOne
+    @JoinColumn(name = "attribution_id")
+    private Attribution attribution;
 
     private BigDecimal montant;
+
     private BigDecimal quantite;
 
     @Enumerated(EnumType.STRING)
@@ -28,6 +34,10 @@ public class Ticket {
     @ManyToOne
     @JoinColumn(name = "id_utilisateur")
     private Utilisateur utilisateur;
+
+    @ManyToOne
+    @JoinColumn(name = "id_validateur") 
+    private Utilisateur validateur;
 
     @ManyToOne
     @JoinColumn(name = "id_vehicule")
@@ -40,12 +50,13 @@ public class Ticket {
     @Column(columnDefinition = "TEXT")
     private String codeQr;
 
-    // Relation vers la demande correspondante
     @OneToOne
     @JoinColumn(name = "demande_id", unique = true)
     private Demande demande;
 
     public Ticket() {}
+
+    
 
     public long getId() {
         return id_ticket;
@@ -55,12 +66,20 @@ public class Ticket {
         this.id_ticket = id;
     }
 
-    public LocalDate getDateEmission() {
+    public LocalDateTime getDateEmission() {
         return dateEmission;
     }
 
-    public void setDateEmission(LocalDate dateEmission) {
+    public void setDateEmission(LocalDateTime dateEmission) {
         this.dateEmission = dateEmission;
+    }
+
+    public LocalDateTime getDateValidation() {
+        return dateValidation;
+    }
+
+    public void setDateValidation(LocalDateTime dateValidation) {
+        this.dateValidation = dateValidation;
     }
 
     public Carburant getCarburant() {
@@ -103,6 +122,14 @@ public class Ticket {
         this.utilisateur = utilisateur;
     }
 
+    public Utilisateur getValidateur() {
+        return validateur;
+    }
+
+    public void setValidateur(Utilisateur validateur) {
+        this.validateur = validateur;
+    }
+
     public Vehicule getVehicule() {
         return vehicule;
     }
@@ -133,5 +160,11 @@ public class Ticket {
 
     public void setDemande(Demande demande) {
         this.demande = demande;
+    }
+    public Attribution getAttribution(){
+        return attribution;
+    } 
+    public void setAttribution(Attribution attribution){
+        this.attribution=attribution;
     }
 }

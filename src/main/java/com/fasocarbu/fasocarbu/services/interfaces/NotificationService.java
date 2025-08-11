@@ -6,5 +6,6 @@ public interface NotificationService {
 
     void notifierGestionnairesNouvelleDemande(Demande demande);
 
-    void sendNotificationToGestionnaires(String title, String body);
+    void sendNotificationToUtilisateur( String title, String body);
+
 }

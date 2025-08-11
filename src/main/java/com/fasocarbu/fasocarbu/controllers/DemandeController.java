@@ -3,7 +3,7 @@ package com.fasocarbu.fasocarbu.controllers;
 import com.fasocarbu.fasocarbu.models.*;
 import com.fasocarbu.fasocarbu.repositories.*;
 import com.fasocarbu.fasocarbu.security.services.UserDetailsImpl;
-import com.fasocarbu.fasocarbu.services.interfaces.NotificationService; // <-- À ajouter
+import com.fasocarbu.fasocarbu.services.interfaces.NotificationService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
@@ -33,9 +33,8 @@ public class DemandeController {
     private VehiculeRepository vehiculeRepository;
 
     @Autowired
-    private NotificationService notificationService; // <-- Injection du service
+    private NotificationService notificationService;
 
-    // POST pour créer une demande
     @PostMapping
     public ResponseEntity<?> createDemande(@RequestBody Demande demande, Authentication authentication) {
         UserDetailsImpl userDetails = (UserDetailsImpl) authentication.getPrincipal();
@@ -47,12 +46,13 @@ public class DemandeController {
 
         Utilisateur utilisateur = utilisateurOpt.get();
 
-        if (!(utilisateur instanceof Chauffeur)) {
-            return ResponseEntity.badRequest().body("Seuls les chauffeurs peuvent créer des demandes");
+        // ❌ Les chauffeurs ne peuvent PAS créer de demandes
+        if (utilisateur instanceof Chauffeur) {
+            return ResponseEntity.badRequest().body("Les chauffeurs ne sont pas autorisés à créer des demandes");
         }
 
-        Chauffeur chauffeur = (Chauffeur) utilisateur;
-        demande.setChauffeur(chauffeur);
+        // ✅ Associer l'utilisateur (employé ou gestionnaire) à la demande
+        demande.setDemandeur(utilisateur);
         demande.setDateDemande(LocalDateTime.now());
 
         // Gestion station
@@ -67,11 +67,7 @@ public class DemandeController {
                         stationFromRequest.getVille(),
                         stationFromRequest.getAdresse()
                 );
-                if (stationOpt.isPresent()) {
-                    station = stationOpt.get();
-                } else {
-                    station = stationRepository.save(stationFromRequest);
-                }
+                station = stationOpt.orElseGet(() -> stationRepository.save(stationFromRequest));
             }
         }
         demande.setStation(station);
@@ -84,7 +80,7 @@ public class DemandeController {
             demande.setCarburant(null);
         }
 
-        // Gestion véhicule (similaire station)
+        // Gestion véhicule
         Vehicule vehiculeFromRequest = demande.getVehicule();
         Vehicule vehicule = null;
         if (vehiculeFromRequest != null) {
@@ -97,13 +93,12 @@ public class DemandeController {
         }
         demande.setVehicule(vehicule);
 
-        // 🔥 Enregistrement de la demande
+        // 🔥 Sauvegarde de la demande
         Demande savedDemande = demandeRepository.save(demande);
 
-        // ✅ Envoi de la notification FCM aux gestionnaires
+        // ✅ Notification aux gestionnaires
         notificationService.notifierGestionnairesNouvelleDemande(savedDemande);
 
         return ResponseEntity.ok(savedDemande);
     }
-
 }

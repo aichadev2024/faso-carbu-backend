@@ -9,16 +9,18 @@ public class JwtResponse {
     private String role;
     private String nom;
     private String prenom;
+    private String telephone;
     
 
 
-   public JwtResponse(String token, UUID id, String email, String role, String nom, String prenom) {
+   public JwtResponse(String token, UUID id, String email, String role, String nom, String prenom,String telephone) {
     this.token = token;
     this.id = id;
     this.email = email;
     this.role = role;
     this.nom = nom;
     this.prenom = prenom;
+    this.telephone = telephone;
 }
 
     public String getToken() {
@@ -63,5 +65,11 @@ public class JwtResponse {
     }
     public void setPrenom(String prenom) {
         this.prenom = prenom;
+    }
+    public String getTelephone(){
+        return telephone;
+    }
+    public void setTelephone(String telephone){
+        this.telephone=telephone;
     }
 }

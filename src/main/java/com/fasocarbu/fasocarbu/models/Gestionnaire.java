@@ -13,8 +13,8 @@ public class Gestionnaire extends Utilisateur {
         super();
     }
 
-    public Gestionnaire(String nom, String prenom, String email, String motDePasse, int niveauAcces) {
-        super(nom, prenom, email, motDePasse);
+    public Gestionnaire(String nom, String prenom,String telephone, String email, String motDePasse, int niveauAcces) {
+        super(nom, prenom,telephone, email, motDePasse);
         this.initialiserProfil(); // 👈 définit automatiquement le rôle
     }
 

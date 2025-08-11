@@ -21,6 +21,7 @@ public abstract class Utilisateur {
 
     private String nom;
     private String prenom;
+    private String telephone;
     private String email;
     private String motDePasse;
 
@@ -38,12 +39,17 @@ public abstract class Utilisateur {
 
     @UpdateTimestamp
     private LocalDateTime dateModification;
+    @ManyToOne
+    @JoinColumn(name = "entreprise_id")
+    private Entreprise entreprise;
+
 
     public Utilisateur() {}
 
-    public Utilisateur(String nom, String prenom, String email, String motDePasse) {
+    public Utilisateur(String nom, String prenom,String telephone, String email, String motDePasse) {
         this.nom = nom;
         this.prenom = prenom;
+        this.telephone=telephone;
         this.email = email;
         this.motDePasse = motDePasse;
     }
@@ -70,6 +76,12 @@ public abstract class Utilisateur {
 
     public void setPrenom(String prenom) {
         this.prenom = prenom;
+    }
+    public String getTelephone(){
+        return telephone;
+    }
+    public void setTelephone(String telephone){
+        this.telephone = telephone;
     }
 
     public String getEmail() {
@@ -123,6 +135,14 @@ public abstract class Utilisateur {
     public LocalDateTime getDateModification() {
         return dateModification;
     }
+    public Entreprise getEntreprise() {
+         return entreprise;
+    }
+
+    public void setEntreprise(Entreprise entreprise) {
+          this.entreprise = entreprise;
+    }
+
 
     public String getFcmToken() {
         return fcmToken;

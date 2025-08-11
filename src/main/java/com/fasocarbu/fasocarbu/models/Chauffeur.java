@@ -15,8 +15,8 @@ public class Chauffeur extends Utilisateur {
         super();
     }
 
-    public Chauffeur(String nom, String prenom, String email, String motDePasse, String permisConduite) {
-        super(nom, prenom, email, motDePasse);
+    public Chauffeur(String nom, String prenom,String telephone, String email, String motDePasse, String permisConduite) {
+        super(nom, prenom,telephone, email, motDePasse);
         this.permisConduite = permisConduite;
         this.initialiserProfil();
     }

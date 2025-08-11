@@ -11,6 +11,9 @@ public class Station {
     private String nom;
     private String adresse;
     private String ville;
+    @OneToOne(mappedBy = "station", cascade = CascadeType.ALL)
+    private AdminStation adminStation;
+
 
     public long getId() {
         return id_station;

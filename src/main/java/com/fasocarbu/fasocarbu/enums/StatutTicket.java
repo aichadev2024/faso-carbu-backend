@@ -4,5 +4,5 @@ public enum StatutTicket {
     EN_ATTENTE,
     VALIDER,
     REJETER,
-    CONSUMEE
+    CONSOMMEE
 }

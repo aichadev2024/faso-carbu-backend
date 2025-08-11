@@ -13,7 +13,6 @@ import com.fasocarbu.fasocarbu.enums.Role;
 
 
 import java.util.List;
-
 @Service
 public class NotificationServiceImpl implements NotificationService {
 
@@ -23,29 +22,26 @@ public class NotificationServiceImpl implements NotificationService {
     @Override
     public void notifierGestionnairesNouvelleDemande(Demande demande) {
         String title = "Nouvelle demande";
-        String body = "Une nouvelle demande a été créée par " + demande.getChauffeur().getNom();
-        sendNotificationToGestionnaires(title, body);
+        String body = "Une nouvelle demande a été créée par " + demande.getDemandeur().getNom();
+        sendNotificationToUtilisateur(title, body);
     }
 
-   
-     @Override
-public void sendNotificationToGestionnaires(String title, String body) {
-    
-    List<Utilisateur> gestionnaires = utilisateurRepository.findByRole(Role.GESTIONNAIRE);
+    @Override
+    public void sendNotificationToUtilisateur(String title, String body) {
+        List<Utilisateur> gestionnaires = utilisateurRepository.findByRole(Role.GESTIONNAIRE);
 
-    for (Utilisateur g : gestionnaires) {
-        if (g.getFcmToken() != null) {
-            Message message = Message.builder()
-                    .setToken(g.getFcmToken())
-                    .setNotification(Notification.builder().setTitle(title).setBody(body).build())
-                    .build();
-            try {
-                FirebaseMessaging.getInstance().send(message);
-            } catch (Exception e) {
-                System.out.println("Erreur d’envoi à " + g.getNom() + ": " + e.getMessage());
+        for (Utilisateur g : gestionnaires) {
+            if (g.getFcmToken() != null) {
+                Message message = Message.builder()
+                        .setToken(g.getFcmToken())
+                        .setNotification(Notification.builder().setTitle(title).setBody(body).build())
+                        .build();
+                try {
+                    FirebaseMessaging.getInstance().send(message);
+                } catch (Exception e) {
+                    System.out.println("Erreur d’envoi à " + g.getNom() + ": " + e.getMessage());
+                }
             }
         }
     }
-}
-
 }
