@@ -56,8 +56,8 @@ public Demande creerDemandeAvecTicket(UUID demandeurId, Long carburantId, Long s
     }
 
     @Override
-    public List<Demande> getDemandesParDemandeur(UUID chauffeurId) {
-        return demandeRepository.findByChauffeurId(chauffeurId); 
+    public List<Demande> getDemandesParDemandeur(UUID demandeur) {
+        return demandeRepository.findByDemandeur_Id(demandeur); 
     }
 
     @Override
