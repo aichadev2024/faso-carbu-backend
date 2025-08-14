@@ -101,8 +101,13 @@ public class UtilisateurServiceImpl implements UtilisateurService {
     @Override
     public void updateFcmToken(UUID userId, String fcmToken) {
         Utilisateur utilisateur = utilisateurRepository.findById(userId)
-            .orElseThrow(() -> new RuntimeException("Utilisateur non trouvé"));
+                .orElseThrow(() -> new RuntimeException("Utilisateur non trouvé"));
         utilisateur.setFcmToken(fcmToken);
         utilisateurRepository.save(utilisateur);
+    }
+
+    @Override
+    public Utilisateur save(Utilisateur utilisateur) {
+        return utilisateurRepository.save(utilisateur);
     }
 }

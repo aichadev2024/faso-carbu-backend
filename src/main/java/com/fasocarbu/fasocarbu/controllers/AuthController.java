@@ -37,14 +37,19 @@ public class AuthController {
         Authentication authentication = authenticationManager.authenticate(
                 new UsernamePasswordAuthenticationToken(
                         loginRequest.getEmail(),
-                        loginRequest.getMotDePasse()
-                )
-        );
+                        loginRequest.getMotDePasse()));
 
         SecurityContextHolder.getContext().setAuthentication(authentication);
         UserDetailsImpl userDetails = (UserDetailsImpl) authentication.getPrincipal();
 
         String jwt = jwtUtils.generateJwtToken(userDetails.getUsername());
+
+        // 🔹 Sauvegarder le FCM token dans l'utilisateur
+        Utilisateur user = userDetails.getUtilisateur();
+        if (loginRequest.getFcmToken() != null && !loginRequest.getFcmToken().isEmpty()) {
+            user.setFcmToken(loginRequest.getFcmToken());
+            utilisateurService.save(user);
+        }
 
         return ResponseEntity.ok(new JwtResponse(
                 jwt,
@@ -54,6 +59,7 @@ public class AuthController {
                 userDetails.getNom(),
                 userDetails.getPrenom(),
                 userDetails.getUtilisateur().getTelephone()
+
         ));
     }
 
@@ -74,7 +80,7 @@ public class AuthController {
 
     @PutMapping("/changer-mot-de-passe")
     public ResponseEntity<?> changerMotDePasse(@RequestBody ChangePasswordRequest request,
-                                               @RequestHeader("Authorization") String tokenHeader) {
+            @RequestHeader("Authorization") String tokenHeader) {
         try {
             String token = tokenHeader.replace("Bearer ", "");
             String email = jwtUtils.getEmailFromJwtToken(token);
