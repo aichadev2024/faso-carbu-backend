@@ -31,7 +31,7 @@ public class SecurityConfig {
     private final AuthEntryPointJwt authEntryPointJwt;
 
     public SecurityConfig(JwtAuthenticationFilter jwtAuthenticationFilter,
-                          AuthEntryPointJwt authEntryPointJwt) {
+            AuthEntryPointJwt authEntryPointJwt) {
         this.jwtAuthenticationFilter = jwtAuthenticationFilter;
         this.authEntryPointJwt = authEntryPointJwt;
     }
@@ -49,33 +49,32 @@ public class SecurityConfig {
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         http
-            .cors(cors -> cors.configurationSource(corsConfigurationSource()))
-            .csrf(csrf -> csrf.disable())
-            .exceptionHandling(exception -> exception.authenticationEntryPoint(authEntryPointJwt))
-            .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
-            .authorizeHttpRequests(auth -> auth
-                // Auth & public endpoints
-                .requestMatchers("/api/auth/**").permitAll()
-                .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
+                .cors(cors -> cors.configurationSource(corsConfigurationSource()))
+                .csrf(csrf -> csrf.disable())
+                .exceptionHandling(exception -> exception.authenticationEntryPoint(authEntryPointJwt))
+                .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
+                .authorizeHttpRequests(auth -> auth
+                        // Auth & public endpoints
+                        .requestMatchers("/api/auth/**").permitAll()
+                        .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
 
-                // Gestionnaire uniquement
-                .requestMatchers("/api/gestionnaire/**").hasRole("GESTIONNAIRE")
+                        // Gestionnaire uniquement
+                        .requestMatchers("/api/gestionnaire/**").hasRole("GESTIONNAIRE")
 
-                // Gestionnaire + Demandeur
-                .requestMatchers("/api/demande/**").hasAnyRole("GESTIONNAIRE", "DEMANDEUR")
+                        // Gestionnaire + Demandeur
+                        .requestMatchers("/api/demande/**").hasAnyRole("GESTIONNAIRE", "DEMANDEUR")
 
-                // Chauffeur : consultation uniquement
-                .requestMatchers("/api/chauffeur/**").hasRole("CHAUFFEUR")
+                        // Chauffeur : consultation uniquement
+                        .requestMatchers("/api/chauffeur/**").hasRole("CHAUFFEUR")
 
-                // Admin station
-                .requestMatchers("/api/admin-station/**").hasRole("ADMIN_STATION")
+                        // Admin station
+                        .requestMatchers("/api/admin-station/**").hasRole("ADMIN_STATION")
 
-                // Agent station
-                .requestMatchers("/api/agent-station/**").hasRole("AGENT_STATION")
+                        // Agent station
+                        .requestMatchers("/api/agent-station/**").hasRole("AGENT_STATION")
 
-                // Autres routes sécurisées
-                .anyRequest().authenticated()
-            );
+                        // Autres routes sécurisées
+                        .anyRequest().authenticated());
 
         http.addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);
 
@@ -85,13 +84,21 @@ public class SecurityConfig {
     @Bean
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration configuration = new CorsConfiguration();
-        configuration.setAllowedOriginPatterns(Arrays.asList("*"));
+
+        // Autoriser toutes les origines pour le mobile + autoriser localhost pour le
+        // web
+        configuration.setAllowedOriginPatterns(Arrays.asList(
+                "*",
+                "http://localhost:*"));
+
         configuration.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "DELETE", "OPTIONS"));
         configuration.setAllowedHeaders(Arrays.asList("*"));
         configuration.setAllowCredentials(true);
 
         UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
         source.registerCorsConfiguration("/**", configuration);
+
         return source;
     }
+
 }
