@@ -2,6 +2,7 @@ package com.fasocarbu.fasocarbu.services.implementation;
 
 import com.fasocarbu.fasocarbu.dtos.RegisterRequest;
 import com.fasocarbu.fasocarbu.models.*;
+import com.fasocarbu.fasocarbu.repositories.EntrepriseRepository;
 import com.fasocarbu.fasocarbu.repositories.UtilisateurRepository;
 import com.fasocarbu.fasocarbu.services.interfaces.UtilisateurService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -20,6 +21,8 @@ public class UtilisateurServiceImpl implements UtilisateurService {
 
     @Autowired
     private PasswordEncoder passwordEncoder;
+    @Autowired
+    private EntrepriseRepository entrepriseRepository;
 
     @Override
     public void enregistrerUtilisateur(Utilisateur utilisateur) {
@@ -37,8 +40,20 @@ public class UtilisateurServiceImpl implements UtilisateurService {
 
         switch (roleStr) {
             case "GESTIONNAIRE":
-                utilisateur = new Gestionnaire();
+                // 1️⃣ Créer l'entreprise du gestionnaire
+                Entreprise entreprise = new Entreprise();
+                entreprise.setNom(registerRequest.getNomEntreprise());
+                entreprise.setAdresse(registerRequest.getAdresseEntreprise());
+                // Sauvegarde de l'entreprise
+                // il faut injecter le repo entreprise :
+                entreprise = entrepriseRepository.save(entreprise);
+
+                // 2️⃣ Créer le gestionnaire
+                Gestionnaire gestionnaire = new Gestionnaire();
+                gestionnaire.setEntreprise(entreprise); // associer entreprise
+                utilisateur = gestionnaire;
                 break;
+
             case "CHAUFFEUR":
                 utilisateur = new Chauffeur();
                 break;
@@ -46,12 +61,13 @@ public class UtilisateurServiceImpl implements UtilisateurService {
                 utilisateur = new AgentStation();
                 break;
             case "DEMANDEUR":
-                utilisateur = new Demandeur(); // pas besoin de classe spéciale
+                utilisateur = new Demandeur();
                 break;
             default:
                 throw new RuntimeException("Rôle inconnu : " + roleStr);
         }
 
+        // Champs communs
         utilisateur.setEmail(registerRequest.getEmail());
         utilisateur.setMotDePasse(passwordEncoder.encode(registerRequest.getMotDePasse()));
         utilisateur.setNom(registerRequest.getNom());

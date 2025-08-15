@@ -25,6 +25,8 @@ public class RegisterRequest {
 
     @NotBlank
     private String telephone;
+    private String nomEntreprise;
+    private String adresseEntreprise;
 
     // Getters et Setters
 
@@ -75,4 +77,21 @@ public class RegisterRequest {
     public void setTelephone(String telephone) {
         this.telephone = telephone;
     }
+
+    public String getNomEntreprise() {
+        return nomEntreprise;
+    }
+
+    public void setNomEntreprise(String nomEntreprise) {
+        this.nomEntreprise = nomEntreprise;
+    }
+
+    public String getAdresseEntreprise() {
+        return adresseEntreprise;
+    }
+
+    public void setAdresseEntreprise(String adresseEntreprise) {
+        this.adresseEntreprise = adresseEntreprise;
+    }
+
 }
