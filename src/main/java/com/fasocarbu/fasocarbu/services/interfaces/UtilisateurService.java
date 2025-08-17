@@ -1,5 +1,6 @@
 package com.fasocarbu.fasocarbu.services.interfaces;
 
+import com.fasocarbu.fasocarbu.dtos.CreateUserRequest;
 import com.fasocarbu.fasocarbu.dtos.RegisterRequest;
 import com.fasocarbu.fasocarbu.models.Utilisateur;
 
@@ -35,5 +36,7 @@ public interface UtilisateurService {
     Utilisateur save(Utilisateur utilisateur);
 
     Utilisateur getUtilisateurByEmail(String email);
+
+    Utilisateur creerUtilisateurParGestionnaire(CreateUserRequest request, String emailGestionnaire);
 
 }

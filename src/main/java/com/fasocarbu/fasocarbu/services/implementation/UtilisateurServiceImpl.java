@@ -7,6 +7,7 @@ import com.fasocarbu.fasocarbu.repositories.UtilisateurRepository;
 import com.fasocarbu.fasocarbu.services.interfaces.UtilisateurService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.crypto.password.PasswordEncoder;
+import com.fasocarbu.fasocarbu.dtos.CreateUserRequest;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -131,6 +132,45 @@ public class UtilisateurServiceImpl implements UtilisateurService {
     public Utilisateur getUtilisateurByEmail(String email) {
         return utilisateurRepository.findByEmail(email)
                 .orElseThrow(() -> new RuntimeException("Utilisateur non trouvé"));
+    }
+
+    @Override
+    public Utilisateur creerUtilisateurParGestionnaire(CreateUserRequest request, String emailGestionnaire) {
+        // Récupérer le gestionnaire connecté pour connaître son entreprise
+        Utilisateur gestionnaire = getUtilisateurByEmail(emailGestionnaire);
+        if (gestionnaire == null || gestionnaire.getEntreprise() == null) {
+            throw new RuntimeException("Gestionnaire ou entreprise non trouvée");
+        }
+
+        // Créer l'utilisateur en fonction du rôle
+        Utilisateur utilisateur;
+        String roleStr = request.getRole().toUpperCase();
+        switch (roleStr) {
+            case "CHAUFFEUR":
+                utilisateur = new Chauffeur();
+                break;
+            case "AGENT_STATION":
+                utilisateur = new AgentStation();
+                break;
+            case "DEMANDEUR":
+                utilisateur = new Demandeur();
+                break;
+            default:
+                throw new RuntimeException("Rôle inconnu : " + roleStr);
+        }
+
+        // Remplir les champs communs
+        utilisateur.setNom(request.getNom());
+        utilisateur.setPrenom(request.getPrenom());
+        utilisateur.setEmail(request.getEmail());
+        utilisateur.setTelephone(request.getTelephone());
+        utilisateur.setMotDePasse(passwordEncoder.encode(request.getMotDePasse()));
+        utilisateur.setRole(roleStr);
+        utilisateur.setEntreprise(gestionnaire.getEntreprise());
+        utilisateur.setActif(true);
+
+        // Sauvegarder et retourner
+        return utilisateurRepository.save(utilisateur);
     }
 
 }

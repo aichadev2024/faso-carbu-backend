@@ -1,5 +1,6 @@
 package com.fasocarbu.fasocarbu.controllers;
 
+import com.fasocarbu.fasocarbu.dtos.CreateUserRequest;
 import com.fasocarbu.fasocarbu.dtos.UpdateFcmTokenRequest;
 import com.fasocarbu.fasocarbu.models.Utilisateur;
 import com.fasocarbu.fasocarbu.security.services.UserDetailsImpl;
@@ -27,17 +28,14 @@ public class UtilisateurController {
     @PostMapping("/ajouter")
     @PreAuthorize("hasRole('GESTIONNAIRE')")
     public ResponseEntity<?> ajouterUtilisateur(
-            @RequestBody Utilisateur utilisateur,
+            @RequestBody CreateUserRequest request,
             @AuthenticationPrincipal UserDetailsImpl userDetails) {
 
-        // Récupérer le gestionnaire connecté
-        Utilisateur gestionnaire = utilisateurService.getUtilisateurByEmail(userDetails.getUsername());
+        // Récupérer l'email du gestionnaire connecté
+        String emailGestionnaire = userDetails.getUsername();
 
-        // Associer l'entreprise du gestionnaire à l'utilisateur créé
-        utilisateur.setEntreprise(gestionnaire.getEntreprise());
-
-        // Enregistrer l'utilisateur
-        Utilisateur savedUser = utilisateurService.enregistrerUtilisateur(utilisateur);
+        // Créer l'utilisateur en utilisant le service et le DTO
+        Utilisateur savedUser = utilisateurService.creerUtilisateurParGestionnaire(request, emailGestionnaire);
 
         return ResponseEntity.status(HttpStatus.CREATED).body(savedUser);
     }
@@ -57,7 +55,7 @@ public class UtilisateurController {
 
     // =================== Suppression ===================
     @DeleteMapping("/{id}")
-    @PreAuthorize("hasRole('GESTIONNAIRE')") // facultatif mais recommandé
+    @PreAuthorize("hasRole('GESTIONNAIRE')")
     public ResponseEntity<Void> supprimerUtilisateur(@PathVariable UUID id) {
         utilisateurService.supprimerUtilisateur(id);
         return ResponseEntity.noContent().build();
