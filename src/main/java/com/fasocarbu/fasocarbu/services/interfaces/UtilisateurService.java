@@ -18,7 +18,7 @@ public interface UtilisateurService {
      */
     Utilisateur registerUser(RegisterRequest registerRequest) throws RuntimeException;
 
-    void enregistrerUtilisateur(Utilisateur utilisateur);
+    Utilisateur enregistrerUtilisateur(Utilisateur utilisateur);
 
     Utilisateur getUtilisateurById(UUID id);
 
@@ -33,5 +33,7 @@ public interface UtilisateurService {
     void updateFcmToken(UUID userId, String fcmToken);
 
     Utilisateur save(Utilisateur utilisateur);
+
+    Utilisateur getUtilisateurByEmail(String email);
 
 }

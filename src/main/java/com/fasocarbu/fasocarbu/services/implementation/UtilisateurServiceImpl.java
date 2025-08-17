@@ -25,8 +25,8 @@ public class UtilisateurServiceImpl implements UtilisateurService {
     private EntrepriseRepository entrepriseRepository;
 
     @Override
-    public void enregistrerUtilisateur(Utilisateur utilisateur) {
-        utilisateurRepository.save(utilisateur);
+    public Utilisateur enregistrerUtilisateur(Utilisateur utilisateur) {
+        return utilisateurRepository.save(utilisateur);
     }
 
     @Override
@@ -126,4 +126,11 @@ public class UtilisateurServiceImpl implements UtilisateurService {
     public Utilisateur save(Utilisateur utilisateur) {
         return utilisateurRepository.save(utilisateur);
     }
+
+    @Override
+    public Utilisateur getUtilisateurByEmail(String email) {
+        return utilisateurRepository.findByEmail(email)
+                .orElseThrow(() -> new RuntimeException("Utilisateur non trouvé"));
+    }
+
 }
