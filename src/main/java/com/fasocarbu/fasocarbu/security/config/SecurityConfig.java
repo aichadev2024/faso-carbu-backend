@@ -58,7 +58,10 @@ public class SecurityConfig {
                         .requestMatchers("/api/auth/**").permitAll()
                         .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
 
-                        // Gestionnaire uniquement
+                        // Création d'utilisateurs par gestionnaire
+                        .requestMatchers("/api/utilisateurs/ajouter").hasRole("GESTIONNAIRE")
+
+                        // Gestionnaire : accès aux autres endpoints
                         .requestMatchers("/api/gestionnaires/**").hasRole("GESTIONNAIRE")
 
                         // Gestionnaire + Demandeur
@@ -73,7 +76,7 @@ public class SecurityConfig {
                         // Agent station
                         .requestMatchers("/api/agent-station/**").hasRole("AGENT_STATION")
 
-                        // Autres routes sécurisées
+                        // Toutes les autres routes sécurisées
                         .anyRequest().authenticated());
 
         http.addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);
@@ -84,13 +87,7 @@ public class SecurityConfig {
     @Bean
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration configuration = new CorsConfiguration();
-
-        // Autoriser toutes les origines pour le mobile + autoriser localhost pour le
-        // web
-        configuration.setAllowedOriginPatterns(Arrays.asList(
-                "*",
-                "http://localhost:*"));
-
+        configuration.setAllowedOriginPatterns(Arrays.asList("*", "http://localhost:*"));
         configuration.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "DELETE", "OPTIONS"));
         configuration.setAllowedHeaders(Arrays.asList("*"));
         configuration.setAllowCredentials(true);
@@ -100,5 +97,4 @@ public class SecurityConfig {
 
         return source;
     }
-
 }
