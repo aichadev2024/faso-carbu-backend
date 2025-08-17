@@ -21,18 +21,28 @@ import java.util.UUID;
 @Service
 public class GestionnaireServiceImpl implements GestionnaireService {
 
-    @Autowired private GestionnaireRepository gestionnaireRepository;
-    @Autowired private ChauffeurRepository chauffeurRepository;
-    @Autowired private VehiculeRepository vehiculeRepository;
-    @Autowired private StationRepository stationRepository;
-    @Autowired private AdminStationRepository adminStationRepository;
-    @Autowired private CarburantRepository carburantRepository;
-    @Autowired private DemandeRepository demandeRepository;
-    @Autowired private TicketRepository ticketRepository;
-    @Autowired private EntrepriseRepository entrepriseRepository;
-    @Autowired private DemandeurRepository demandeurRepository;
-    @Autowired private ConsommationRepository consommationRepository;
-
+    @Autowired
+    private GestionnaireRepository gestionnaireRepository;
+    @Autowired
+    private ChauffeurRepository chauffeurRepository;
+    @Autowired
+    private VehiculeRepository vehiculeRepository;
+    @Autowired
+    private StationRepository stationRepository;
+    @Autowired
+    private AdminStationRepository adminStationRepository;
+    @Autowired
+    private CarburantRepository carburantRepository;
+    @Autowired
+    private DemandeRepository demandeRepository;
+    @Autowired
+    private TicketRepository ticketRepository;
+    @Autowired
+    private EntrepriseRepository entrepriseRepository;
+    @Autowired
+    private DemandeurRepository demandeurRepository;
+    @Autowired
+    private ConsommationRepository consommationRepository;
 
     @Override
     public Gestionnaire ajouterGestionnaire(Gestionnaire gestionnaire) {
@@ -166,29 +176,30 @@ public class GestionnaireServiceImpl implements GestionnaireService {
 
         return gestionnaireRepository.save(gestionnaire);
     }
+
     @Override
-public List<Demande> getDemandesParStatut(String statut) {
-    return demandeRepository.findByStatut(StatutDemande.valueOf(statut.toUpperCase()));
-}
+    public List<Demande> getDemandesParStatut(String statut) {
+        return demandeRepository.findByStatut(StatutDemande.valueOf(statut.toUpperCase()));
+    }
 
-@Override
-public Demandeur creerDemandeur(Demandeur demandeur) {
-    demandeur.setRole("DEMANDEUR");
-    return demandeurRepository.save(demandeur);
-}
+    @Override
+    public Demandeur creerDemandeur(Demandeur demandeur) {
+        demandeur.setRole("DEMANDEUR");
+        return demandeurRepository.save(demandeur);
+    }
 
-@Override
-public List<Consommation> consulterHistoriqueConsommationParVehicule(Long vehiculeId) {
-    return consommationRepository.findByAttribution_Ticket_Vehicule_Id(vehiculeId);
-}
-@Override
-public Vehicule definirQuotaPourVehicule(Long vehiculeId, double quota) {
-    Vehicule vehicule = vehiculeRepository.findById(vehiculeId)
-            .orElseThrow(() -> new RuntimeException("Véhicule non trouvé"));
+    @Override
+    public List<Consommation> consulterHistoriqueConsommationParVehicule(Long vehiculeId) {
+        return consommationRepository.findByAttribution_Ticket_Vehicule_Id(vehiculeId);
+    }
 
-    vehicule.setQuotaCarburant(quota);
-    return vehiculeRepository.save(vehicule);
-}
+    @Override
+    public Vehicule definirQuotaPourVehicule(Long vehiculeId, double quota) {
+        Vehicule vehicule = vehiculeRepository.findById(vehiculeId)
+                .orElseThrow(() -> new RuntimeException("Véhicule non trouvé"));
 
+        vehicule.setQuotaCarburant(quota);
+        return vehiculeRepository.save(vehicule);
+    }
 
 }

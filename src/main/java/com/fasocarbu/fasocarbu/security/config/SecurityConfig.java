@@ -59,13 +59,13 @@ public class SecurityConfig {
                         .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
 
                         // Gestionnaire uniquement
-                        .requestMatchers("/api/gestionnaire/**").hasRole("GESTIONNAIRE")
+                        .requestMatchers("/api/gestionnaires/**").hasRole("GESTIONNAIRE")
 
                         // Gestionnaire + Demandeur
-                        .requestMatchers("/api/demande/**").hasAnyRole("GESTIONNAIRE", "DEMANDEUR")
+                        .requestMatchers("/api/demandes/**").hasAnyRole("GESTIONNAIRE", "DEMANDEUR")
 
                         // Chauffeur : consultation uniquement
-                        .requestMatchers("/api/chauffeur/**").hasRole("CHAUFFEUR")
+                        .requestMatchers("/api/chauffeurs/**").hasRole("CHAUFFEUR")
 
                         // Admin station
                         .requestMatchers("/api/admin-station/**").hasRole("ADMIN_STATION")
