@@ -2,6 +2,7 @@ package com.fasocarbu.fasocarbu.models;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import jakarta.persistence.*;
+import java.util.List;
 
 @Entity
 public class AdminStation extends Utilisateur {
@@ -11,11 +12,15 @@ public class AdminStation extends Utilisateur {
     @JsonIgnoreProperties("adminStation")
     private Station station;
 
-    public AdminStation() {}
+    @OneToMany(mappedBy = "adminStation")
+    private List<Carburant> carburants;
+
+    public AdminStation() {
+    }
 
     @Override
     public void initialiserProfil() {
-        
+
     }
 
     public Station getStation() {
@@ -24,5 +29,13 @@ public class AdminStation extends Utilisateur {
 
     public void setStation(Station station) {
         this.station = station;
+    }
+
+    public List<Carburant> getCarburants() {
+        return carburants;
+    }
+
+    public void setCarburants(List<Carburant> carburants) {
+        this.carburants = carburants;
     }
 }

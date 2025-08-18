@@ -12,14 +12,24 @@ public class Carburant {
     private String nom;
     private Double prix;
 
-    public Carburant() {}
+    @ManyToOne
+    @JoinColumn(name = "admin_station_id")
+    private AdminStation adminStation;
 
-    public Carburant( Long id,String nom, Double prix) {
-        this.id= id;
+    @OneToOne
+    @JoinColumn(name = "station_id")
+    private Station station;
+
+    public Carburant() {
+    }
+
+    public Carburant(Long id, String nom, Double prix) {
+        this.id = id;
         this.nom = nom;
         this.prix = prix;
     }
 
+    // Getters et Setters
     public Long getId() {
         return id;
     }
@@ -42,5 +52,21 @@ public class Carburant {
 
     public void setPrix(Double prix) {
         this.prix = prix;
+    }
+
+    public AdminStation getAdminStation() {
+        return adminStation;
+    }
+
+    public void setAdminStation(AdminStation adminStation) {
+        this.adminStation = adminStation;
+    }
+
+    public Station getStation() {
+        return station;
+    }
+
+    public void setStation(Station station) {
+        this.station = station;
     }
 }
