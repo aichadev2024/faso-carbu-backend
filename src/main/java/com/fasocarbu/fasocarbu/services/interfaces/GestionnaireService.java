@@ -48,4 +48,6 @@ public interface GestionnaireService {
     ResponseEntity<Resource> exporterRapportConsommation();
 
     List<Station> obtenirToutesLesStations();
+
+    List<Station> obtenirStationsParGestionnaire(UUID gestionnaireId);
 }
