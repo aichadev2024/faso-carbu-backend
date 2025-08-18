@@ -205,4 +205,9 @@ public class GestionnaireServiceImpl implements GestionnaireService {
         return vehiculeRepository.save(vehicule);
     }
 
+    @Override
+    public List<Station> obtenirToutesLesStations() {
+        return stationRepository.findAll();
+    }
+
 }

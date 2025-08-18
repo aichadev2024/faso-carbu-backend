@@ -14,33 +14,38 @@ public interface GestionnaireService {
 
     // Gestionnaires
     Gestionnaire ajouterGestionnaire(Gestionnaire gestionnaire);
-    Gestionnaire obtenirGestionnaire(UUID id);
-    List<Gestionnaire> obtenirTousLesGestionnaires();
-    Gestionnaire modifierGestionnaire(UUID id, Gestionnaire gestionnaire);
-    void supprimerGestionnaire(UUID id);
-    Gestionnaire ajouterGestionnaireAvecEntreprise(GestionnaireAvecEntrepriseRequest request);
 
+    Gestionnaire obtenirGestionnaire(UUID id);
+
+    List<Gestionnaire> obtenirTousLesGestionnaires();
+
+    Gestionnaire modifierGestionnaire(UUID id, Gestionnaire gestionnaire);
+
+    void supprimerGestionnaire(UUID id);
+
+    Gestionnaire ajouterGestionnaireAvecEntreprise(GestionnaireAvecEntrepriseRequest request);
 
     Chauffeur creerChauffeur(Chauffeur chauffeur);
 
-
     Vehicule creerVehicule(Vehicule vehicule);
-    Vehicule definirQuotaPourVehicule(Long vehiculeId, double quota);
 
+    Vehicule definirQuotaPourVehicule(Long vehiculeId, double quota);
 
     Station creerStationAvecAdmin(StationAvecAdminRequest request);
 
     Demande creerDemandePourEntreprise(DemandeRequest request);
-    Ticket validerDemandeEtGenererTicket(Long id);
-    Demande rejeterDemande(Long id, String motif);
-    List<Demande> getDemandesParStatut(String statut);
 
+    Ticket validerDemandeEtGenererTicket(Long id);
+
+    Demande rejeterDemande(Long id, String motif);
+
+    List<Demande> getDemandesParStatut(String statut);
 
     Demandeur creerDemandeur(Demandeur demandeur);
 
-    
     List<Consommation> consulterHistoriqueConsommationParVehicule(Long vehiculeId);
 
-    
     ResponseEntity<Resource> exporterRapportConsommation();
+
+    List<Station> obtenirToutesLesStations();
 }
