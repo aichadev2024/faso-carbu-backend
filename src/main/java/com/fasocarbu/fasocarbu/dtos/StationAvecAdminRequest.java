@@ -2,18 +2,15 @@ package com.fasocarbu.fasocarbu.dtos;
 
 public class StationAvecAdminRequest {
 
-    
     private String nomStation;
     private String adresseStation;
+    private String villeStation;
 
-    
     private String nomAdmin;
     private String prenomAdmin;
     private String emailAdmin;
     private String motDePasseAdmin;
     private String telephoneAdmin;
-
-
 
     public String getNomStation() {
         return nomStation;
@@ -29,6 +26,14 @@ public class StationAvecAdminRequest {
 
     public void setAdresseStation(String adresseStation) {
         this.adresseStation = adresseStation;
+    }
+
+    public String getVilleStation() {
+        return villeStation;
+    }
+
+    public void setVilleStation(String villeStation) {
+        this.villeStation = villeStation;
     }
 
     public String getNomAdmin() {

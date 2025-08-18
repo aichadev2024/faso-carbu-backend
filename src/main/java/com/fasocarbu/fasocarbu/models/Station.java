@@ -6,14 +6,14 @@ import jakarta.persistence.*;
 
 public class Station {
     @Id
-    @GeneratedValue(strategy=GenerationType.IDENTITY)
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private long id_station;
     private String nom;
     private String adresse;
     private String ville;
+    private String statut;
     @OneToOne(mappedBy = "station", cascade = CascadeType.ALL)
     private AdminStation adminStation;
-
 
     public long getId() {
         return id_station;
@@ -45,5 +45,13 @@ public class Station {
 
     public void setVille(String ville) {
         this.ville = ville;
+    }
+
+    public String getStatut() {
+        return statut;
+    }
+
+    public void setStatut(String statut) {
+        this.statut = statut;
     }
 }

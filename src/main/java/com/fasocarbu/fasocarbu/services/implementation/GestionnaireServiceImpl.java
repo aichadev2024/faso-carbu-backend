@@ -90,6 +90,8 @@ public class GestionnaireServiceImpl implements GestionnaireService {
         Station station = new Station();
         station.setNom(request.getNomStation());
         station.setAdresse(request.getAdresseStation());
+        station.setVille(request.getVilleStation()); // ⚠️ ajouter la ville
+        station.setStatut("ACTIF"); // ou le statut que tu veux par défaut
         Station savedStation = stationRepository.save(station);
 
         AdminStation admin = new AdminStation();
@@ -103,7 +105,8 @@ public class GestionnaireServiceImpl implements GestionnaireService {
 
         adminStationRepository.save(admin);
 
-        return savedStation;
+        // Recharge la station complète avec admin pour retourner tous les champs
+        return stationRepository.findById(savedStation.getId()).orElse(savedStation);
     }
 
     @Override
