@@ -210,9 +210,4 @@ public class GestionnaireServiceImpl implements GestionnaireService {
         return stationRepository.findAll();
     }
 
-    @Override
-    public List<Station> obtenirStationsParGestionnaire(UUID gestionnaireId) {
-        return stationRepository.findByGestionnaireId(gestionnaireId);
-    }
-
 }

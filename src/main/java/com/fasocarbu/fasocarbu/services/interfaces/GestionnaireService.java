@@ -49,5 +49,4 @@ public interface GestionnaireService {
 
     List<Station> obtenirToutesLesStations();
 
-    List<Station> obtenirStationsParGestionnaire(UUID gestionnaireId);
 }
