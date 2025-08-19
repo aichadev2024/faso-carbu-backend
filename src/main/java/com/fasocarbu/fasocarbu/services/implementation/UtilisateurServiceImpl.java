@@ -41,17 +41,24 @@ public class UtilisateurServiceImpl implements UtilisateurService {
 
         switch (roleStr) {
             case "GESTIONNAIRE":
-                // 1️⃣ Créer l'entreprise du gestionnaire
+                // ✅ Vérification que le nom et l'adresse de l'entreprise sont fournis
+                if (registerRequest.getNomEntreprise() == null || registerRequest.getNomEntreprise().isEmpty()) {
+                    throw new RuntimeException("Le nom de l'entreprise est obligatoire pour un gestionnaire");
+                }
+                if (registerRequest.getAdresseEntreprise() == null
+                        || registerRequest.getAdresseEntreprise().isEmpty()) {
+                    throw new RuntimeException("L'adresse de l'entreprise est obligatoire pour un gestionnaire");
+                }
+
+                // Création de l'entreprise
                 Entreprise entreprise = new Entreprise();
                 entreprise.setNom(registerRequest.getNomEntreprise());
                 entreprise.setAdresse(registerRequest.getAdresseEntreprise());
-                // Sauvegarde de l'entreprise
-                // il faut injecter le repo entreprise :
                 entreprise = entrepriseRepository.save(entreprise);
 
-                // 2️⃣ Créer le gestionnaire
+                // Création du gestionnaire
                 Gestionnaire gestionnaire = new Gestionnaire();
-                gestionnaire.setEntreprise(entreprise); // associer entreprise
+                gestionnaire.setEntreprise(entreprise);
                 utilisateur = gestionnaire;
                 break;
 
