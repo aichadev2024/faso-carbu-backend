@@ -15,7 +15,7 @@ public class RegisterRequest {
     private String motDePasse;
 
     @NotBlank
-    private String role; // Exemple : "GESTIONNAIRE", "CHAUFFEUR", "AGENT_STATION", "DEMANDEUR"
+    private String role;
 
     @NotBlank
     private String nom;
