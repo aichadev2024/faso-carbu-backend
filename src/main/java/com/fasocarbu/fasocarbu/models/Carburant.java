@@ -16,7 +16,7 @@ public class Carburant {
     @JoinColumn(name = "admin_station_id")
     private AdminStation adminStation;
 
-    @OneToOne
+    @ManyToOne
     @JoinColumn(name = "station_id")
     private Station station;
 
