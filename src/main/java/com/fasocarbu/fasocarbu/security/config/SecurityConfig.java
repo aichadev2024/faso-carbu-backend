@@ -57,6 +57,7 @@ public class SecurityConfig {
                         // Auth & public endpoints
                         .requestMatchers("/api/auth/**").permitAll()
                         .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
+                        .requestMatchers("/api/carburants/**").permitAll()
 
                         // Création d'utilisateurs par gestionnaire
                         .requestMatchers("/api/utilisateurs/ajouter").hasRole("GESTIONNAIRE")
