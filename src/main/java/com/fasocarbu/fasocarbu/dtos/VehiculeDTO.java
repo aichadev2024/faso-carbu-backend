@@ -1,0 +1,102 @@
+package com.fasocarbu.fasocarbu.dtos;
+
+import com.fasocarbu.fasocarbu.models.Vehicule;
+import java.util.UUID;
+
+public class VehiculeDTO {
+    private long id;
+    private String marque;
+    private String modele;
+    private String immatriculation;
+    private double quotaCarburant;
+    private long carburantId;
+    private String carburantNom;
+    private UUID utilisateurId;
+    private String utilisateurNom;
+
+    // Constructeur depuis Vehicule
+    public VehiculeDTO(Vehicule v) {
+        this.id = v.getId();
+        this.marque = v.getMarque();
+        this.modele = v.getModele();
+        this.immatriculation = v.getImmatriculation();
+        this.quotaCarburant = v.getQuotaCarburant();
+        this.carburantId = v.getCarburant().getId();
+        this.carburantNom = v.getCarburant().getNom();
+        this.utilisateurId = v.getUtilisateur().getId();
+        this.utilisateurNom = v.getUtilisateur().getNom();
+    }
+
+    // Getters et Setters
+    public long getId() {
+        return id;
+    }
+
+    public void setId(long id) {
+        this.id = id;
+    }
+
+    public String getMarque() {
+        return marque;
+    }
+
+    public void setMarque(String marque) {
+        this.marque = marque;
+    }
+
+    public String getModele() {
+        return modele;
+    }
+
+    public void setModele(String modele) {
+        this.modele = modele;
+    }
+
+    public String getImmatriculation() {
+        return immatriculation;
+    }
+
+    public void setImmatriculation(String immatriculation) {
+        this.immatriculation = immatriculation;
+    }
+
+    public double getQuotaCarburant() {
+        return quotaCarburant;
+    }
+
+    public void setQuotaCarburant(double quotaCarburant) {
+        this.quotaCarburant = quotaCarburant;
+    }
+
+    public long getCarburantId() {
+        return carburantId;
+    }
+
+    public void setCarburantId(long carburantId) {
+        this.carburantId = carburantId;
+    }
+
+    public String getCarburantNom() {
+        return carburantNom;
+    }
+
+    public void setCarburantNom(String carburantNom) {
+        this.carburantNom = carburantNom;
+    }
+
+    public UUID getUtilisateurId() {
+        return utilisateurId;
+    }
+
+    public void setUtilisateurId(UUID utilisateurId) {
+        this.utilisateurId = utilisateurId;
+    }
+
+    public String getUtilisateurNom() {
+        return utilisateurNom;
+    }
+
+    public void setUtilisateurNom(String utilisateurNom) {
+        this.utilisateurNom = utilisateurNom;
+    }
+}

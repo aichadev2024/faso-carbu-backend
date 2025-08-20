@@ -1,5 +1,6 @@
 package com.fasocarbu.fasocarbu.controllers;
 
+import com.fasocarbu.fasocarbu.dtos.VehiculeDTO;
 import com.fasocarbu.fasocarbu.models.Vehicule;
 import com.fasocarbu.fasocarbu.services.interfaces.VehiculeService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -15,18 +16,23 @@ public class VehiculeController {
     private VehiculeService vehiculeService;
 
     @PostMapping("/ajouter")
-    public Vehicule ajouterVehicule(@RequestBody Vehicule vehicule) {
-        return vehiculeService.enregistrerVehicule(vehicule);
+    public VehiculeDTO ajouterVehicule(@RequestBody Vehicule vehicule) {
+        Vehicule savedVehicule = vehiculeService.enregistrerVehicule(vehicule);
+        return new VehiculeDTO(savedVehicule);
     }
 
     @GetMapping("/{id}")
-    public Vehicule getVehicule(@PathVariable Long id) {
-        return vehiculeService.getVehiculeById(id);
+    public VehiculeDTO getVehicule(@PathVariable Long id) {
+        Vehicule vehicule = vehiculeService.getVehiculeById(id);
+        return new VehiculeDTO(vehicule);
     }
 
     @GetMapping
-    public List<Vehicule> getAllVehicules() {
-        return vehiculeService.getAllVehicules();
+    public List<VehiculeDTO> getAllVehicules() {
+        List<Vehicule> vehicules = vehiculeService.getAllVehicules();
+        return vehicules.stream()
+                .map(VehiculeDTO::new)
+                .toList();
     }
 
     @DeleteMapping("/{id}")
