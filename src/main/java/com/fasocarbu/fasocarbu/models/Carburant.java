@@ -1,5 +1,6 @@
 package com.fasocarbu.fasocarbu.models;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import jakarta.persistence.*;
 
 @Entity
@@ -14,10 +15,12 @@ public class Carburant {
 
     @ManyToOne
     @JoinColumn(name = "admin_station_id")
+    @JsonIgnoreProperties({ "station", "carburants" })
     private AdminStation adminStation;
 
     @ManyToOne
     @JoinColumn(name = "station_id")
+    @JsonIgnoreProperties({ "adminStation" })
     private Station station;
 
     public Carburant() {
@@ -29,7 +32,6 @@ public class Carburant {
         this.prix = prix;
     }
 
-    // Getters et Setters
     public Long getId() {
         return id;
     }

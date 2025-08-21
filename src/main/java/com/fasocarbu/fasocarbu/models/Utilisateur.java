@@ -39,6 +39,7 @@ public abstract class Utilisateur {
 
     @UpdateTimestamp
     private LocalDateTime dateModification;
+
     @ManyToOne
     @JoinColumn(name = "entreprise_id")
     private Entreprise entreprise;
@@ -52,7 +53,6 @@ public abstract class Utilisateur {
         this.telephone = telephone;
         this.email = email;
         this.motDePasse = motDePasse;
-
     }
 
     public UUID getId() {
@@ -112,14 +112,12 @@ public abstract class Utilisateur {
             log.error("Rôle null reçu.");
             return;
         }
-
         for (Role r : Role.values()) {
             if (r.name().equalsIgnoreCase(roleStr.trim())) {
                 this.role = r;
                 return;
             }
         }
-
         log.error("Rôle inconnu: '{}'. Aucun rôle défini.", roleStr);
     }
 

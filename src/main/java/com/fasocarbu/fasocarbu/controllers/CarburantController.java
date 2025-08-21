@@ -1,5 +1,6 @@
 package com.fasocarbu.fasocarbu.controllers;
 
+import com.fasocarbu.fasocarbu.dtos.CarburantDTO;
 import com.fasocarbu.fasocarbu.models.Carburant;
 import com.fasocarbu.fasocarbu.services.interfaces.CarburantService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -11,38 +12,47 @@ import java.util.UUID;
 
 @RestController
 @RequestMapping("/api/carburants")
+@CrossOrigin(origins = "*")
 public class CarburantController {
 
     @Autowired
     private CarburantService carburantService;
 
+    // =================== AJOUTER ===================
     @PostMapping("/ajouter")
-    public Carburant ajouterCarburant(@RequestBody Carburant carburant) {
-        return carburantService.ajouterCarburant(carburant);
+    public CarburantDTO ajouterCarburant(@RequestBody Carburant carburant) {
+        Carburant saved = carburantService.ajouterCarburant(carburant);
+        // On réutilise la méthode existante DTO
+        return carburantService.getCarburantDTOById(saved.getId());
     }
 
+    // =================== LISTE ===================
     @GetMapping
-    public List<Carburant> getAll() {
-        return carburantService.getAllCarburants();
+    public List<CarburantDTO> getAll() {
+        return carburantService.getAllCarburantsDTO();
     }
 
+    // =================== GET BY ID ===================
     @GetMapping("/{id}")
-    public Carburant getById(@PathVariable Long id) {
-        return carburantService.getCarburantById(id);
+    public CarburantDTO getById(@PathVariable Long id) {
+        return carburantService.getCarburantDTOById(id);
     }
 
+    // =================== SUPPRIMER ===================
     @DeleteMapping("/{id}")
-    public void delete(@PathVariable Long id) {
+    public ResponseEntity<Void> delete(@PathVariable Long id) {
         carburantService.supprimerCarburant(id);
+        return ResponseEntity.noContent().build();
     }
 
+    // =================== METTRE À JOUR PRIX ===================
     @PutMapping("/{idCarburant}/updatePrix/{idAdminStation}")
-    public ResponseEntity<Carburant> updatePrix(
+    public ResponseEntity<CarburantDTO> updatePrix(
             @PathVariable Long idCarburant,
             @PathVariable UUID idAdminStation,
             @RequestParam Double nouveauPrix) {
 
-        Carburant updated = carburantService.updatePrix(idCarburant, idAdminStation, nouveauPrix);
+        CarburantDTO updated = carburantService.updatePrixDTO(idCarburant, idAdminStation, nouveauPrix);
         return ResponseEntity.ok(updated);
     }
 }

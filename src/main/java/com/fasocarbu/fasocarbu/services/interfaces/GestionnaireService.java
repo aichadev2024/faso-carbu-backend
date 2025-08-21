@@ -31,8 +31,6 @@ public interface GestionnaireService {
 
     Vehicule definirQuotaPourVehicule(Long vehiculeId, double quota);
 
-    Station creerStationAvecAdmin(StationAvecAdminRequest request);
-
     Demande creerDemandePourEntreprise(DemandeRequest request);
 
     Ticket validerDemandeEtGenererTicket(Long id);
@@ -48,5 +46,7 @@ public interface GestionnaireService {
     ResponseEntity<Resource> exporterRapportConsommation();
 
     List<Station> obtenirToutesLesStations();
+
+    Station creerStationAvecAdmin(StationAvecAdminRequest request, UUID gestionnaireId);
 
 }

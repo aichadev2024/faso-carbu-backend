@@ -9,10 +9,11 @@ public class AdminStation extends Utilisateur {
 
     @OneToOne
     @JoinColumn(name = "station_id")
-    @JsonIgnoreProperties("adminStation")
+    @JsonIgnoreProperties({ "adminStation" }) // éviter rebouclage
     private Station station;
 
     @OneToMany(mappedBy = "adminStation")
+    @JsonIgnoreProperties({ "adminStation", "station" }) // éviter rebouclage
     private List<Carburant> carburants;
 
     public AdminStation() {
@@ -20,7 +21,6 @@ public class AdminStation extends Utilisateur {
 
     @Override
     public void initialiserProfil() {
-
     }
 
     public Station getStation() {

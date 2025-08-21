@@ -1,13 +1,16 @@
 package com.fasocarbu.fasocarbu.controllers;
 
 import com.fasocarbu.fasocarbu.models.*;
+import com.fasocarbu.fasocarbu.security.services.UserDetailsImpl;
 import com.fasocarbu.fasocarbu.services.interfaces.GestionnaireService;
 import com.fasocarbu.fasocarbu.dtos.StationAvecAdminRequest;
 import com.fasocarbu.fasocarbu.dtos.DemandeRequest;
 import com.fasocarbu.fasocarbu.dtos.MotifRejetRequest;
-
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.io.Resource;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
 import jakarta.validation.Valid;
@@ -19,6 +22,8 @@ import java.util.UUID;
 @RequestMapping("/api/gestionnaires")
 public class GestionnaireController {
 
+    @Autowired
+    private GestionnaireService gestionnaireService;
     private final GestionnaireService service;
 
     public GestionnaireController(GestionnaireService service) {
@@ -75,9 +80,15 @@ public class GestionnaireController {
 
     // ------------------- Stations -------------------
     @PostMapping("/stations")
-    public ResponseEntity<Station> creerStation(@Valid @RequestBody StationAvecAdminRequest request) {
-        Station s = service.creerStationAvecAdmin(request);
-        return ResponseEntity.status(HttpStatus.CREATED).body(s);
+    @PreAuthorize("hasRole('GESTIONNAIRE')")
+    public ResponseEntity<Station> creerStationAvecAdmin(
+            @RequestBody StationAvecAdminRequest request,
+            @AuthenticationPrincipal UserDetailsImpl userDetails) {
+
+        UUID gestionnaireId = userDetails.getId(); // id du gestionnaire connecté
+        Station station = gestionnaireService.creerStationAvecAdmin(request, gestionnaireId);
+
+        return ResponseEntity.status(HttpStatus.CREATED).body(station);
     }
 
     @GetMapping("/stations")
