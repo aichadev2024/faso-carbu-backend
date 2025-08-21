@@ -9,6 +9,11 @@ import com.fasocarbu.fasocarbu.security.jwt.JwtUtils;
 import com.fasocarbu.fasocarbu.security.services.UserDetailsImpl;
 import com.fasocarbu.fasocarbu.services.interfaces.UtilisateurService;
 import jakarta.validation.Valid;
+
+import java.util.HashMap;
+import java.util.Map;
+import org.springframework.http.HttpStatus;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -67,9 +72,22 @@ public class AuthController {
     public ResponseEntity<?> registerUser(@Valid @RequestBody RegisterRequest registerRequest) {
         try {
             Utilisateur newUser = utilisateurService.registerUser(registerRequest);
-            return ResponseEntity.ok(newUser);
+
+            // 🔹 Préparer un body JSON clair
+            Map<String, Object> responseBody = new HashMap<>();
+            responseBody.put("message", "Utilisateur créé avec succès !");
+            responseBody.put("id", newUser.getId());
+            responseBody.put("nom", newUser.getNom());
+            responseBody.put("prenom", newUser.getPrenom());
+            responseBody.put("email", newUser.getEmail());
+            responseBody.put("role", newUser.getRole());
+
+            return ResponseEntity.status(HttpStatus.CREATED).body(responseBody);
+
         } catch (RuntimeException e) {
-            return ResponseEntity.badRequest().body(e.getMessage());
+            Map<String, String> errorBody = new HashMap<>();
+            errorBody.put("message", "Erreur lors de la création : " + e.getMessage());
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(errorBody);
         }
     }
 
