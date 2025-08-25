@@ -12,9 +12,9 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 import jakarta.validation.Valid;
+import org.springframework.security.core.Authentication;
 
 import java.util.List;
-import java.util.UUID;
 import java.util.stream.Collectors;
 
 @RestController
@@ -32,49 +32,23 @@ public class VehiculeController {
 
     @PostMapping("/ajouter")
     @PreAuthorize("hasRole('GESTIONNAIRE')")
-    public VehiculeDTO ajouterVehicule(@RequestBody @Valid VehiculeRequest vehiculeRequest) {
+    public VehiculeDTO ajouterVehicule(
+            @Valid @RequestBody VehiculeRequest vehiculeRequest,
+            Authentication authentication) {
+
+        // récupérer le gestionnaire connecté
+        String email = authentication.getName();
+        Utilisateur utilisateur = utilisateurService.getUtilisateurByEmail(email);
+
+        if (utilisateur == null) {
+            throw new IllegalArgumentException("Utilisateur connecté introuvable");
+        }
 
         // Vérification du carburant
-        if (vehiculeRequest.getCarburantId() == null) {
-            throw new IllegalArgumentException("L'ID du carburant est obligatoire.");
-        }
         Carburant carburant = carburantService.getCarburantById(vehiculeRequest.getCarburantId());
         if (carburant == null) {
             throw new IllegalArgumentException(
                     "Carburant introuvable pour l'id : " + vehiculeRequest.getCarburantId());
-        }
-        if (carburant.getNom() == null || carburant.getNom().isBlank()) {
-            carburant.setNom("Carburant inconnu");
-        }
-
-        // Vérification de l'utilisateur
-        String utilisateurIdStr = vehiculeRequest.getUtilisateurId();
-        if (utilisateurIdStr == null || utilisateurIdStr.isBlank()) {
-            throw new IllegalArgumentException("L'ID de l'utilisateur est obligatoire.");
-        }
-
-        UUID utilisateurId;
-        try {
-            utilisateurId = UUID.fromString(utilisateurIdStr);
-        } catch (IllegalArgumentException e) {
-            throw new IllegalArgumentException("ID utilisateur invalide : " + utilisateurIdStr, e);
-        }
-
-        Utilisateur utilisateur = utilisateurService.getUtilisateurById(utilisateurId);
-        if (utilisateur == null) {
-            throw new IllegalArgumentException(
-                    "Utilisateur introuvable pour l'id : " + vehiculeRequest.getUtilisateurId());
-        }
-
-        // Vérification des champs du véhicule
-        if (vehiculeRequest.getMarque() == null || vehiculeRequest.getMarque().isBlank()) {
-            throw new IllegalArgumentException("La marque du véhicule est obligatoire.");
-        }
-        if (vehiculeRequest.getModele() == null || vehiculeRequest.getModele().isBlank()) {
-            throw new IllegalArgumentException("Le modèle du véhicule est obligatoire.");
-        }
-        if (vehiculeRequest.getImmatriculation() == null || vehiculeRequest.getImmatriculation().isBlank()) {
-            throw new IllegalArgumentException("L'immatriculation du véhicule est obligatoire.");
         }
 
         // Création du véhicule
@@ -84,7 +58,7 @@ public class VehiculeController {
         vehicule.setImmatriculation(vehiculeRequest.getImmatriculation());
         vehicule.setQuotaCarburant(vehiculeRequest.getQuotaCarburant());
         vehicule.setCarburant(carburant);
-        vehicule.setUtilisateur(utilisateur);
+        vehicule.setUtilisateur(utilisateur); // 👉 assigné automatiquement au gestionnaire connecté
 
         Vehicule savedVehicule = vehiculeService.enregistrerVehicule(vehicule);
 

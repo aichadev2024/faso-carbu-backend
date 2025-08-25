@@ -18,9 +18,6 @@ public class VehiculeRequest {
     @NotNull
     private Long carburantId;
 
-    @NotNull
-    private String utilisateurId; // UUID en string
-
     // getters et setters
     public String getMarque() {
         return marque;
@@ -60,13 +57,5 @@ public class VehiculeRequest {
 
     public void setCarburantId(Long carburantId) {
         this.carburantId = carburantId;
-    }
-
-    public String getUtilisateurId() {
-        return utilisateurId;
-    }
-
-    public void setUtilisateurId(String utilisateurId) {
-        this.utilisateurId = utilisateurId;
     }
 }
