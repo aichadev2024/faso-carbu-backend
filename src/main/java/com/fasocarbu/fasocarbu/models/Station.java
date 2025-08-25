@@ -10,13 +10,20 @@ public class Station {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private long id_station;
 
-    private String nom;
-    private String adresse;
-    private String ville;
-    private String statut;
+    @Column(nullable = false)
+    private String nom = "Inconnu";
+
+    @Column(nullable = false)
+    private String adresse = "";
+
+    @Column(nullable = false)
+    private String ville = "";
+
+    @Column(nullable = false)
+    private String statut = "inactif";
 
     @OneToOne(mappedBy = "station", cascade = CascadeType.ALL)
-    @JsonIgnoreProperties({ "station", "carburants" }) // éviter boucle
+    @JsonIgnoreProperties({ "station", "carburants" })
     private AdminStation adminStation;
 
     public long getId() {
@@ -28,35 +35,35 @@ public class Station {
     }
 
     public String getNom() {
-        return nom;
+        return nom != null ? nom : "Inconnu";
     }
 
     public void setNom(String nom) {
-        this.nom = nom;
+        this.nom = nom != null ? nom : "Inconnu";
     }
 
     public String getAdresse() {
-        return adresse;
+        return adresse != null ? adresse : "";
     }
 
     public void setAdresse(String adresse) {
-        this.adresse = adresse;
+        this.adresse = adresse != null ? adresse : "";
     }
 
     public String getVille() {
-        return ville;
+        return ville != null ? ville : "";
     }
 
     public void setVille(String ville) {
-        this.ville = ville;
+        this.ville = ville != null ? ville : "";
     }
 
     public String getStatut() {
-        return statut;
+        return statut != null ? statut : "inactif";
     }
 
     public void setStatut(String statut) {
-        this.statut = statut;
+        this.statut = statut != null ? statut : "inactif";
     }
 
     public AdminStation getAdminStation() {

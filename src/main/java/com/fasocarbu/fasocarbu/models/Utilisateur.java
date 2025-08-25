@@ -19,19 +19,27 @@ public abstract class Utilisateur {
     @GeneratedValue
     private UUID id;
 
-    private String nom;
-    private String prenom;
-    private String telephone;
-    private String email;
-    private String motDePasse;
+    @Column(nullable = false)
+    private String nom = "Inconnu";
+
+    @Column(nullable = false)
+    private String prenom = "Inconnu";
+
+    private String telephone = "";
+
+    @Column(nullable = false, unique = true)
+    private String email = "inconnu@exemple.com";
+
+    @Column(nullable = false)
+    private String motDePasse = "";
 
     @Enumerated(EnumType.STRING)
-    private Role role;
+    private Role role = Role.CHAUFFEUR; // valeur par défaut
 
     @Column(nullable = false)
     private Boolean actif = true;
 
-    private String fcmToken;
+    private String fcmToken = "";
 
     @CreationTimestamp
     @Column(updatable = false)
@@ -48,13 +56,14 @@ public abstract class Utilisateur {
     }
 
     public Utilisateur(String nom, String prenom, String telephone, String email, String motDePasse) {
-        this.nom = nom;
-        this.prenom = prenom;
-        this.telephone = telephone;
-        this.email = email;
-        this.motDePasse = motDePasse;
+        this.nom = nom != null ? nom : "Inconnu";
+        this.prenom = prenom != null ? prenom : "Inconnu";
+        this.telephone = telephone != null ? telephone : "";
+        this.email = email != null ? email : "inconnu@exemple.com";
+        this.motDePasse = motDePasse != null ? motDePasse : "";
     }
 
+    // getters/setters avec sécurités null
     public UUID getId() {
         return id;
     }
@@ -64,47 +73,47 @@ public abstract class Utilisateur {
     }
 
     public String getNom() {
-        return nom;
+        return nom != null ? nom : "Inconnu";
     }
 
     public void setNom(String nom) {
-        this.nom = nom;
+        this.nom = nom != null ? nom : "Inconnu";
     }
 
     public String getPrenom() {
-        return prenom;
+        return prenom != null ? prenom : "Inconnu";
     }
 
     public void setPrenom(String prenom) {
-        this.prenom = prenom;
-    }
-
-    public String getTelephone() {
-        return telephone;
-    }
-
-    public void setTelephone(String telephone) {
-        this.telephone = telephone;
+        this.prenom = prenom != null ? prenom : "Inconnu";
     }
 
     public String getEmail() {
-        return email;
+        return email != null ? email : "inconnu@exemple.com";
     }
 
     public void setEmail(String email) {
-        this.email = email;
+        this.email = email != null ? email : "inconnu@exemple.com";
+    }
+
+    public String getTelephone() {
+        return telephone != null ? telephone : "";
+    }
+
+    public void setTelephone(String telephone) {
+        this.telephone = telephone != null ? telephone : "";
     }
 
     public String getMotDePasse() {
-        return motDePasse;
+        return motDePasse != null ? motDePasse : "";
     }
 
     public void setMotDePasse(String motDePasse) {
-        this.motDePasse = motDePasse;
+        this.motDePasse = motDePasse != null ? motDePasse : "";
     }
 
     public Role getRole() {
-        return role;
+        return role != null ? role : Role.CHAUFFEUR;
     }
 
     public void setRole(String roleStr) {
@@ -122,11 +131,19 @@ public abstract class Utilisateur {
     }
 
     public Boolean getActif() {
-        return actif;
+        return actif != null ? actif : true;
     }
 
     public void setActif(boolean actif) {
         this.actif = actif;
+    }
+
+    public String getFcmToken() {
+        return fcmToken != null ? fcmToken : "";
+    }
+
+    public void setFcmToken(String fcmToken) {
+        this.fcmToken = fcmToken != null ? fcmToken : "";
     }
 
     public LocalDateTime getDateCreation() {
@@ -143,14 +160,6 @@ public abstract class Utilisateur {
 
     public void setEntreprise(Entreprise entreprise) {
         this.entreprise = entreprise;
-    }
-
-    public String getFcmToken() {
-        return fcmToken;
-    }
-
-    public void setFcmToken(String fcmToken) {
-        this.fcmToken = fcmToken;
     }
 
     public abstract void initialiserProfil();

@@ -10,8 +10,11 @@ public class Carburant {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    private String nom;
-    private Double prix;
+    @Column(nullable = false)
+    private String nom = "Inconnu";
+
+    @Column(nullable = false)
+    private Double prix = 0.0;
 
     @ManyToOne
     @JoinColumn(name = "admin_station_id")
@@ -28,8 +31,8 @@ public class Carburant {
 
     public Carburant(Long id, String nom, Double prix) {
         this.id = id;
-        this.nom = nom;
-        this.prix = prix;
+        this.nom = (nom != null && !nom.isEmpty()) ? nom : "Inconnu";
+        this.prix = (prix != null) ? prix : 0.0;
     }
 
     public Long getId() {
@@ -41,19 +44,19 @@ public class Carburant {
     }
 
     public String getNom() {
-        return nom;
+        return nom != null ? nom : "Inconnu";
     }
 
     public void setNom(String nom) {
-        this.nom = nom;
+        this.nom = (nom != null && !nom.isEmpty()) ? nom : "Inconnu";
     }
 
     public Double getPrix() {
-        return prix;
+        return prix != null ? prix : 0.0;
     }
 
     public void setPrix(Double prix) {
-        this.prix = prix;
+        this.prix = (prix != null) ? prix : 0.0;
     }
 
     public AdminStation getAdminStation() {

@@ -17,27 +17,20 @@ public class VehiculeDTO {
     // Constructeur depuis Vehicule
     public VehiculeDTO(Vehicule v) {
         this.id = v.getId();
-        this.marque = v.getMarque() != null ? v.getMarque() : "";
-        this.modele = v.getModele() != null ? v.getModele() : "";
-        this.immatriculation = v.getImmatriculation() != null ? v.getImmatriculation() : "";
+        this.marque = v.getMarque() != null ? v.getMarque() : "Inconnu";
+        this.modele = v.getModele() != null ? v.getModele() : "Inconnu";
+        this.immatriculation = v.getImmatriculation() != null ? v.getImmatriculation() : "XXXX";
         this.quotaCarburant = v.getQuotaCarburant();
 
-        if (v.getCarburant() != null) {
-            this.carburantId = v.getCarburant().getId();
-            this.carburantNom = v.getCarburant().getNom() != null ? v.getCarburant().getNom() : "Carburant inconnu";
-        } else {
-            this.carburantId = 0;
-            this.carburantNom = "Carburant inconnu";
-        }
+        this.carburantId = v.getCarburant() != null ? v.getCarburant().getId() : 0;
+        this.carburantNom = v.getCarburant() != null && v.getCarburant().getNom() != null
+                ? v.getCarburant().getNom()
+                : "Inconnu";
 
-        if (v.getUtilisateur() != null) {
-            this.utilisateurId = v.getUtilisateur().getId();
-            this.utilisateurNom = v.getUtilisateur().getNom() != null ? v.getUtilisateur().getNom()
-                    : "Utilisateur inconnu";
-        } else {
-            this.utilisateurId = null;
-            this.utilisateurNom = "Utilisateur inconnu";
-        }
+        this.utilisateurId = v.getUtilisateur() != null ? v.getUtilisateur().getId() : null;
+        this.utilisateurNom = v.getUtilisateur() != null && v.getUtilisateur().getNom() != null
+                ? v.getUtilisateur().getNom()
+                : "Inconnu";
     }
 
     // Getters et Setters
