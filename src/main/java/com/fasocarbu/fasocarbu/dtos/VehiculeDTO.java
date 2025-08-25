@@ -17,14 +17,27 @@ public class VehiculeDTO {
     // Constructeur depuis Vehicule
     public VehiculeDTO(Vehicule v) {
         this.id = v.getId();
-        this.marque = v.getMarque();
-        this.modele = v.getModele();
-        this.immatriculation = v.getImmatriculation();
+        this.marque = v.getMarque() != null ? v.getMarque() : "";
+        this.modele = v.getModele() != null ? v.getModele() : "";
+        this.immatriculation = v.getImmatriculation() != null ? v.getImmatriculation() : "";
         this.quotaCarburant = v.getQuotaCarburant();
-        this.carburantId = v.getCarburant().getId();
-        this.carburantNom = v.getCarburant().getNom();
-        this.utilisateurId = v.getUtilisateur().getId();
-        this.utilisateurNom = v.getUtilisateur().getNom();
+
+        if (v.getCarburant() != null) {
+            this.carburantId = v.getCarburant().getId();
+            this.carburantNom = v.getCarburant().getNom() != null ? v.getCarburant().getNom() : "Carburant inconnu";
+        } else {
+            this.carburantId = 0;
+            this.carburantNom = "Carburant inconnu";
+        }
+
+        if (v.getUtilisateur() != null) {
+            this.utilisateurId = v.getUtilisateur().getId();
+            this.utilisateurNom = v.getUtilisateur().getNom() != null ? v.getUtilisateur().getNom()
+                    : "Utilisateur inconnu";
+        } else {
+            this.utilisateurId = null;
+            this.utilisateurNom = "Utilisateur inconnu";
+        }
     }
 
     // Getters et Setters

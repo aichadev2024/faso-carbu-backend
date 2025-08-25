@@ -29,19 +29,27 @@ public class VehiculeController {
     @Autowired
     private UtilisateurService utilisateurService;
 
-    // ------------------- Ajouter un véhicule (GESTIONNAIRE uniquement)
-    // -------------------
+    // Ajouter un véhicule
     @PostMapping("/ajouter")
     @PreAuthorize("hasRole('GESTIONNAIRE')")
     public VehiculeDTO ajouterVehicule(@RequestBody VehiculeRequest vehiculeRequest) {
 
-        // Récupérer Carburant et Utilisateur depuis leur ID
         Carburant carburant = carburantService.getCarburantById(vehiculeRequest.getCarburantId());
+        if (carburant == null) {
+            throw new IllegalArgumentException(
+                    "Carburant introuvable pour l'id : " + vehiculeRequest.getCarburantId());
+        }
+        if (carburant.getNom() == null) {
+            carburant.setNom("Carburant inconnu");
+        }
 
         UUID utilisateurId = UUID.fromString(vehiculeRequest.getUtilisateurId());
         Utilisateur utilisateur = utilisateurService.getUtilisateurById(utilisateurId);
+        if (utilisateur == null) {
+            throw new IllegalArgumentException(
+                    "Utilisateur introuvable pour l'id : " + vehiculeRequest.getUtilisateurId());
+        }
 
-        // Créer l'entité Vehicule
         Vehicule vehicule = new Vehicule();
         vehicule.setMarque(vehiculeRequest.getMarque());
         vehicule.setModele(vehiculeRequest.getModele());
@@ -55,7 +63,7 @@ public class VehiculeController {
         return new VehiculeDTO(savedVehicule);
     }
 
-    // ------------------- Récupérer tous les véhicules -------------------
+    // Récupérer tous les véhicules
     @GetMapping
     public List<VehiculeDTO> getAllVehicules() {
         return vehiculeService.getAllVehicules()
@@ -64,18 +72,17 @@ public class VehiculeController {
                 .collect(Collectors.toList());
     }
 
-    // ------------------- Récupérer un véhicule par ID -------------------
+    // Récupérer un véhicule par ID
     @GetMapping("/{id}")
     public VehiculeDTO getVehicule(@PathVariable Long id) {
         Vehicule vehicule = vehiculeService.getVehiculeById(id);
         return new VehiculeDTO(vehicule);
     }
 
-    // ------------------- Supprimer un véhicule -------------------
+    // Supprimer un véhicule
     @DeleteMapping("/{id}")
     @PreAuthorize("hasRole('GESTIONNAIRE')")
     public void supprimerVehicule(@PathVariable Long id) {
         vehiculeService.supprimerVehicule(id);
     }
-
 }
