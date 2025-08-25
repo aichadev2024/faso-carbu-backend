@@ -11,6 +11,7 @@ import com.fasocarbu.fasocarbu.services.interfaces.UtilisateurService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
+import jakarta.validation.Valid;
 
 import java.util.List;
 import java.util.UUID;
@@ -29,27 +30,54 @@ public class VehiculeController {
     @Autowired
     private UtilisateurService utilisateurService;
 
-    // Ajouter un véhicule
     @PostMapping("/ajouter")
     @PreAuthorize("hasRole('GESTIONNAIRE')")
-    public VehiculeDTO ajouterVehicule(@RequestBody VehiculeRequest vehiculeRequest) {
+    public VehiculeDTO ajouterVehicule(@RequestBody @Valid VehiculeRequest vehiculeRequest) {
 
+        // Vérification du carburant
+        if (vehiculeRequest.getCarburantId() == null) {
+            throw new IllegalArgumentException("L'ID du carburant est obligatoire.");
+        }
         Carburant carburant = carburantService.getCarburantById(vehiculeRequest.getCarburantId());
         if (carburant == null) {
             throw new IllegalArgumentException(
                     "Carburant introuvable pour l'id : " + vehiculeRequest.getCarburantId());
         }
-        if (carburant.getNom() == null) {
+        if (carburant.getNom() == null || carburant.getNom().isBlank()) {
             carburant.setNom("Carburant inconnu");
         }
 
-        UUID utilisateurId = UUID.fromString(vehiculeRequest.getUtilisateurId());
+        // Vérification de l'utilisateur
+        String utilisateurIdStr = vehiculeRequest.getUtilisateurId();
+        if (utilisateurIdStr == null || utilisateurIdStr.isBlank()) {
+            throw new IllegalArgumentException("L'ID de l'utilisateur est obligatoire.");
+        }
+
+        UUID utilisateurId;
+        try {
+            utilisateurId = UUID.fromString(utilisateurIdStr);
+        } catch (IllegalArgumentException e) {
+            throw new IllegalArgumentException("ID utilisateur invalide : " + utilisateurIdStr, e);
+        }
+
         Utilisateur utilisateur = utilisateurService.getUtilisateurById(utilisateurId);
         if (utilisateur == null) {
             throw new IllegalArgumentException(
                     "Utilisateur introuvable pour l'id : " + vehiculeRequest.getUtilisateurId());
         }
 
+        // Vérification des champs du véhicule
+        if (vehiculeRequest.getMarque() == null || vehiculeRequest.getMarque().isBlank()) {
+            throw new IllegalArgumentException("La marque du véhicule est obligatoire.");
+        }
+        if (vehiculeRequest.getModele() == null || vehiculeRequest.getModele().isBlank()) {
+            throw new IllegalArgumentException("Le modèle du véhicule est obligatoire.");
+        }
+        if (vehiculeRequest.getImmatriculation() == null || vehiculeRequest.getImmatriculation().isBlank()) {
+            throw new IllegalArgumentException("L'immatriculation du véhicule est obligatoire.");
+        }
+
+        // Création du véhicule
         Vehicule vehicule = new Vehicule();
         vehicule.setMarque(vehiculeRequest.getMarque());
         vehicule.setModele(vehiculeRequest.getModele());
