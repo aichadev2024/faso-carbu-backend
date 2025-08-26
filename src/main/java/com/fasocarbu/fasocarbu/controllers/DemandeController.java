@@ -6,10 +6,12 @@ import com.fasocarbu.fasocarbu.security.services.UserDetailsImpl;
 import com.fasocarbu.fasocarbu.services.interfaces.NotificationService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 
 import java.time.LocalDateTime;
+import java.util.List;
 import java.util.Optional;
 
 @RestController
@@ -19,23 +21,20 @@ public class DemandeController {
 
     @Autowired
     private DemandeRepository demandeRepository;
-
     @Autowired
     private UtilisateurRepository utilisateurRepository;
-
     @Autowired
     private CarburantRepository carburantRepository;
-
     @Autowired
     private StationRepository stationRepository;
-
     @Autowired
     private VehiculeRepository vehiculeRepository;
-
     @Autowired
     private NotificationService notificationService;
 
+    // ===================== CREER DEMANDE =====================
     @PostMapping
+    @PreAuthorize("hasAnyRole('GESTIONNAIRE','DEMANDEUR')")
     public ResponseEntity<?> createDemande(@RequestBody Demande demande, Authentication authentication) {
         UserDetailsImpl userDetails = (UserDetailsImpl) authentication.getPrincipal();
         Optional<Utilisateur> utilisateurOpt = utilisateurRepository.findByEmail(userDetails.getUsername());
@@ -46,59 +45,60 @@ public class DemandeController {
 
         Utilisateur utilisateur = utilisateurOpt.get();
 
-        // ❌ Les chauffeurs ne peuvent PAS créer de demandes
-        if (utilisateur instanceof Chauffeur) {
-            return ResponseEntity.badRequest().body("Les chauffeurs ne sont pas autorisés à créer des demandes");
+        // ✅ Seul un gestionnaire ou un demandeur peut créer une demande
+        if (!(utilisateur instanceof Gestionnaire) && !(utilisateur instanceof Demandeur)) {
+            return ResponseEntity.status(403).body("Vous n'êtes pas autorisé à créer une demande");
         }
 
-        // ✅ Associer l'utilisateur (employé ou gestionnaire) à la demande
+        // Associer demandeur + date
         demande.setDemandeur(utilisateur);
         demande.setDateDemande(LocalDateTime.now());
 
-        // Gestion station
-        Station stationFromRequest = demande.getStation();
-        Station station = null;
-        if (stationFromRequest != null) {
-            if (stationFromRequest.getId() != 0L) {
-                station = stationRepository.findById(stationFromRequest.getId()).orElse(null);
-            } else {
-                Optional<Station> stationOpt = stationRepository.findByNomAndVilleAndAdresse(
-                        stationFromRequest.getNom(),
-                        stationFromRequest.getVille(),
-                        stationFromRequest.getAdresse()
-                );
-                station = stationOpt.orElseGet(() -> stationRepository.save(stationFromRequest));
-            }
+        // Récupérer entités liées
+        if (demande.getStation() != null && demande.getStation().getId() != 0L) {
+            stationRepository.findById(demande.getStation().getId()).ifPresent(demande::setStation);
         }
-        demande.setStation(station);
 
-        // Gestion carburant
         if (demande.getCarburant() != null && demande.getCarburant().getId() != null) {
-            Carburant carburant = carburantRepository.findById(demande.getCarburant().getId()).orElse(null);
-            demande.setCarburant(carburant);
-        } else {
-            demande.setCarburant(null);
+            carburantRepository.findById(demande.getCarburant().getId()).ifPresent(demande::setCarburant);
         }
 
-        // Gestion véhicule
-        Vehicule vehiculeFromRequest = demande.getVehicule();
-        Vehicule vehicule = null;
-        if (vehiculeFromRequest != null) {
-            if (vehiculeFromRequest.getId() != 0L) {
-                vehicule = vehiculeRepository.findById(vehiculeFromRequest.getId()).orElse(null);
-            } else {
-                Optional<Vehicule> vehiculeOpt = vehiculeRepository.findByImmatriculation(vehiculeFromRequest.getImmatriculation());
-                vehicule = vehiculeOpt.orElseGet(() -> vehiculeRepository.save(vehiculeFromRequest));
-            }
+        if (demande.getVehicule() != null && demande.getVehicule().getId() != 0L) {
+            vehiculeRepository.findById(demande.getVehicule().getId()).ifPresent(demande::setVehicule);
         }
-        demande.setVehicule(vehicule);
 
-        // 🔥 Sauvegarde de la demande
+        // 🔥 Sauvegarde
         Demande savedDemande = demandeRepository.save(demande);
 
         // ✅ Notification aux gestionnaires
         notificationService.notifierGestionnairesNouvelleDemande(savedDemande);
 
         return ResponseEntity.ok(savedDemande);
+    }
+
+    // ===================== LISTE DES DEMANDES =====================
+    @GetMapping
+    @PreAuthorize("hasAnyRole('GESTIONNAIRE','DEMANDEUR')")
+    public ResponseEntity<List<Demande>> getDemandes(Authentication authentication) {
+        UserDetailsImpl userDetails = (UserDetailsImpl) authentication.getPrincipal();
+        Optional<Utilisateur> utilisateurOpt = utilisateurRepository.findByEmail(userDetails.getUsername());
+
+        if (utilisateurOpt.isEmpty()) {
+            return ResponseEntity.status(404).build();
+        }
+
+        Utilisateur utilisateur = utilisateurOpt.get();
+
+        // 🔹 Si gestionnaire → retourne toutes les demandes
+        if (utilisateur instanceof Gestionnaire) {
+            return ResponseEntity.ok(demandeRepository.findAll());
+        }
+
+        // 🔹 Si demandeur → retourne seulement ses demandes
+        if (utilisateur instanceof Demandeur) {
+            return ResponseEntity.ok(demandeRepository.findByDemandeur(utilisateur));
+        }
+
+        return ResponseEntity.status(403).build();
     }
 }

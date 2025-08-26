@@ -4,7 +4,6 @@ import com.fasocarbu.fasocarbu.models.*;
 import com.fasocarbu.fasocarbu.security.services.UserDetailsImpl;
 import com.fasocarbu.fasocarbu.services.interfaces.GestionnaireService;
 import com.fasocarbu.fasocarbu.dtos.StationAvecAdminRequest;
-import com.fasocarbu.fasocarbu.dtos.DemandeRequest;
 import com.fasocarbu.fasocarbu.dtos.MotifRejetRequest;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -22,40 +21,32 @@ import java.util.UUID;
 @RequestMapping("/api/gestionnaires")
 public class GestionnaireController {
 
-    @Autowired
-    private GestionnaireService gestionnaireService;
     private final GestionnaireService service;
 
+    @Autowired
     public GestionnaireController(GestionnaireService service) {
         this.service = service;
     }
 
     // ------------------- Gestionnaires -------------------
-
-    // Récupérer un gestionnaire par ID (mettre {id} sous un path spécifique)
     @GetMapping("/id/{id}")
     public ResponseEntity<Gestionnaire> obtenir(@PathVariable UUID id) {
-        Gestionnaire g = service.obtenirGestionnaire(id);
-        return ResponseEntity.ok(g);
+        return ResponseEntity.ok(service.obtenirGestionnaire(id));
     }
 
-    // Liste tous les gestionnaires
     @GetMapping
     public ResponseEntity<List<Gestionnaire>> obtenirTous() {
-        List<Gestionnaire> gestionnaires = service.obtenirTousLesGestionnaires();
-        return ResponseEntity.ok(gestionnaires);
+        return ResponseEntity.ok(service.obtenirTousLesGestionnaires());
     }
 
     @PostMapping
     public ResponseEntity<Gestionnaire> ajouter(@Valid @RequestBody Gestionnaire gestionnaire) {
-        Gestionnaire g = service.ajouterGestionnaire(gestionnaire);
-        return ResponseEntity.status(HttpStatus.CREATED).body(g);
+        return ResponseEntity.status(HttpStatus.CREATED).body(service.ajouterGestionnaire(gestionnaire));
     }
 
     @PutMapping("/id/{id}")
     public ResponseEntity<Gestionnaire> modifier(@PathVariable UUID id, @Valid @RequestBody Gestionnaire gestionnaire) {
-        Gestionnaire g = service.modifierGestionnaire(id, gestionnaire);
-        return ResponseEntity.ok(g);
+        return ResponseEntity.ok(service.modifierGestionnaire(id, gestionnaire));
     }
 
     @DeleteMapping("/id/{id}")
@@ -66,16 +57,16 @@ public class GestionnaireController {
 
     // ------------------- Chauffeurs -------------------
     @PostMapping("/chauffeurs")
+    @PreAuthorize("hasRole('GESTIONNAIRE')")
     public ResponseEntity<Chauffeur> creerChauffeur(@Valid @RequestBody Chauffeur chauffeur) {
-        Chauffeur c = service.creerChauffeur(chauffeur);
-        return ResponseEntity.status(HttpStatus.CREATED).body(c);
+        return ResponseEntity.status(HttpStatus.CREATED).body(service.creerChauffeur(chauffeur));
     }
 
     // ------------------- Véhicules -------------------
     @PostMapping("/vehicules")
+    @PreAuthorize("hasRole('GESTIONNAIRE')")
     public ResponseEntity<Vehicule> creerVehicule(@Valid @RequestBody Vehicule vehicule) {
-        Vehicule v = service.creerVehicule(vehicule);
-        return ResponseEntity.status(HttpStatus.CREATED).body(v);
+        return ResponseEntity.status(HttpStatus.CREATED).body(service.creerVehicule(vehicule));
     }
 
     // ------------------- Stations -------------------
@@ -85,39 +76,32 @@ public class GestionnaireController {
             @RequestBody StationAvecAdminRequest request,
             @AuthenticationPrincipal UserDetailsImpl userDetails) {
 
-        UUID gestionnaireId = userDetails.getId(); // id du gestionnaire connecté
-        Station station = gestionnaireService.creerStationAvecAdmin(request, gestionnaireId);
-
-        return ResponseEntity.status(HttpStatus.CREATED).body(station);
+        UUID gestionnaireId = userDetails.getId();
+        return ResponseEntity.status(HttpStatus.CREATED).body(service.creerStationAvecAdmin(request, gestionnaireId));
     }
 
     @GetMapping("/stations")
+    @PreAuthorize("hasRole('GESTIONNAIRE')")
     public ResponseEntity<List<Station>> getStations() {
-        List<Station> stations = service.obtenirToutesLesStations();
-        return ResponseEntity.ok(stations);
+        return ResponseEntity.ok(service.obtenirToutesLesStations());
     }
 
-    // ------------------- Demandes -------------------
-    @PostMapping("/demandes")
-    public ResponseEntity<Demande> creerDemande(@Valid @RequestBody DemandeRequest request) {
-        Demande d = service.creerDemandePourEntreprise(request);
-        return ResponseEntity.status(HttpStatus.CREATED).body(d);
-    }
-
+    // ------------------- Validation / Rejet des demandes -------------------
     @PostMapping("/demandes/{id}/valider")
+    @PreAuthorize("hasRole('GESTIONNAIRE')")
     public ResponseEntity<Ticket> validerDemande(@PathVariable Long id) {
-        Ticket t = service.validerDemandeEtGenererTicket(id);
-        return ResponseEntity.ok(t);
+        return ResponseEntity.ok(service.validerDemandeEtGenererTicket(id));
     }
 
     @PostMapping("/demandes/{id}/rejeter")
+    @PreAuthorize("hasRole('GESTIONNAIRE')")
     public ResponseEntity<Demande> rejeterDemande(@PathVariable Long id, @Valid @RequestBody MotifRejetRequest motif) {
-        Demande d = service.rejeterDemande(id, motif.getMotif());
-        return ResponseEntity.ok(d);
+        return ResponseEntity.ok(service.rejeterDemande(id, motif.getMotif()));
     }
 
     // ------------------- Rapports -------------------
     @GetMapping("/rapport/consommation")
+    @PreAuthorize("hasRole('GESTIONNAIRE')")
     public ResponseEntity<Resource> exporterRapport() {
         return service.exporterRapportConsommation();
     }
