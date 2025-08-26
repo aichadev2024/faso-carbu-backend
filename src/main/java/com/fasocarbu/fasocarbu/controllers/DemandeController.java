@@ -1,5 +1,6 @@
 package com.fasocarbu.fasocarbu.controllers;
 
+import com.fasocarbu.fasocarbu.dtos.DemandeRequest;
 import com.fasocarbu.fasocarbu.models.*;
 import com.fasocarbu.fasocarbu.repositories.*;
 import com.fasocarbu.fasocarbu.security.services.UserDetailsImpl;
@@ -35,7 +36,8 @@ public class DemandeController {
     // ===================== CREER DEMANDE =====================
     @PostMapping
     @PreAuthorize("hasAnyRole('GESTIONNAIRE','DEMANDEUR')")
-    public ResponseEntity<?> createDemande(@RequestBody Demande demande, Authentication authentication) {
+    public ResponseEntity<?> createDemande(@RequestBody DemandeRequest dto,
+            Authentication authentication) {
         UserDetailsImpl userDetails = (UserDetailsImpl) authentication.getPrincipal();
         Optional<Utilisateur> utilisateurOpt = utilisateurRepository.findByEmail(userDetails.getUsername());
 
@@ -45,32 +47,43 @@ public class DemandeController {
 
         Utilisateur utilisateur = utilisateurOpt.get();
 
-        // ✅ Seul un gestionnaire ou un demandeur peut créer une demande
+        // Vérifier que le créateur est bien autorisé
         if (!(utilisateur instanceof Gestionnaire) && !(utilisateur instanceof Demandeur)) {
             return ResponseEntity.status(403).body("Vous n'êtes pas autorisé à créer une demande");
         }
 
-        // Associer demandeur + date
-        demande.setDemandeur(utilisateur);
+        // 🔹 Créer une nouvelle demande
+        Demande demande = new Demande();
         demande.setDateDemande(LocalDateTime.now());
+        demande.setQuantite(dto.getQuantite());
 
-        // Récupérer entités liées
-        if (demande.getStation() != null && demande.getStation().getId() != 0L) {
-            stationRepository.findById(demande.getStation().getId()).ifPresent(demande::setStation);
+        // ✅ Récupérer le demandeur
+        if (dto.getDemandeurId() != null) {
+            utilisateurRepository.findById(dto.getDemandeurId()).ifPresent(demande::setDemandeur);
+        } else {
+            // Si pas de demandeur → on met l'utilisateur courant comme demandeur
+            demande.setDemandeur(utilisateur);
         }
 
-        if (demande.getCarburant() != null && demande.getCarburant().getId() != null) {
-            carburantRepository.findById(demande.getCarburant().getId()).ifPresent(demande::setCarburant);
+        // ✅ Récupérer carburant
+        if (dto.getCarburantId() != null) {
+            carburantRepository.findById(dto.getCarburantId()).ifPresent(demande::setCarburant);
         }
 
-        if (demande.getVehicule() != null && demande.getVehicule().getId() != 0L) {
-            vehiculeRepository.findById(demande.getVehicule().getId()).ifPresent(demande::setVehicule);
+        // ✅ Récupérer station
+        if (dto.getStationId() != null) {
+            stationRepository.findById(dto.getStationId()).ifPresent(demande::setStation);
+        }
+
+        // ✅ Récupérer véhicule
+        if (dto.getVehiculeId() != null) {
+            vehiculeRepository.findById(dto.getVehiculeId()).ifPresent(demande::setVehicule);
         }
 
         // 🔥 Sauvegarde
         Demande savedDemande = demandeRepository.save(demande);
 
-        // ✅ Notification aux gestionnaires
+        // ✅ Notifier gestionnaires
         notificationService.notifierGestionnairesNouvelleDemande(savedDemande);
 
         return ResponseEntity.ok(savedDemande);
