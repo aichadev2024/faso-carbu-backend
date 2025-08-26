@@ -61,6 +61,13 @@ public class UtilisateurController {
         return ResponseEntity.noContent().build();
     }
 
+    // =================== Récupérer l’utilisateur connecté ===================
+    @GetMapping("/me")
+    public ResponseEntity<Utilisateur> getCurrentUser(@AuthenticationPrincipal UserDetailsImpl userDetails) {
+        Utilisateur utilisateur = utilisateurService.getUtilisateurById(userDetails.getId());
+        return ResponseEntity.ok(utilisateur);
+    }
+
     // =================== FCM Token ===================
     @PostMapping("/update-token")
     public ResponseEntity<?> updateToken(@RequestBody UpdateFcmTokenRequest request) {
