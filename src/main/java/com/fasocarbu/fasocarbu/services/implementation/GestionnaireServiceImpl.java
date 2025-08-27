@@ -7,12 +7,14 @@ import com.fasocarbu.fasocarbu.enums.StatutDemande;
 import com.fasocarbu.fasocarbu.models.*;
 import com.fasocarbu.fasocarbu.repositories.*;
 import com.fasocarbu.fasocarbu.services.interfaces.GestionnaireService;
+import com.fasocarbu.fasocarbu.services.interfaces.NotificationService;
+import com.fasocarbu.fasocarbu.utils.QRCodeGenerator;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.io.Resource;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
-
+import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
@@ -43,14 +45,18 @@ public class GestionnaireServiceImpl implements GestionnaireService {
     private DemandeurRepository demandeurRepository;
     @Autowired
     private ConsommationRepository consommationRepository;
-
     @Autowired
-    private PasswordEncoder passwordEncoder; // 🔑 Injection du PasswordEncoder
+    private PasswordEncoder passwordEncoder;
+    @Autowired
+    private NotificationService notificationService;
+    @Autowired
+    private QRCodeGenerator qrCodeGenerator;
 
     // ------------------- Gestionnaires -------------------
     @Override
     public Gestionnaire ajouterGestionnaire(Gestionnaire gestionnaire) {
         gestionnaire.setMotDePasse(passwordEncoder.encode(gestionnaire.getMotDePasse()));
+        gestionnaire.setRole("GESTIONNAIRE");
         return gestionnaireRepository.save(gestionnaire);
     }
 
@@ -99,11 +105,9 @@ public class GestionnaireServiceImpl implements GestionnaireService {
     // ------------------- Stations avec Admin -------------------
     @Override
     public Station creerStationAvecAdmin(StationAvecAdminRequest request, UUID gestionnaireId) {
-        // 🔎 Récupérer le gestionnaire à partir de l'id
         Gestionnaire gestionnaire = gestionnaireRepository.findById(gestionnaireId)
                 .orElseThrow(() -> new RuntimeException("Gestionnaire non trouvé"));
 
-        // Création de la station
         Station station = new Station();
         station.setNom(request.getNomStation());
         station.setAdresse(request.getAdresseStation());
@@ -111,20 +115,24 @@ public class GestionnaireServiceImpl implements GestionnaireService {
         station.setStatut("ACTIF");
         Station savedStation = stationRepository.save(station);
 
-        // Création de l'admin de station
         AdminStation admin = new AdminStation();
         admin.setNom(request.getNomAdmin());
         admin.setPrenom(request.getPrenomAdmin());
         admin.setEmail(request.getEmailAdmin());
         admin.setTelephone(request.getTelephoneAdmin());
-        admin.setMotDePasse(passwordEncoder.encode(request.getMotDePasseAdmin())); // mot de passe encodé
+        admin.setMotDePasse(passwordEncoder.encode(request.getMotDePasseAdmin()));
         admin.setRole("ADMIN_STATION");
         admin.setStation(savedStation);
-        admin.setEntreprise(gestionnaire.getEntreprise()); // 🔗 lien avec l'entreprise du gestionnaire
+        admin.setEntreprise(gestionnaire.getEntreprise());
 
         adminStationRepository.save(admin);
 
         return stationRepository.findById(savedStation.getId()).orElse(savedStation);
+    }
+
+    @Override
+    public List<Station> obtenirToutesLesStations() {
+        return stationRepository.findAll();
     }
 
     // ------------------- Demandes -------------------
@@ -152,7 +160,20 @@ public class GestionnaireServiceImpl implements GestionnaireService {
             Ticket ticket = new Ticket();
             ticket.setDemande(demande);
             ticket.setDateEmission(LocalDateTime.now());
-            ticket.setCodeQr(UUID.randomUUID().toString());
+            ticket.setCarburant(demande.getCarburant());
+            ticket.setStation(demande.getStation());
+            ticket.setVehicule(demande.getVehicule());
+            ticket.setQuantite(BigDecimal.valueOf(demande.getQuantite()));
+            ticket.setUtilisateur(demande.getDemandeur());
+            ticket.setValidateur(demande.getGestionnaire());
+
+            try {
+                // ✅ Générer le QR Code en Base64
+                String qrCode = qrCodeGenerator.generateQRCodeForTicket(ticket);
+                ticket.setCodeQr(qrCode);
+            } catch (Exception e) {
+                throw new RuntimeException("Erreur lors de la génération du QR Code", e);
+            }
 
             demande.setTicket(ticket);
 
@@ -165,26 +186,30 @@ public class GestionnaireServiceImpl implements GestionnaireService {
     }
 
     @Override
+    public Demande rejeterDemande(Long id, String motif) {
+        Demande demande = demandeRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Demande non trouvée"));
+
+        if (demande.getStatut() != StatutDemande.EN_ATTENTE) {
+            throw new RuntimeException("Demande déjà traitée");
+        }
+
+        demande.setStatut(StatutDemande.REJETEE);
+        demande.setDateValidation(LocalDateTime.now());
+        demande.setMotifRejet(motif);
+
+        demandeRepository.save(demande);
+
+        notificationService.sendNotificationToUtilisateur(
+                demande.getDemandeur().getId().toString(),
+                "Votre demande a été rejetée : " + motif);
+
+        return demande;
+    }
+
+    @Override
     public List<Demande> getDemandesParStatut(String statut) {
         return demandeRepository.findByStatut(StatutDemande.valueOf(statut.toUpperCase()));
-    }
-
-    @Override
-    public Demande rejeterDemande(Long id, String motif) {
-        Optional<Demande> optionalDemande = demandeRepository.findById(id);
-        if (optionalDemande.isPresent()) {
-            Demande demande = optionalDemande.get();
-            demande.setStatut(StatutDemande.REJETEE);
-            demande.setDateValidation(LocalDateTime.now());
-            demande.setMotifRejet(motif);
-            return demandeRepository.save(demande);
-        }
-        return null;
-    }
-
-    @Override
-    public ResponseEntity<Resource> exporterRapportConsommation() {
-        throw new UnsupportedOperationException("Rapport non encore implémenté.");
     }
 
     // ------------------- Gestionnaire avec entreprise -------------------
@@ -197,7 +222,7 @@ public class GestionnaireServiceImpl implements GestionnaireService {
         gestionnaire.setNom(request.getNom());
         gestionnaire.setPrenom(request.getPrenom());
         gestionnaire.setEmail(request.getEmail());
-        gestionnaire.setMotDePasse(passwordEncoder.encode(request.getMotDePasse())); // 🔑 mot de passe encodé
+        gestionnaire.setMotDePasse(passwordEncoder.encode(request.getMotDePasse()));
         gestionnaire.setTelephone(request.getTelephone());
         gestionnaire.setRole("GESTIONNAIRE");
         gestionnaire.setEntreprise(entreprise);
@@ -227,8 +252,10 @@ public class GestionnaireServiceImpl implements GestionnaireService {
         return vehiculeRepository.save(vehicule);
     }
 
+    // ------------------- Rapports -------------------
     @Override
-    public List<Station> obtenirToutesLesStations() {
-        return stationRepository.findAll();
+    public ResponseEntity<Resource> exporterRapportConsommation() {
+        throw new UnsupportedOperationException("Rapport non encore implémenté.");
     }
+
 }

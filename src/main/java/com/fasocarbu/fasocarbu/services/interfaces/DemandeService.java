@@ -6,13 +6,12 @@ import java.util.List;
 import java.util.UUID;
 
 public interface DemandeService {
-    Demande creerDemandeAvecTicket(UUID chauffeurId, Long carburantId, Long stationId, Long vehiculeId, double quantite);
-    Demande saveDemande(Demande demande);
-    List<Demande> getAllDemandes();
-    List<Demande> getDemandesParDemandeur(UUID chauffeurId);
+    Demande creerDemandeAvecTicket(UUID userId, Long carburantId, Long stationId, Long vehiculeId, double quantite);
 
-    Demande validerDemande(Long demandeId, UUID gestionnaireId);
-    Demande rejeterDemande(Long demandeId);
-    
+    Demande saveDemande(Demande demande);
+
+    List<Demande> getAllDemandes();
+
+    List<Demande> getDemandesParDemandeur(UUID demandeurId);
 
 }

@@ -30,8 +30,12 @@ public class GestionnaireController {
 
     // ------------------- Gestionnaires -------------------
     @GetMapping("/id/{id}")
-    public ResponseEntity<Gestionnaire> obtenir(@PathVariable UUID id) {
-        return ResponseEntity.ok(service.obtenirGestionnaire(id));
+    public ResponseEntity<?> obtenir(@PathVariable UUID id) {
+        Gestionnaire gestionnaire = service.obtenirGestionnaire(id);
+        if (gestionnaire == null) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Gestionnaire introuvable");
+        }
+        return ResponseEntity.ok(gestionnaire);
     }
 
     @GetMapping
@@ -45,8 +49,12 @@ public class GestionnaireController {
     }
 
     @PutMapping("/id/{id}")
-    public ResponseEntity<Gestionnaire> modifier(@PathVariable UUID id, @Valid @RequestBody Gestionnaire gestionnaire) {
-        return ResponseEntity.ok(service.modifierGestionnaire(id, gestionnaire));
+    public ResponseEntity<?> modifier(@PathVariable UUID id, @Valid @RequestBody Gestionnaire gestionnaire) {
+        Gestionnaire updated = service.modifierGestionnaire(id, gestionnaire);
+        if (updated == null) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Gestionnaire introuvable pour mise à jour");
+        }
+        return ResponseEntity.ok(updated);
     }
 
     @DeleteMapping("/id/{id}")
@@ -89,14 +97,22 @@ public class GestionnaireController {
     // ------------------- Validation / Rejet des demandes -------------------
     @PostMapping("/demandes/{id}/valider")
     @PreAuthorize("hasRole('GESTIONNAIRE')")
-    public ResponseEntity<Ticket> validerDemande(@PathVariable Long id) {
-        return ResponseEntity.ok(service.validerDemandeEtGenererTicket(id));
+    public ResponseEntity<?> validerDemande(@PathVariable Long id) {
+        Ticket ticket = service.validerDemandeEtGenererTicket(id);
+        if (ticket == null) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Demande introuvable ou déjà traitée");
+        }
+        return ResponseEntity.ok(ticket);
     }
 
     @PostMapping("/demandes/{id}/rejeter")
     @PreAuthorize("hasRole('GESTIONNAIRE')")
-    public ResponseEntity<Demande> rejeterDemande(@PathVariable Long id, @Valid @RequestBody MotifRejetRequest motif) {
-        return ResponseEntity.ok(service.rejeterDemande(id, motif.getMotif()));
+    public ResponseEntity<?> rejeterDemande(@PathVariable Long id, @Valid @RequestBody MotifRejetRequest motif) {
+        Demande demande = service.rejeterDemande(id, motif.getMotif());
+        if (demande == null) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Demande introuvable ou déjà traitée");
+        }
+        return ResponseEntity.ok(demande);
     }
 
     // ------------------- Rapports -------------------
