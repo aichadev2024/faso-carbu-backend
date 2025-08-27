@@ -3,9 +3,11 @@ package com.fasocarbu.fasocarbu.models;
 import com.fasocarbu.fasocarbu.enums.Role;
 import jakarta.persistence.Entity;
 import jakarta.persistence.PrimaryKeyJoinColumn;
+import jakarta.persistence.*;
 
 @Entity
 @PrimaryKeyJoinColumn(name = "utilisateur_id")
+@DiscriminatorValue("CHAUFFEUR")
 public class Chauffeur extends Utilisateur {
 
     private String permisConduite;
@@ -15,8 +17,9 @@ public class Chauffeur extends Utilisateur {
         super();
     }
 
-    public Chauffeur(String nom, String prenom,String telephone, String email, String motDePasse, String permisConduite) {
-        super(nom, prenom,telephone, email, motDePasse);
+    public Chauffeur(String nom, String prenom, String telephone, String email, String motDePasse,
+            String permisConduite) {
+        super(nom, prenom, telephone, email, motDePasse);
         this.permisConduite = permisConduite;
         this.initialiserProfil();
     }

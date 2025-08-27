@@ -12,6 +12,7 @@ import java.util.UUID;
 
 @Entity
 @Inheritance(strategy = InheritanceType.JOINED)
+@DiscriminatorColumn(name = "type_utilisateur", discriminatorType = DiscriminatorType.STRING)
 public abstract class Utilisateur {
     private static final Logger log = LoggerFactory.getLogger(Utilisateur.class);
 

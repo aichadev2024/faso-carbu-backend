@@ -5,6 +5,8 @@ import jakarta.persistence.*;
 @Entity
 @Table(name = "agent_station")
 @PrimaryKeyJoinColumn(name = "id_utilisateur")
+@DiscriminatorValue("AGENT_STATION")
+
 public class AgentStation extends Utilisateur {
 
     @ManyToOne

@@ -5,6 +5,7 @@ import jakarta.persistence.*;
 import java.util.List;
 
 @Entity
+@DiscriminatorValue("ADMIN_STATION")
 public class AdminStation extends Utilisateur {
 
     @OneToOne
