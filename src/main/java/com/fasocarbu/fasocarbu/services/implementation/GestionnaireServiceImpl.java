@@ -152,37 +152,43 @@ public class GestionnaireServiceImpl implements GestionnaireService {
     @Override
     public Ticket validerDemandeEtGenererTicket(Long id) {
         Optional<Demande> optionalDemande = demandeRepository.findById(id);
-        if (optionalDemande.isPresent()) {
-            Demande demande = optionalDemande.get();
-            demande.setStatut(StatutDemande.VALIDEE);
-            demande.setDateValidation(LocalDateTime.now());
-
-            Ticket ticket = new Ticket();
-            ticket.setDemande(demande);
-            ticket.setDateEmission(LocalDateTime.now());
-            ticket.setCarburant(demande.getCarburant());
-            ticket.setStation(demande.getStation());
-            ticket.setVehicule(demande.getVehicule());
-            ticket.setQuantite(BigDecimal.valueOf(demande.getQuantite()));
-            ticket.setUtilisateur(demande.getDemandeur());
-            ticket.setValidateur(demande.getGestionnaire());
-
-            try {
-                // ✅ Générer le QR Code en Base64
-                String qrCode = qrCodeGenerator.generateQRCodeForTicket(ticket);
-                ticket.setCodeQr(qrCode);
-            } catch (Exception e) {
-                throw new RuntimeException("Erreur lors de la génération du QR Code", e);
-            }
-
-            demande.setTicket(ticket);
-
-            demandeRepository.save(demande);
-            ticketRepository.save(ticket);
-
-            return ticket;
+        if (optionalDemande.isEmpty()) {
+            return null;
         }
-        return null;
+
+        Demande demande = optionalDemande.get();
+
+        // 🚨 Vérifier si déjà validée
+        if (demande.getStatut() == StatutDemande.VALIDEE && demande.getTicket() != null) {
+            throw new IllegalStateException("Cette demande est déjà validée et possède un ticket");
+        }
+
+        demande.setStatut(StatutDemande.VALIDEE);
+        demande.setDateValidation(LocalDateTime.now());
+
+        Ticket ticket = new Ticket();
+        ticket.setDemande(demande);
+        ticket.setDateEmission(LocalDateTime.now());
+        ticket.setCarburant(demande.getCarburant());
+        ticket.setStation(demande.getStation());
+        ticket.setVehicule(demande.getVehicule());
+        ticket.setQuantite(BigDecimal.valueOf(demande.getQuantite()));
+        ticket.setUtilisateur(demande.getDemandeur());
+        ticket.setValidateur(demande.getGestionnaire());
+
+        try {
+            String qrCode = qrCodeGenerator.generateQRCodeForTicket(ticket);
+            ticket.setCodeQr(qrCode);
+        } catch (Exception e) {
+            throw new RuntimeException("Erreur lors de la génération du QR Code", e);
+        }
+
+        Ticket savedTicket = ticketRepository.save(ticket);
+
+        demande.setTicket(savedTicket);
+        demandeRepository.save(demande);
+
+        return savedTicket;
     }
 
     @Override
