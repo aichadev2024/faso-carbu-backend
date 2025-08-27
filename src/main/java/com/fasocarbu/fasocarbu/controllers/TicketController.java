@@ -1,10 +1,14 @@
 package com.fasocarbu.fasocarbu.controllers;
 
 import com.fasocarbu.fasocarbu.models.Ticket;
+import com.fasocarbu.fasocarbu.security.services.UserDetailsImpl;
 import com.fasocarbu.fasocarbu.services.interfaces.TicketService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 
+import java.util.UUID;
 import java.util.List;
 
 @RestController
@@ -29,5 +33,18 @@ public class TicketController {
         return ticketService.getAllTickets();
     }
 
+    // ✅ Récupérer uniquement MES tickets (sécurisé)
+    @GetMapping("/mes-tickets")
+    @PreAuthorize("hasRole('DEMANDEUR')")
+    public List<Ticket> getMesTickets(@AuthenticationPrincipal UserDetailsImpl userDetails) {
+        UUID userId = userDetails.getId();
+        return ticketService.getTicketsByUtilisateur(userId);
+    }
 
+    // ✅ Récupérer les tickets d’un utilisateur donné (réservé aux gestionnaires)
+    @GetMapping("/utilisateur/{id}")
+    @PreAuthorize("hasRole('GESTIONNAIRE')")
+    public List<Ticket> getTicketsByUtilisateur(@PathVariable UUID id) {
+        return ticketService.getTicketsByUtilisateur(id);
+    }
 }

@@ -9,6 +9,7 @@ import org.springframework.stereotype.Service;
 
 import java.util.List;
 import java.util.Optional;
+import java.util.UUID;
 
 @Service
 public class TicketServiceImpl implements TicketService {
@@ -30,7 +31,6 @@ public class TicketServiceImpl implements TicketService {
         return ticketRepository.save(ticket);
     }
 
-
     @Override
     public Ticket getTicketById(Long id) {
         Optional<Ticket> optional = ticketRepository.findById(id);
@@ -46,4 +46,10 @@ public class TicketServiceImpl implements TicketService {
     public void supprimerTicket(Long id) {
         ticketRepository.deleteById(id);
     }
+
+    @Override
+    public List<Ticket> getTicketsByUtilisateur(UUID utilisateurId) {
+        return ticketRepository.findByUtilisateur_Id(utilisateurId);
+    }
+
 }
