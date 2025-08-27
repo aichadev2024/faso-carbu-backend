@@ -1,6 +1,7 @@
 package com.fasocarbu.fasocarbu.controllers;
 
 import com.fasocarbu.fasocarbu.dtos.DemandeRequest;
+import com.fasocarbu.fasocarbu.dtos.DemandeResponse;
 import com.fasocarbu.fasocarbu.models.Demande;
 import com.fasocarbu.fasocarbu.models.Utilisateur;
 import com.fasocarbu.fasocarbu.repositories.UtilisateurRepository;
@@ -25,7 +26,6 @@ public class DemandeController {
     private final DemandeService demandeService;
     private final UtilisateurRepository utilisateurRepository;
 
-    // ===================== CREER DEMANDE =====================
     @PostMapping
     @PreAuthorize("hasAnyRole('GESTIONNAIRE','DEMANDEUR')")
     public ResponseEntity<?> createDemande(@RequestBody DemandeRequest dto, Authentication authentication) {
@@ -45,14 +45,14 @@ public class DemandeController {
                     dto.getStationId(),
                     dto.getVehiculeId(),
                     dto.getQuantite());
-            return ResponseEntity.status(HttpStatus.CREATED).body(demande);
+
+            return ResponseEntity.status(HttpStatus.CREATED).body(new DemandeResponse(demande));
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST)
                     .body("❌ Erreur lors de la création de la demande : " + e.getMessage());
         }
     }
 
-    // ===================== LISTE DES DEMANDES =====================
     @GetMapping
     @PreAuthorize("hasAnyRole('GESTIONNAIRE','DEMANDEUR')")
     public ResponseEntity<?> getDemandes(Authentication authentication) {
@@ -66,11 +66,18 @@ public class DemandeController {
         Utilisateur utilisateur = utilisateurOpt.get();
 
         if (utilisateur.getRole() == Role.GESTIONNAIRE) {
-            return ResponseEntity.ok(demandeService.getAllDemandes());
+            return ResponseEntity.ok(
+                    demandeService.getAllDemandes().stream()
+                            .map(DemandeResponse::new)
+                            .toList());
         } else if (utilisateur.getRole() == Role.DEMANDEUR) {
-            return ResponseEntity.ok(demandeService.getDemandesParDemandeur(utilisateur.getId()));
+            return ResponseEntity.ok(
+                    demandeService.getDemandesParDemandeur(utilisateur.getId()).stream()
+                            .map(DemandeResponse::new)
+                            .toList());
         }
 
         return ResponseEntity.status(HttpStatus.FORBIDDEN).body("❌ Vous n’êtes pas autorisé à consulter ces demandes");
     }
+
 }
