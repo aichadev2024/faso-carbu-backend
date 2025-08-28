@@ -30,7 +30,10 @@ public class TicketDTO {
     // Infos carburant
     private String carburantNom;
 
-    // ✅ Constructeur depuis Ticket
+    // ✅ Ajout entrepriseId
+    private Long entrepriseId;
+
+    // ---------- CONSTRUCTEURS ----------
     public TicketDTO() {
     }
 
@@ -55,6 +58,15 @@ public class TicketDTO {
 
         if (ticket.getStation() != null) {
             this.stationNom = ticket.getStation().getNom();
+
+            // ✅ Récupération entrepriseId via adminStation
+            if (ticket.getStation().getAdminStation() != null &&
+                    ticket.getStation().getAdminStation().getEntreprise() != null) {
+                this.entrepriseId = ticket.getStation()
+                        .getAdminStation()
+                        .getEntreprise()
+                        .getId();
+            }
         }
 
         if (ticket.getVehicule() != null) {
@@ -67,7 +79,6 @@ public class TicketDTO {
     }
 
     // ---------- GETTERS & SETTERS ----------
-
     public Long getId() {
         return id;
     }
@@ -178,5 +189,13 @@ public class TicketDTO {
 
     public void setCarburantNom(String carburantNom) {
         this.carburantNom = carburantNom;
+    }
+
+    public Long getEntrepriseId() {
+        return entrepriseId;
+    }
+
+    public void setEntrepriseId(Long entrepriseId) {
+        this.entrepriseId = entrepriseId;
     }
 }
