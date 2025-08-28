@@ -17,6 +17,9 @@ public class DemandeResponse {
     private String vehiculeImmatriculation;
     private String carburantNom;
 
+    // ✅ Ajout du champ entrepriseId
+    private Long entrepriseId;
+
     public DemandeResponse(Demande demande) {
         this.id = demande.getId().toString();
         this.quantite = demande.getQuantite();
@@ -34,6 +37,15 @@ public class DemandeResponse {
 
         if (demande.getStation() != null) {
             this.stationNom = demande.getStation().getNom();
+
+            if (demande.getStation().getAdminStation() != null &&
+                    demande.getStation().getAdminStation().getEntreprise() != null) {
+
+                this.entrepriseId = demande.getStation()
+                        .getAdminStation()
+                        .getEntreprise()
+                        .getId(); // ✅ plus de .toString()
+            }
         }
 
         if (demande.getVehicule() != null) {
@@ -84,5 +96,9 @@ public class DemandeResponse {
 
     public String getCarburantNom() {
         return carburantNom;
+    }
+
+    public Long getEntrepriseId() { // ✅ reste en Long
+        return entrepriseId;
     }
 }
