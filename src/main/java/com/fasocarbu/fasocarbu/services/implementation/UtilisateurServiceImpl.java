@@ -182,7 +182,7 @@ public class UtilisateurServiceImpl implements UtilisateurService {
     }
 
     @Override
-    public List<Utilisateur> getChauffeursByEntreprise(UUID entrepriseId) {
+    public List<Utilisateur> getChauffeursByEntreprise(Long entrepriseId) {
         return utilisateurRepository.findByEntreprise_IdAndRole(entrepriseId, Role.CHAUFFEUR);
     }
 

@@ -78,7 +78,7 @@ public class UtilisateurController {
 
     @GetMapping("/chauffeurs/{entrepriseId}")
     @PreAuthorize("hasRole('GESTIONNAIRE')")
-    public List<UtilisateurDTO> getChauffeursByEntreprise(@PathVariable UUID entrepriseId) {
+    public List<UtilisateurDTO> getChauffeursByEntreprise(@PathVariable Long entrepriseId) {
         return utilisateurService.getChauffeursByEntreprise(entrepriseId)
                 .stream()
                 .map(UtilisateurDTO::new)

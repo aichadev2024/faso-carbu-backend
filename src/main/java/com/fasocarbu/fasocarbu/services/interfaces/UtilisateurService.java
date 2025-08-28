@@ -39,5 +39,5 @@ public interface UtilisateurService {
 
     Utilisateur creerUtilisateurParGestionnaire(CreateUserRequest request, String emailGestionnaire);
 
-    List<Utilisateur> getChauffeursByEntreprise(UUID entrepriseId);
+    List<Utilisateur> getChauffeursByEntreprise(Long entrepriseId);
 }
