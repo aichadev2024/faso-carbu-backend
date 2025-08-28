@@ -33,7 +33,7 @@ public class TicketController {
         return ticketService.getAllTickets();
     }
 
-    // ✅ Récupérer uniquement MES tickets (sécurisé)
+    // ✅ Voir MES tickets (pour un demandeur)
     @GetMapping("/mes-tickets")
     @PreAuthorize("hasRole('DEMANDEUR')")
     public List<Ticket> getMesTickets(@AuthenticationPrincipal UserDetailsImpl userDetails) {
@@ -41,10 +41,18 @@ public class TicketController {
         return ticketService.getTicketsByUtilisateur(userId);
     }
 
-    // ✅ Récupérer les tickets d’un utilisateur donné (réservé aux gestionnaires)
+    // ✅ Voir TOUS les tickets (gestionnaire)
+    @GetMapping("/tous")
+    @PreAuthorize("hasRole('GESTIONNAIRE')")
+    public List<Ticket> getTousLesTickets() {
+        return ticketService.getAllTickets();
+    }
+
+    // ✅ Voir tickets d’un utilisateur spécifique (gestionnaire)
     @GetMapping("/utilisateur/{id}")
     @PreAuthorize("hasRole('GESTIONNAIRE')")
     public List<Ticket> getTicketsByUtilisateur(@PathVariable UUID id) {
         return ticketService.getTicketsByUtilisateur(id);
     }
+
 }
