@@ -2,6 +2,7 @@ package com.fasocarbu.fasocarbu.controllers;
 
 import com.fasocarbu.fasocarbu.dtos.CreateUserRequest;
 import com.fasocarbu.fasocarbu.dtos.UpdateFcmTokenRequest;
+import com.fasocarbu.fasocarbu.dtos.UtilisateurDTO;
 import com.fasocarbu.fasocarbu.models.Utilisateur;
 import com.fasocarbu.fasocarbu.security.services.UserDetailsImpl;
 import com.fasocarbu.fasocarbu.services.interfaces.UtilisateurService;
@@ -74,4 +75,14 @@ public class UtilisateurController {
         utilisateurService.updateFcmToken(request.getUserId(), request.getFcmToken());
         return ResponseEntity.ok("Token mis à jour avec succès !");
     }
+
+    @GetMapping("/chauffeurs/{entrepriseId}")
+    @PreAuthorize("hasRole('GESTIONNAIRE')")
+    public List<UtilisateurDTO> getChauffeursByEntreprise(@PathVariable UUID entrepriseId) {
+        return utilisateurService.getChauffeursByEntreprise(entrepriseId)
+                .stream()
+                .map(UtilisateurDTO::new)
+                .toList();
+    }
+
 }

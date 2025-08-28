@@ -9,6 +9,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import com.fasocarbu.fasocarbu.dtos.CreateUserRequest;
 import org.springframework.stereotype.Service;
+import com.fasocarbu.fasocarbu.enums.Role;
 
 import java.util.List;
 import java.util.Optional;
@@ -178,6 +179,11 @@ public class UtilisateurServiceImpl implements UtilisateurService {
 
         // Sauvegarder et retourner
         return utilisateurRepository.save(utilisateur);
+    }
+
+    @Override
+    public List<Utilisateur> getChauffeursByEntreprise(UUID entrepriseId) {
+        return utilisateurRepository.findByEntreprise_IdAndRole(entrepriseId, Role.CHAUFFEUR);
     }
 
 }

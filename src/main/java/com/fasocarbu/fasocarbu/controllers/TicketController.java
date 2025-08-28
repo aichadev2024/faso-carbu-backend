@@ -1,5 +1,6 @@
 package com.fasocarbu.fasocarbu.controllers;
 
+import com.fasocarbu.fasocarbu.dtos.TicketDTO;
 import com.fasocarbu.fasocarbu.models.Ticket;
 import com.fasocarbu.fasocarbu.security.services.UserDetailsImpl;
 import com.fasocarbu.fasocarbu.services.interfaces.TicketService;
@@ -18,41 +19,55 @@ public class TicketController {
     @Autowired
     private TicketService ticketService;
 
+    // ✅ Ajouter un ticket (gestionnaire)
     @PostMapping("/ajouter")
-    public Ticket ajouterTicket(@RequestBody Ticket ticket) {
+    @PreAuthorize("hasRole('GESTIONNAIRE')")
+    public TicketDTO ajouterTicket(@RequestBody Ticket ticket) {
         return ticketService.enregistrerTicket(ticket);
     }
 
+    // ✅ Récupérer un ticket par ID
     @GetMapping("/{id}")
-    public Ticket getTicket(@PathVariable Long id) {
+    public TicketDTO getTicket(@PathVariable Long id) {
         return ticketService.getTicketById(id);
     }
 
-    @GetMapping
-    public List<Ticket> getAllTickets() {
-        return ticketService.getAllTickets();
-    }
-
-    // ✅ Voir MES tickets (pour un demandeur)
-    @GetMapping("/mes-tickets")
-    @PreAuthorize("hasRole('DEMANDEUR')")
-    public List<Ticket> getMesTickets(@AuthenticationPrincipal UserDetailsImpl userDetails) {
-        UUID userId = userDetails.getId();
-        return ticketService.getTicketsByUtilisateur(userId);
-    }
-
-    // ✅ Voir TOUS les tickets (gestionnaire)
+    // ✅ Voir TOUS les tickets (gestionnaire uniquement)
     @GetMapping("/tous")
     @PreAuthorize("hasRole('GESTIONNAIRE')")
-    public List<Ticket> getTousLesTickets() {
-        return ticketService.getAllTickets();
+    public List<TicketDTO> getTousLesTickets() {
+        return ticketService.getAllTicketsDTO();
+    }
+
+    // ✅ Voir MES tickets (demandeur ou chauffeur connecté)
+    @GetMapping("/mes-tickets")
+    @PreAuthorize("hasAnyRole('DEMANDEUR', 'CHAUFFEUR')")
+    public List<TicketDTO> getMesTickets(@AuthenticationPrincipal UserDetailsImpl userDetails) {
+        UUID userId = userDetails.getId();
+        return ticketService.getTicketsByUtilisateurDTO(userId);
     }
 
     // ✅ Voir tickets d’un utilisateur spécifique (gestionnaire)
     @GetMapping("/utilisateur/{id}")
     @PreAuthorize("hasRole('GESTIONNAIRE')")
-    public List<Ticket> getTicketsByUtilisateur(@PathVariable UUID id) {
-        return ticketService.getTicketsByUtilisateur(id);
+    public List<TicketDTO> getTicketsByUtilisateur(@PathVariable UUID id) {
+        return ticketService.getTicketsByUtilisateurDTO(id);
     }
 
+    // ✅ Validation d’un ticket (agent station)
+    @PostMapping("/valider/{id}")
+    @PreAuthorize("hasRole('AGENT_STATION')")
+    public TicketDTO validerTicket(@PathVariable Long id,
+            @AuthenticationPrincipal UserDetailsImpl userDetails) {
+        UUID validateurId = userDetails.getId();
+        return ticketService.validerTicket(id, validateurId);
+    }
+
+    // ✅ Attribuer un ticket à un chauffeur (gestionnaire)
+    @PutMapping("/attribuer/{ticketId}/{chauffeurId}")
+    @PreAuthorize("hasRole('GESTIONNAIRE')")
+    public TicketDTO attribuerTicket(@PathVariable Long ticketId,
+            @PathVariable UUID chauffeurId) {
+        return ticketService.attribuerTicket(ticketId, chauffeurId);
+    }
 }
