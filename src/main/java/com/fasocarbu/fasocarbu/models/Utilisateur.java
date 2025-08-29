@@ -131,6 +131,10 @@ public abstract class Utilisateur {
         log.error("Rôle inconnu: '{}'. Aucun rôle défini.", roleStr);
     }
 
+    public void setRole(Role role) {
+        this.role = role != null ? role : Role.CHAUFFEUR;
+    }
+
     public Boolean getActif() {
         return actif != null ? actif : true;
     }

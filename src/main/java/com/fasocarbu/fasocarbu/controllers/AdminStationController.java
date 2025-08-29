@@ -1,5 +1,7 @@
 package com.fasocarbu.fasocarbu.controllers;
 
+import com.fasocarbu.fasocarbu.dtos.CreateUserRequest;
+import com.fasocarbu.fasocarbu.dtos.UtilisateurDTO;
 import com.fasocarbu.fasocarbu.models.AdminStation;
 import com.fasocarbu.fasocarbu.models.AgentStation;
 import com.fasocarbu.fasocarbu.models.Carburant;
@@ -73,10 +75,12 @@ public class AdminStationController {
 
     @PostMapping("/{adminStationId}/agents")
     @PreAuthorize("hasRole('ADMIN_STATION')")
-    public AgentStation createAgent(
+    public ResponseEntity<UtilisateurDTO> createAgent(
             @PathVariable UUID adminStationId,
-            @RequestBody AgentStation agent) {
-        return agentStationService.createAgent(adminStationId, agent);
+            @RequestBody CreateUserRequest request) {
+
+        AgentStation agent = agentStationService.createAgent(adminStationId, request);
+        return ResponseEntity.ok(new UtilisateurDTO(agent));
     }
 
     @GetMapping("/{adminStationId}/agents")
