@@ -5,6 +5,7 @@ import com.fasocarbu.fasocarbu.enums.StatutTicket;
 import com.fasocarbu.fasocarbu.models.AdminStation;
 import com.fasocarbu.fasocarbu.models.Ticket;
 import com.fasocarbu.fasocarbu.models.Utilisateur;
+import com.fasocarbu.fasocarbu.repositories.AdminStationRepository;
 import com.fasocarbu.fasocarbu.repositories.TicketRepository;
 import com.fasocarbu.fasocarbu.repositories.UtilisateurRepository;
 import com.fasocarbu.fasocarbu.services.interfaces.TicketService;
@@ -28,6 +29,8 @@ public class TicketServiceImpl implements TicketService {
 
     @Autowired
     private QRCodeGenerator qrCodeGenerator;
+    @Autowired
+    private AdminStationRepository adminStationRepository;
 
     // ✅ Création ticket
     @Override
