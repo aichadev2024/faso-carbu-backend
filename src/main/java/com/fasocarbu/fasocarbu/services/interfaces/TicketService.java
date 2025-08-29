@@ -27,4 +27,6 @@ public interface TicketService {
 
     // Tickets d’un utilisateur (demandeur ou chauffeur)
     List<TicketDTO> getTicketsByUtilisateurDTO(UUID utilisateurId);
+
+    List<Ticket> getTicketsByAdminStation(UUID adminStationId);
 }

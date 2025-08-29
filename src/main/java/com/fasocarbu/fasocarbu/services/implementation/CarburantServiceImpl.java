@@ -25,6 +25,7 @@ public class CarburantServiceImpl implements CarburantService {
     @Autowired
     private AdminStationRepository adminStationRepository;
 
+    // -------------------- Méthodes classiques --------------------
     @Override
     public Carburant ajouterCarburant(Carburant carburant) {
         return carburantRepository.save(carburant);
@@ -52,7 +53,6 @@ public class CarburantServiceImpl implements CarburantService {
 
         Carburant carburant = carburantRepository.findById(idCarburant)
                 .orElseThrow(() -> new RuntimeException("Carburant non trouvé"));
-
         if (carburant.getStation().getId() != adminStation.getStation().getId()) {
             throw new RuntimeException("Cet admin n'a pas le droit de modifier ce carburant");
         }
@@ -61,8 +61,7 @@ public class CarburantServiceImpl implements CarburantService {
         return carburantRepository.save(carburant);
     }
 
-    // --------------------- Méthodes DTO ---------------------
-
+    // -------------------- Méthodes DTO --------------------
     @Override
     public List<CarburantDTO> getAllCarburantsDTO() {
         return carburantRepository.findAll()
@@ -84,7 +83,41 @@ public class CarburantServiceImpl implements CarburantService {
         return convertToDTO(carburant);
     }
 
-    // Conversion Carburant -> CarburantDTO
+    // -------------------- Méthodes spécifiques AdminStation --------------------
+    @Override
+    public Carburant ajouterCarburantPourStation(UUID adminStationId, Carburant carburant) {
+        AdminStation adminStation = adminStationRepository.findById(adminStationId)
+                .orElseThrow(() -> new RuntimeException("AdminStation introuvable"));
+
+        carburant.setStation(adminStation.getStation());
+        return carburantRepository.save(carburant);
+    }
+
+    @Override
+    public List<Carburant> getCarburantsByAdminStation(UUID adminStationId) {
+        AdminStation adminStation = adminStationRepository.findById(adminStationId)
+                .orElseThrow(() -> new RuntimeException("AdminStation introuvable"));
+
+        return carburantRepository.findByStationId(adminStation.getStation().getId());
+    }
+
+    @Override
+    public Carburant updateCarburant(UUID adminStationId, Long carburantId, Carburant carburant) {
+        AdminStation adminStation = adminStationRepository.findById(adminStationId)
+                .orElseThrow(() -> new RuntimeException("AdminStation introuvable"));
+
+        Carburant existing = carburantRepository.findById(carburantId)
+                .orElseThrow(() -> new RuntimeException("Carburant introuvable"));
+        if (existing.getStation().getId() != adminStation.getStation().getId()) {
+            throw new RuntimeException("Ce carburant n'appartient pas à la station de cet Admin");
+        }
+
+        existing.setNom(carburant.getNom());
+        existing.setPrix(carburant.getPrix());
+        return carburantRepository.save(existing);
+    }
+
+    // -------------------- Conversion Carburant -> DTO --------------------
     private CarburantDTO convertToDTO(Carburant carburant) {
         CarburantDTO dto = new CarburantDTO();
         dto.setId(carburant.getId());

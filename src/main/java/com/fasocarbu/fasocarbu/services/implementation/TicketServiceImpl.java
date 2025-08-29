@@ -2,6 +2,7 @@ package com.fasocarbu.fasocarbu.services.implementation;
 
 import com.fasocarbu.fasocarbu.dtos.TicketDTO;
 import com.fasocarbu.fasocarbu.enums.StatutTicket;
+import com.fasocarbu.fasocarbu.models.AdminStation;
 import com.fasocarbu.fasocarbu.models.Ticket;
 import com.fasocarbu.fasocarbu.models.Utilisateur;
 import com.fasocarbu.fasocarbu.repositories.TicketRepository;
@@ -104,4 +105,13 @@ public class TicketServiceImpl implements TicketService {
                 .map(TicketDTO::new)
                 .collect(Collectors.toList());
     }
+
+    @Override
+    public List<Ticket> getTicketsByAdminStation(UUID adminStationId) {
+        AdminStation adminStation = adminStationRepository.findById(adminStationId)
+                .orElseThrow(() -> new RuntimeException("AdminStation introuvable"));
+
+        return ticketRepository.findByStationId(adminStation.getStation().getId());
+    }
+
 }

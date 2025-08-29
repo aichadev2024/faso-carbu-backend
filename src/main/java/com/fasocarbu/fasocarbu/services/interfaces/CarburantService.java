@@ -15,14 +15,18 @@ public interface CarburantService {
 
     void supprimerCarburant(Long id);
 
-    // Ajout du paramètre idAdminStation
     Carburant updatePrix(Long idCarburant, UUID idAdminStation, Double nouveauPrix);
 
-    // Nouveau dans l'interface
     List<CarburantDTO> getAllCarburantsDTO();
 
     CarburantDTO getCarburantDTOById(Long id);
 
     CarburantDTO updatePrixDTO(Long idCarburant, UUID idAdminStation, Double nouveauPrix);
 
+    // -------------------- Ajouts pour AdminStation --------------------
+    Carburant ajouterCarburantPourStation(UUID adminStationId, Carburant carburant);
+
+    List<Carburant> getCarburantsByAdminStation(UUID adminStationId);
+
+    Carburant updateCarburant(UUID adminStationId, Long carburantId, Carburant carburant);
 }

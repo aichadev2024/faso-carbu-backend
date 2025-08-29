@@ -6,6 +6,7 @@ import com.fasocarbu.fasocarbu.services.interfaces.CarburantService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.security.access.prepost.PreAuthorize;
 
 import java.util.List;
 import java.util.UUID;
@@ -18,35 +19,21 @@ public class CarburantController {
     @Autowired
     private CarburantService carburantService;
 
-    // =================== AJOUTER ===================
     @PostMapping("/ajouter")
+    @PreAuthorize("hasRole('ADMIN_STATION')")
     public CarburantDTO ajouterCarburant(@RequestBody Carburant carburant) {
         Carburant saved = carburantService.ajouterCarburant(carburant);
-        // On réutilise la méthode existante DTO
         return carburantService.getCarburantDTOById(saved.getId());
     }
 
-    // =================== LISTE ===================
     @GetMapping
+    @PreAuthorize("hasRole('ADMIN_STATION')")
     public List<CarburantDTO> getAll() {
         return carburantService.getAllCarburantsDTO();
     }
 
-    // =================== GET BY ID ===================
-    @GetMapping("/{id}")
-    public CarburantDTO getById(@PathVariable Long id) {
-        return carburantService.getCarburantDTOById(id);
-    }
-
-    // =================== SUPPRIMER ===================
-    @DeleteMapping("/{id}")
-    public ResponseEntity<Void> delete(@PathVariable Long id) {
-        carburantService.supprimerCarburant(id);
-        return ResponseEntity.noContent().build();
-    }
-
-    // =================== METTRE À JOUR PRIX ===================
     @PutMapping("/{idCarburant}/updatePrix/{idAdminStation}")
+    @PreAuthorize("hasRole('ADMIN_STATION')")
     public ResponseEntity<CarburantDTO> updatePrix(
             @PathVariable Long idCarburant,
             @PathVariable UUID idAdminStation,
@@ -54,5 +41,12 @@ public class CarburantController {
 
         CarburantDTO updated = carburantService.updatePrixDTO(idCarburant, idAdminStation, nouveauPrix);
         return ResponseEntity.ok(updated);
+    }
+
+    @DeleteMapping("/{id}")
+    @PreAuthorize("hasRole('ADMIN_STATION')")
+    public ResponseEntity<Void> delete(@PathVariable Long id) {
+        carburantService.supprimerCarburant(id);
+        return ResponseEntity.noContent().build();
     }
 }

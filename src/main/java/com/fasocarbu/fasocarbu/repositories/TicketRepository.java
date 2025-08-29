@@ -15,4 +15,6 @@ public interface TicketRepository extends JpaRepository<Ticket, Long> {
 
     List<Ticket> findByUtilisateur_Id(UUID utilisateurId);
 
+    List<Ticket> findByStationId(Long stationId);
+
 }
