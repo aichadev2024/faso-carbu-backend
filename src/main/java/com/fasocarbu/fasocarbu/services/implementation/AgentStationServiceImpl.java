@@ -50,7 +50,10 @@ public class AgentStationServiceImpl implements AgentStationService {
         agent.setTelephone(request.getTelephone());
         agent.setMotDePasse(passwordEncoder.encode(request.getMotDePasse())); // ✅ sécurisé
         agent.setRole(Role.AGENT_STATION); // ✅ enum bien importé
-        agent.setStation(adminStation.getStation()); // ✅ lien avec la station de l’admin
+
+        // 🔹 Rattachement à la station + entreprise de l'admin
+        agent.setStation(adminStation.getStation());
+        agent.setEntreprise(adminStation.getEntreprise()); // ✅ correction entreprise_id
 
         return agentStationRepository.save(agent);
     }
