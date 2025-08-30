@@ -118,8 +118,8 @@ public class TicketServiceImpl implements TicketService {
     }
 
     @Override
-    public TicketDTO validerTicketParQrCode(String qrCode, UUID agentStationId) {
-        Ticket ticket = ticketRepository.findByCodeQr(qrCode)
+    public TicketDTO validerTicketParCodeQr(String codeQr, UUID agentStationId) {
+        Ticket ticket = ticketRepository.findByCodeQr(codeQr)
                 .orElseThrow(() -> new RuntimeException("❌ Ticket introuvable"));
 
         if (ticket.getStatut() == StatutTicket.VALIDER) {

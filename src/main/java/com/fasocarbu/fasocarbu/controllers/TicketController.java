@@ -79,13 +79,13 @@ public class TicketController {
             @RequestBody Map<String, String> payload,
             @AuthenticationPrincipal UserDetailsImpl userDetails) {
 
-        String qrCode = payload.get("qrCode");
-        if (qrCode == null || qrCode.isEmpty()) {
-            throw new RuntimeException("⚠️ qrCode requis");
+        String codeQr = payload.get("codeQr");
+        if (codeQr == null || codeQr.isEmpty()) {
+            throw new RuntimeException("⚠️ codeQr requis");
         }
 
         UUID agentStationId = userDetails.getId();
-        return ticketService.validerTicketParQrCode(qrCode, agentStationId);
+        return ticketService.validerTicketParCodeQr(codeQr, agentStationId);
     }
 
 }

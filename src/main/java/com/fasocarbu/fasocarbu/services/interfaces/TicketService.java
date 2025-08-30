@@ -30,6 +30,6 @@ public interface TicketService {
 
     List<Ticket> getTicketsByAdminStation(UUID adminStationId);
 
-    TicketDTO validerTicketParQrCode(String qrCode, UUID agentStationId);
+    TicketDTO validerTicketParCodeQr(String qrCode, UUID agentStationId);
 
 }
