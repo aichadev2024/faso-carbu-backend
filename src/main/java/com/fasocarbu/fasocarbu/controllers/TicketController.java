@@ -11,6 +11,7 @@ import org.springframework.security.core.annotation.AuthenticationPrincipal;
 
 import java.util.UUID;
 import java.util.List;
+import java.util.Map;
 
 @RestController
 @RequestMapping("/api/tickets")
@@ -70,4 +71,21 @@ public class TicketController {
             @PathVariable UUID chauffeurId) {
         return ticketService.attribuerTicket(ticketId, chauffeurId);
     }
+
+    // ✅ Validation d’un ticket par QR code (agent station connecté)
+    @PostMapping("/valider")
+    @PreAuthorize("hasRole('AGENT_STATION')")
+    public TicketDTO validerTicket(
+            @RequestBody Map<String, String> payload,
+            @AuthenticationPrincipal UserDetailsImpl userDetails) {
+
+        String qrCode = payload.get("qrCode");
+        if (qrCode == null || qrCode.isEmpty()) {
+            throw new RuntimeException("⚠️ qrCode requis");
+        }
+
+        UUID agentStationId = userDetails.getId();
+        return ticketService.validerTicketParQrCode(qrCode, agentStationId);
+    }
+
 }

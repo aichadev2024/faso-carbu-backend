@@ -17,4 +17,6 @@ public interface TicketRepository extends JpaRepository<Ticket, Long> {
 
     List<Ticket> findByStationId(Long stationId);
 
+    Optional<Ticket> findByQrCode(String qrCode);
+
 }

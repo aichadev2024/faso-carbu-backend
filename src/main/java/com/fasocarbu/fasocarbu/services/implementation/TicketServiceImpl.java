@@ -117,4 +117,35 @@ public class TicketServiceImpl implements TicketService {
         return ticketRepository.findByStationId(adminStation.getStation().getId());
     }
 
+    @Override
+    public TicketDTO validerTicketParQrCode(String qrCode, UUID agentStationId) {
+        Ticket ticket = ticketRepository.findByCodeQr(qrCode)
+                .orElseThrow(() -> new RuntimeException("❌ Ticket introuvable"));
+
+        if (ticket.getStatut() == StatutTicket.VALIDER) {
+            throw new RuntimeException("⚠️ Ce ticket est déjà validé !");
+        }
+
+        Utilisateur agent = utilisateurRepository.findById(agentStationId)
+                .orElseThrow(() -> new RuntimeException("❌ Agent non trouvé"));
+
+        ticket.setStatut(StatutTicket.VALIDER);
+        ticket.setDateValidation(LocalDateTime.now());
+        ticket.setValidateur(agent);
+
+        Ticket saved = ticketRepository.save(ticket);
+
+        // ✅ Construction manuelle du DTO
+        TicketDTO dto = new TicketDTO();
+        dto.setId(saved.getId());
+        dto.setCodeQr(saved.getCodeQr());
+        dto.setStatut(StatutTicket.VALIDER);
+
+        dto.setDateValidation(saved.getDateValidation());
+        dto.setValidateurNom(
+                saved.getValidateur() != null ? saved.getValidateur().getNom() : null);
+
+        return dto;
+    }
+
 }
