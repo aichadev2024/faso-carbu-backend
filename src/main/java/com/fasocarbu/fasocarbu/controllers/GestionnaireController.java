@@ -5,9 +5,11 @@ import com.fasocarbu.fasocarbu.security.services.UserDetailsImpl;
 import com.fasocarbu.fasocarbu.services.interfaces.GestionnaireService;
 import com.fasocarbu.fasocarbu.dtos.StationAvecAdminRequest;
 import com.fasocarbu.fasocarbu.dtos.MotifRejetRequest;
+import com.fasocarbu.fasocarbu.dtos.TicketDTO;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.io.Resource;
+import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.http.HttpStatus;
@@ -16,6 +18,7 @@ import jakarta.validation.Valid;
 
 import java.util.List;
 import java.util.UUID;
+import java.time.LocalDateTime;
 
 @RestController
 @RequestMapping("/api/gestionnaires")
@@ -121,4 +124,23 @@ public class GestionnaireController {
     public ResponseEntity<Resource> exporterRapport() {
         return service.exporterRapportConsommation();
     }
+
+    // ✅ Rapport : tickets par chauffeur (tous)
+    @GetMapping("/rapport/tickets")
+    @PreAuthorize("hasRole('GESTIONNAIRE')")
+    public ResponseEntity<List<TicketDTO>> getTicketsParChauffeur(
+            @RequestParam UUID chauffeurId) {
+        return ResponseEntity.ok(service.getTicketsParChauffeur(chauffeurId));
+    }
+
+    // ✅ Rapport : tickets par chauffeur + filtrés par période
+    @GetMapping("/rapport/tickets/filtre")
+    @PreAuthorize("hasRole('GESTIONNAIRE')")
+    public ResponseEntity<List<TicketDTO>> getTicketsParChauffeurEtDates(
+            @RequestParam UUID chauffeurId,
+            @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime dateDebut,
+            @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime dateFin) {
+        return ResponseEntity.ok(service.getTicketsParChauffeurEtDates(chauffeurId, dateDebut, dateFin));
+    }
+
 }

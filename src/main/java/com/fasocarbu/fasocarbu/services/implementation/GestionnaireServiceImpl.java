@@ -3,6 +3,7 @@ package com.fasocarbu.fasocarbu.services.implementation;
 import com.fasocarbu.fasocarbu.dtos.DemandeRequest;
 import com.fasocarbu.fasocarbu.dtos.GestionnaireAvecEntrepriseRequest;
 import com.fasocarbu.fasocarbu.dtos.StationAvecAdminRequest;
+import com.fasocarbu.fasocarbu.dtos.TicketDTO;
 import com.fasocarbu.fasocarbu.enums.StatutDemande;
 import com.fasocarbu.fasocarbu.models.*;
 import com.fasocarbu.fasocarbu.repositories.*;
@@ -262,6 +263,23 @@ public class GestionnaireServiceImpl implements GestionnaireService {
     @Override
     public ResponseEntity<Resource> exporterRapportConsommation() {
         throw new UnsupportedOperationException("Rapport non encore implémenté.");
+    }
+
+    @Override
+    public List<TicketDTO> getTicketsParChauffeur(UUID chauffeurId) {
+        return ticketRepository.findByAttribution_Chauffeur_Id(chauffeurId)
+                .stream()
+                .map(TicketDTO::new)
+                .toList();
+    }
+
+    @Override
+    public List<TicketDTO> getTicketsParChauffeurEtDates(UUID chauffeurId, LocalDateTime dateDebut,
+            LocalDateTime dateFin) {
+        return ticketRepository.findByAttribution_Chauffeur_IdAndDateEmissionBetween(chauffeurId, dateDebut, dateFin)
+                .stream()
+                .map(TicketDTO::new)
+                .toList();
     }
 
 }

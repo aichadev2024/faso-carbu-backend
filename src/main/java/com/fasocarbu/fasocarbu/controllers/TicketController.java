@@ -5,6 +5,8 @@ import com.fasocarbu.fasocarbu.models.Ticket;
 import com.fasocarbu.fasocarbu.security.services.UserDetailsImpl;
 import com.fasocarbu.fasocarbu.services.interfaces.TicketService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.format.annotation.DateTimeFormat;
+import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
@@ -12,6 +14,7 @@ import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import java.util.UUID;
 import java.util.List;
 import java.util.Map;
+import java.time.LocalDateTime;
 
 @RestController
 @RequestMapping("/api/tickets")
@@ -72,7 +75,6 @@ public class TicketController {
         return ticketService.attribuerTicket(ticketId, chauffeurId);
     }
 
-    // ✅ Validation d’un ticket par QR code (agent station connecté)
     @PostMapping("/valider")
     @PreAuthorize("hasRole('AGENT_STATION')")
     public TicketDTO validerTicket(
@@ -86,6 +88,23 @@ public class TicketController {
 
         UUID agentStationId = userDetails.getId();
         return ticketService.validerTicketParCodeQr(codeQr, agentStationId);
+    }
+
+    @GetMapping("/rapport/tickets")
+    @PreAuthorize("hasRole('GESTIONNAIRE')")
+    public ResponseEntity<List<Ticket>> getTicketsParChauffeur(
+            @RequestParam UUID chauffeurId) {
+        return ResponseEntity.ok(service.getTicketsParChauffeur(chauffeurId));
+    }
+
+    // ✅ Rapport : tickets par chauffeur + filtrés par période
+    @GetMapping("/rapport/tickets/filtre")
+    @PreAuthorize("hasRole('GESTIONNAIRE')")
+    public ResponseEntity<List<Ticket>> getTicketsParChauffeurEtDates(
+            @RequestParam UUID chauffeurId,
+            @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime dateDebut,
+            @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime dateFin) {
+        return ResponseEntity.ok(service.getTicketsParChauffeurEtDates(chauffeurId, dateDebut, dateFin));
     }
 
 }

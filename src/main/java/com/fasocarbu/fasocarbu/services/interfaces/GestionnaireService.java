@@ -1,6 +1,7 @@
 package com.fasocarbu.fasocarbu.services.interfaces;
 
 import com.fasocarbu.fasocarbu.dtos.DemandeRequest;
+import com.fasocarbu.fasocarbu.dtos.TicketDTO;
 import com.fasocarbu.fasocarbu.dtos.GestionnaireAvecEntrepriseRequest;
 import com.fasocarbu.fasocarbu.dtos.StationAvecAdminRequest;
 import com.fasocarbu.fasocarbu.models.*;
@@ -9,6 +10,7 @@ import org.springframework.http.ResponseEntity;
 
 import java.util.List;
 import java.util.UUID;
+import java.time.LocalDateTime;
 
 public interface GestionnaireService {
 
@@ -48,5 +50,9 @@ public interface GestionnaireService {
     List<Station> obtenirToutesLesStations();
 
     Station creerStationAvecAdmin(StationAvecAdminRequest request, UUID gestionnaireId);
+
+    List<TicketDTO> getTicketsParChauffeur(UUID chauffeurId);
+
+    List<TicketDTO> getTicketsParChauffeurEtDates(UUID chauffeurId, LocalDateTime debut, LocalDateTime fin);
 
 }
