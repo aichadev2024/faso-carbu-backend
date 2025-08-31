@@ -27,7 +27,7 @@ public class CarburantController {
     }
 
     @GetMapping
-    @PreAuthorize("hasRole('ADMIN_STATION')")
+    @PreAuthorize("hasRole('ADMIN_STATION','GESTIONNAIRE', 'DEMANDEUR')")
     public List<CarburantDTO> getAll() {
         return carburantService.getAllCarburantsDTO();
     }
