@@ -72,20 +72,25 @@ public class TicketController {
         return ticketService.attribuerTicket(ticketId, chauffeurId);
     }
 
-    // ✅ Validation d’un ticket par QR code (agent station connecté)
+    // ✅ Validation d’un ticket par QR code avec montant (agent station connecté)
     @PostMapping("/valider")
     @PreAuthorize("hasRole('AGENT_STATION')")
-    public TicketDTO validerTicket(
-            @RequestBody Map<String, String> payload,
+    public TicketDTO validerTicketParQr(
+            @RequestBody Map<String, Object> payload,
             @AuthenticationPrincipal UserDetailsImpl userDetails) {
 
-        String codeQr = payload.get("codeQr");
+        String codeQr = payload.get("codeQr") != null ? payload.get("codeQr").toString() : null;
         if (codeQr == null || codeQr.isEmpty()) {
             throw new RuntimeException("⚠️ codeQr requis");
         }
 
+        String montant = payload.get("montant") != null ? payload.get("montant").toString() : null;
+        if (montant == null || montant.isEmpty()) {
+            throw new RuntimeException("⚠️ montant requis");
+        }
+
         UUID agentStationId = userDetails.getId();
-        return ticketService.validerTicketParCodeQr(codeQr, agentStationId);
+        return ticketService.validerTicketParCodeQrEtMontant(codeQr, montant, agentStationId);
     }
 
 }

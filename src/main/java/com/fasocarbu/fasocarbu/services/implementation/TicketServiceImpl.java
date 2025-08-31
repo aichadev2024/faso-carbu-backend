@@ -13,6 +13,7 @@ import com.fasocarbu.fasocarbu.utils.QRCodeGenerator;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.UUID;
@@ -120,20 +121,21 @@ public class TicketServiceImpl implements TicketService {
     }
 
     @Override
-    public TicketDTO validerTicketParCodeQr(String codeQr, UUID agentStationId) {
+    public TicketDTO validerTicketParCodeQrEtMontant(String codeQr, String montant, UUID agentStationId) {
         Ticket ticket = ticketRepository.findByCodeQr(codeQr)
-                .orElseThrow(() -> new RuntimeException("❌ Ticket introuvable"));
+                .orElseThrow(() -> new RuntimeException("⚠️ Ticket introuvable"));
 
         if (ticket.getStatut() == StatutTicket.VALIDER) {
-            throw new RuntimeException("⚠️ Ce ticket est déjà validé !");
+            throw new RuntimeException("⚠️ Ticket déjà validé");
         }
 
-        Utilisateur agent = utilisateurRepository.findById(agentStationId)
-                .orElseThrow(() -> new RuntimeException("❌ Agent introuvable"));
-
-        ticket.setStatut(StatutTicket.VALIDER);
+        ticket.setMontant(new BigDecimal(montant));
         ticket.setDateValidation(LocalDateTime.now());
-        ticket.setValidateur(agent);
+        ticket.setStatut(StatutTicket.VALIDER);
+
+        Utilisateur validateur = utilisateurRepository.findById(agentStationId)
+                .orElseThrow(() -> new RuntimeException("⚠️ Validateur introuvable"));
+        ticket.setValidateur(validateur);
 
         Ticket saved = ticketRepository.save(ticket);
         return new TicketDTO(saved);
