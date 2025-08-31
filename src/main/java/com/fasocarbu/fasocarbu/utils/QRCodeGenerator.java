@@ -14,7 +14,6 @@ import java.awt.image.BufferedImage;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.time.format.DateTimeFormatter;
-import java.util.Base64;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -23,8 +22,7 @@ public class QRCodeGenerator {
 
     private final Gson gson = new Gson();
 
-    public String generateQRCodeForTicket(Ticket ticket) throws WriterException, IOException {
-
+    public String generateQRCodeForTicket(Ticket ticket) {
         Map<String, Object> qrData = new HashMap<>();
         qrData.put("id", ticket.getId());
         qrData.put("montant", ticket.getMontant());
@@ -36,14 +34,8 @@ public class QRCodeGenerator {
                 ? ticket.getDateEmission().format(DateTimeFormatter.ISO_LOCAL_DATE_TIME)
                 : null);
 
-        // 🔹 Convertir en JSON
-        String content = gson.toJson(qrData);
-
-        // 🔹 Générer l’image du QR code
-        byte[] imageBytes = generateQRCodeImage(content, 300, 300);
-
-        // 🔹 Retourner en Base64 (image encodée)
-        return Base64.getEncoder().encodeToString(imageBytes);
+        // ✅ Convertir en JSON et l’utiliser comme contenu du QR
+        return gson.toJson(qrData);
     }
 
     public static byte[] generateQRCodeImage(String text, int width, int height) throws WriterException, IOException {
