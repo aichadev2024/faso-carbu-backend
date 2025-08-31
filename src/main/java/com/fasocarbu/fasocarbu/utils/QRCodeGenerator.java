@@ -1,6 +1,7 @@
 package com.fasocarbu.fasocarbu.utils;
 
 import com.fasocarbu.fasocarbu.models.Ticket;
+import com.google.gson.Gson;
 import com.google.zxing.BarcodeFormat;
 import com.google.zxing.WriterException;
 import com.google.zxing.qrcode.QRCodeWriter;
@@ -12,14 +13,36 @@ import javax.imageio.ImageIO;
 import java.awt.image.BufferedImage;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
+import java.time.format.DateTimeFormatter;
 import java.util.Base64;
+import java.util.HashMap;
+import java.util.Map;
 
 @Component
 public class QRCodeGenerator {
 
+    private final Gson gson = new Gson();
+
     public String generateQRCodeForTicket(Ticket ticket) throws WriterException, IOException {
-        String content = "TICKET-" + ticket.hashCode();
-        byte[] imageBytes = generateQRCodeImage(content, 200, 200);
+
+        Map<String, Object> qrData = new HashMap<>();
+        qrData.put("id", ticket.getId());
+        qrData.put("montant", ticket.getMontant());
+        qrData.put("quantite", ticket.getQuantite());
+        qrData.put("carburant", ticket.getCarburant() != null ? ticket.getCarburant().getNom() : null);
+        qrData.put("vehicule", ticket.getVehicule() != null ? ticket.getVehicule().getImmatriculation() : null);
+        qrData.put("station", ticket.getStation() != null ? ticket.getStation().getNom() : null);
+        qrData.put("dateEmission", ticket.getDateEmission() != null
+                ? ticket.getDateEmission().format(DateTimeFormatter.ISO_LOCAL_DATE_TIME)
+                : null);
+
+        // 🔹 Convertir en JSON
+        String content = gson.toJson(qrData);
+
+        // 🔹 Générer l’image du QR code
+        byte[] imageBytes = generateQRCodeImage(content, 300, 300);
+
+        // 🔹 Retourner en Base64 (image encodée)
         return Base64.getEncoder().encodeToString(imageBytes);
     }
 
