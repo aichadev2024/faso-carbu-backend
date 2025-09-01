@@ -101,4 +101,11 @@ public class TicketController {
         return ticketService.validerTicketParCodeQrEtMontant(codeQr, montant, agentStationId);
     }
 
+    @GetMapping("/mes-tickets-valides")
+    @PreAuthorize("hasAnyRole('AGENT_STATION','CHAUFFEUR')")
+    public List<TicketDTO> getMesTicketsValides(@AuthenticationPrincipal UserDetailsImpl userDetails) {
+        UUID userId = userDetails.getId();
+        return ticketService.getTicketsValidesByUtilisateur(userId);
+    }
+
 }

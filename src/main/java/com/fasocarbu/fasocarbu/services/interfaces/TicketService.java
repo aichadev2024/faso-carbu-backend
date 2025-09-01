@@ -32,4 +32,6 @@ public interface TicketService {
 
     TicketDTO validerTicketParCodeQrEtMontant(String codeQr, String montant, UUID agentStationId);
 
+    List<TicketDTO> getTicketsValidesByUtilisateur(UUID utilisateurId);
+
 }

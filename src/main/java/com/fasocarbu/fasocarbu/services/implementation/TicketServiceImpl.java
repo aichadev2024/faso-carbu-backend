@@ -141,4 +141,12 @@ public class TicketServiceImpl implements TicketService {
         return new TicketDTO(saved);
     }
 
+    public List<TicketDTO> getTicketsValidesByUtilisateur(UUID utilisateurId) {
+        return getTicketsByUtilisateurDTO(utilisateurId)
+                .stream()
+                .filter(ticket -> ticket.getStatut() == StatutTicket.VALIDER)
+
+                .toList();
+    }
+
 }
