@@ -32,6 +32,24 @@ public class QRCodeGenerator {
                     .multiply(ticket.getQuantite());
         }
 
+        // 🟢 DEBUG : afficher toutes les valeurs
+        System.out.println("=== Génération QRCode ===");
+        System.out.println("ID Ticket       : " + ticket.getId());
+        System.out.println(
+                "Carburant       : " + (ticket.getCarburant() != null ? ticket.getCarburant().getNom() : "null"));
+        System.out.println(
+                "Prix Carburant  : " + (ticket.getCarburant() != null ? ticket.getCarburant().getPrix() : "null"));
+        System.out.println("Quantité        : " + ticket.getQuantite());
+        System.out.println("Montant calculé : " + montant);
+        System.out.println("Véhicule        : "
+                + (ticket.getVehicule() != null ? ticket.getVehicule().getImmatriculation() : "null"));
+        System.out
+                .println("Station         : " + (ticket.getStation() != null ? ticket.getStation().getNom() : "null"));
+        System.out.println("DateEmission    : " + (ticket.getDateEmission() != null
+                ? ticket.getDateEmission().format(DateTimeFormatter.ISO_LOCAL_DATE_TIME)
+                : "null"));
+        System.out.println("=========================");
+
         qrData.put("id", ticket.getId());
         qrData.put("montant", montant);
         qrData.put("quantite", ticket.getQuantite());
@@ -43,7 +61,9 @@ public class QRCodeGenerator {
                 : null);
 
         // ✅ Convertir en JSON et l’utiliser comme contenu du QR
-        return gson.toJson(qrData);
+        String jsonQr = gson.toJson(qrData);
+        System.out.println("JSON QRCode     : " + jsonQr); // 🟢 DEBUG final
+        return jsonQr;
     }
 
     public static byte[] generateQRCodeImage(String text, int width, int height)
