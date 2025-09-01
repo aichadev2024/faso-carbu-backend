@@ -27,20 +27,17 @@ public class TicketController {
         return ticketService.enregistrerTicket(ticket);
     }
 
-    // ✅ Récupérer un ticket par ID
     @GetMapping("/{id}")
     public TicketDTO getTicket(@PathVariable Long id) {
         return ticketService.getTicketById(id);
     }
 
-    // ✅ Voir TOUS les tickets (gestionnaire uniquement)
     @GetMapping("/tous")
     @PreAuthorize("hasRole('GESTIONNAIRE')")
     public List<TicketDTO> getTousLesTickets() {
         return ticketService.getAllTicketsDTO();
     }
 
-    // ✅ Voir MES tickets (demandeur ou chauffeur connecté)
     @GetMapping("/mes-tickets")
     @PreAuthorize("hasAnyRole('DEMANDEUR', 'CHAUFFEUR')")
     public List<TicketDTO> getMesTickets(@AuthenticationPrincipal UserDetailsImpl userDetails) {
@@ -48,14 +45,12 @@ public class TicketController {
         return ticketService.getTicketsByUtilisateurDTO(userId);
     }
 
-    // ✅ Voir tickets d’un utilisateur spécifique (gestionnaire)
     @GetMapping("/utilisateur/{id}")
     @PreAuthorize("hasRole('GESTIONNAIRE')")
     public List<TicketDTO> getTicketsByUtilisateur(@PathVariable UUID id) {
         return ticketService.getTicketsByUtilisateurDTO(id);
     }
 
-    // ✅ Validation d’un ticket (agent station)
     @PostMapping("/valider/{id}")
     @PreAuthorize("hasRole('AGENT_STATION')")
     public TicketDTO validerTicket(@PathVariable Long id,
@@ -64,7 +59,6 @@ public class TicketController {
         return ticketService.validerTicket(id, validateurId);
     }
 
-    // ✅ Attribuer un ticket à un chauffeur (gestionnaire)
     @PutMapping("/attribuer/{ticketId}/{chauffeurId}")
     @PreAuthorize("hasRole('GESTIONNAIRE')")
     public TicketDTO attribuerTicket(@PathVariable Long ticketId,
@@ -72,7 +66,6 @@ public class TicketController {
         return ticketService.attribuerTicket(ticketId, chauffeurId);
     }
 
-    // ✅ Validation d’un ticket par QR code avec montant (agent station connecté)
     @PostMapping("/valider")
     @PreAuthorize("hasRole('AGENT_STATION')")
     public TicketDTO validerTicketParQr(

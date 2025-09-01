@@ -1,6 +1,8 @@
 package com.fasocarbu.fasocarbu.dtos;
 
 import com.fasocarbu.fasocarbu.enums.StatutTicket;
+import com.fasocarbu.fasocarbu.models.Ticket;
+
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
@@ -29,16 +31,20 @@ public class TicketDTO {
 
     // Infos carburant
     private String carburantNom;
+    private Double carburantPrix; // ✅ ajout prix unitaire
 
     // ✅ Ajout entreprise
     private Long entrepriseId;
     private String entrepriseNom;
 
+    // ✅ Ajout somme calculée
+    private BigDecimal somme;
+
     // ---------- CONSTRUCTEURS ----------
     public TicketDTO() {
     }
 
-    public TicketDTO(com.fasocarbu.fasocarbu.models.Ticket ticket) {
+    public TicketDTO(Ticket ticket) {
         this.id = ticket.getId();
         this.dateEmission = ticket.getDateEmission();
         this.dateValidation = ticket.getDateValidation();
@@ -60,7 +66,6 @@ public class TicketDTO {
         if (ticket.getStation() != null) {
             this.stationNom = ticket.getStation().getNom();
 
-            // ✅ Récupération entrepriseId + Nom via adminStation
             if (ticket.getStation().getAdminStation() != null &&
                     ticket.getStation().getAdminStation().getEntreprise() != null) {
                 this.entrepriseId = ticket.getStation()
@@ -81,6 +86,12 @@ public class TicketDTO {
 
         if (ticket.getCarburant() != null) {
             this.carburantNom = ticket.getCarburant().getNom();
+            this.carburantPrix = ticket.getCarburant().getPrix();
+
+            // ✅ somme = prix × quantite
+            if (this.quantite != null && this.carburantPrix != null) {
+                this.somme = BigDecimal.valueOf(this.carburantPrix).multiply(this.quantite);
+            }
         }
     }
 
@@ -197,6 +208,14 @@ public class TicketDTO {
         this.carburantNom = carburantNom;
     }
 
+    public Double getCarburantPrix() {
+        return carburantPrix;
+    }
+
+    public void setCarburantPrix(Double carburantPrix) {
+        this.carburantPrix = carburantPrix;
+    }
+
     public Long getEntrepriseId() {
         return entrepriseId;
     }
@@ -211,5 +230,13 @@ public class TicketDTO {
 
     public void setEntrepriseNom(String entrepriseNom) {
         this.entrepriseNom = entrepriseNom;
+    }
+
+    public BigDecimal getSomme() {
+        return somme;
+    }
+
+    public void setSomme(BigDecimal somme) {
+        this.somme = somme;
     }
 }
