@@ -26,30 +26,17 @@ public class QRCodeGenerator {
     public String generateQRCodeForTicket(Ticket ticket) {
         Map<String, Object> qrData = new HashMap<>();
 
+        // ✅ Calcul du montant (toujours présent)
         BigDecimal montant = ticket.getMontant();
         if (montant == null && ticket.getCarburant() != null && ticket.getQuantite() != null) {
             montant = BigDecimal.valueOf(ticket.getCarburant().getPrix())
                     .multiply(ticket.getQuantite());
         }
+        if (montant == null) {
+            montant = BigDecimal.ZERO;
+        }
 
-        // 🟢 DEBUG : afficher toutes les valeurs
-        System.out.println("=== Génération QRCode ===");
-        System.out.println("ID Ticket       : " + ticket.getId());
-        System.out.println(
-                "Carburant       : " + (ticket.getCarburant() != null ? ticket.getCarburant().getNom() : "null"));
-        System.out.println(
-                "Prix Carburant  : " + (ticket.getCarburant() != null ? ticket.getCarburant().getPrix() : "null"));
-        System.out.println("Quantité        : " + ticket.getQuantite());
-        System.out.println("Montant calculé : " + montant);
-        System.out.println("Véhicule        : "
-                + (ticket.getVehicule() != null ? ticket.getVehicule().getImmatriculation() : "null"));
-        System.out
-                .println("Station         : " + (ticket.getStation() != null ? ticket.getStation().getNom() : "null"));
-        System.out.println("DateEmission    : " + (ticket.getDateEmission() != null
-                ? ticket.getDateEmission().format(DateTimeFormatter.ISO_LOCAL_DATE_TIME)
-                : "null"));
-        System.out.println("=========================");
-
+        // ✅ Ajout des infos
         qrData.put("id", ticket.getId());
         qrData.put("montant", montant);
         qrData.put("quantite", ticket.getQuantite());
@@ -60,10 +47,11 @@ public class QRCodeGenerator {
                 ? ticket.getDateEmission().format(DateTimeFormatter.ISO_LOCAL_DATE_TIME)
                 : null);
 
-        // ✅ Convertir en JSON et l’utiliser comme contenu du QR
-        String jsonQr = gson.toJson(qrData);
-        System.out.println("JSON QRCode     : " + jsonQr); // 🟢 DEBUG final
-        return jsonQr;
+        // ✅ Log debug
+        System.out.println("📦 QR Code généré : " + qrData);
+
+        // ✅ Convertir en JSON pour le QR
+        return gson.toJson(qrData);
     }
 
     public static byte[] generateQRCodeImage(String text, int width, int height)
