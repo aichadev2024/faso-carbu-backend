@@ -13,6 +13,7 @@ import javax.imageio.ImageIO;
 import java.awt.image.BufferedImage;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
+import java.math.BigDecimal;
 import java.time.format.DateTimeFormatter;
 import java.util.HashMap;
 import java.util.Map;
@@ -24,8 +25,15 @@ public class QRCodeGenerator {
 
     public String generateQRCodeForTicket(Ticket ticket) {
         Map<String, Object> qrData = new HashMap<>();
+
+        BigDecimal montant = ticket.getMontant();
+        if (montant == null && ticket.getCarburant() != null && ticket.getQuantite() != null) {
+            montant = BigDecimal.valueOf(ticket.getCarburant().getPrix())
+                    .multiply(ticket.getQuantite());
+        }
+
         qrData.put("id", ticket.getId());
-        qrData.put("montant", ticket.getMontant());
+        qrData.put("montant", montant);
         qrData.put("quantite", ticket.getQuantite());
         qrData.put("carburant", ticket.getCarburant() != null ? ticket.getCarburant().getNom() : null);
         qrData.put("vehicule", ticket.getVehicule() != null ? ticket.getVehicule().getImmatriculation() : null);
@@ -38,7 +46,8 @@ public class QRCodeGenerator {
         return gson.toJson(qrData);
     }
 
-    public static byte[] generateQRCodeImage(String text, int width, int height) throws WriterException, IOException {
+    public static byte[] generateQRCodeImage(String text, int width, int height)
+            throws WriterException, IOException {
         QRCodeWriter qrCodeWriter = new QRCodeWriter();
         BitMatrix bitMatrix = qrCodeWriter.encode(text, BarcodeFormat.QR_CODE, width, height);
         BufferedImage bufferedImage = MatrixToImageWriter.toBufferedImage(bitMatrix);
