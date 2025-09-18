@@ -71,8 +71,15 @@ public class UtilisateurController {
 
     // =================== FCM Token ===================
     @PostMapping("/update-token")
-    public ResponseEntity<?> updateToken(@RequestBody UpdateFcmTokenRequest request) {
-        utilisateurService.updateFcmToken(request.getUserId(), request.getFcmToken());
+    public ResponseEntity<?> updateToken(
+            @RequestBody UpdateFcmTokenRequest request,
+            @AuthenticationPrincipal UserDetailsImpl userDetails) {
+
+        // Récupère directement l'ID de l'utilisateur connecté via JWT
+        UUID userId = userDetails.getId();
+
+        utilisateurService.updateFcmToken(userId, request.getFcmToken());
+
         return ResponseEntity.ok("Token mis à jour avec succès !");
     }
 
