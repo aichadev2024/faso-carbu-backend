@@ -59,6 +59,9 @@ public class SecurityConfig {
                         .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
                         .requestMatchers("/api/carburants/**").permitAll()
 
+                        // Endpoint FCM : tout utilisateur authentifié peut envoyer son token
+                        .requestMatchers("/api/utilisateurs/update-token").authenticated()
+
                         // Création d'utilisateurs par gestionnaire
                         .requestMatchers("/api/utilisateurs/ajouter").hasRole("GESTIONNAIRE")
 
