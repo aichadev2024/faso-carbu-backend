@@ -23,14 +23,8 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
     @Autowired
     private UserDetailsServiceImpl userDetailsService;
 
-    // ✅ Endpoints publics qui ne nécessitent pas de JWT
-    private static final String[] PUBLIC_URLS = {
-            "/api/auth/forgot-password",
-            "/api/auth/reset-password",
-            "/api/auth/login",
-            "/api/auth/register",
-            "/api/carburants"
-    };
+    // 🔹 Endpoints publics à ignorer pour JWT
+    private static final String[] PUBLIC_URLS = { "/api/auth/", "/api/carburants/", "/error" };
 
     @Override
     protected void doFilterInternal(HttpServletRequest request,
@@ -38,18 +32,14 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             FilterChain filterChain) throws ServletException, IOException {
 
         String path = request.getServletPath();
-
-        // 🔹 Ignore les routes publiques
-        for (String url : PUBLIC_URLS) {
-            if (path.startsWith(url)) {
-                filterChain.doFilter(request, response);
+        for (String publicUrl : PUBLIC_URLS) {
+            if (path.startsWith(publicUrl)) {
+                filterChain.doFilter(request, response); // 🔹 On ignore JWT pour les publics
                 return;
             }
         }
 
-        // 🔹 JWT validation pour les autres routes
         String authHeader = request.getHeader("Authorization");
-
         if (authHeader != null && authHeader.startsWith("Bearer ")) {
             try {
                 String token = authHeader.substring(7);
@@ -59,9 +49,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
                     var userDetails = userDetailsService.loadUserByUsername(username);
                     if (jwtUtils.validateJwtToken(token)) {
                         var authToken = new UsernamePasswordAuthenticationToken(
-                                userDetails,
-                                null,
-                                userDetails.getAuthorities());
+                                userDetails, null, userDetails.getAuthorities());
                         authToken.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
                         SecurityContextHolder.getContext().setAuthentication(authToken);
                     }

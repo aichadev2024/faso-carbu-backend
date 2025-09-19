@@ -2,8 +2,10 @@ package com.fasocarbu.fasocarbu.security.config;
 
 import com.fasocarbu.fasocarbu.security.jwt.JwtAuthenticationFilter;
 import com.fasocarbu.fasocarbu.security.jwt.AuthEntryPointJwt;
+
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.http.HttpMethod;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
 import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
@@ -52,21 +54,33 @@ public class SecurityConfig {
                 .exceptionHandling(exception -> exception.authenticationEntryPoint(authEntryPointJwt))
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authorizeHttpRequests(auth -> auth
-                        // ✅ Routes publiques
-                        .requestMatchers("/api/auth/forgot-password").permitAll()
-                        .requestMatchers("/api/auth/reset-password").permitAll()
-                        .requestMatchers("/api/auth/login").permitAll()
-                        .requestMatchers("/api/auth/register").permitAll()
+                        // Auth & public endpoints
+                        .requestMatchers("/api/auth/**").permitAll()
+                        .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
                         .requestMatchers("/api/carburants/**").permitAll()
 
-                        // 🔒 Routes sécurisées
+                        // Endpoint FCM : tout utilisateur authentifié peut envoyer son token
                         .requestMatchers("/api/utilisateurs/update-token").authenticated()
+
+                        // Création d'utilisateurs par gestionnaire
                         .requestMatchers("/api/utilisateurs/ajouter").hasRole("GESTIONNAIRE")
+
+                        // Gestionnaire : accès aux autres endpoints
                         .requestMatchers("/api/gestionnaires/**").hasRole("GESTIONNAIRE")
+
+                        // Gestionnaire + Demandeur
                         .requestMatchers("/api/demandes/**").hasAnyRole("GESTIONNAIRE", "DEMANDEUR")
+
+                        // Chauffeur : consultation uniquement
                         .requestMatchers("/api/chauffeurs/**").hasRole("CHAUFFEUR")
+
+                        // Admin station
                         .requestMatchers("/api/admin-station/**").hasRole("ADMIN_STATION")
+
+                        // Agent station
                         .requestMatchers("/api/agent-station/**").hasRole("AGENT_STATION")
+
+                        // Toutes les autres routes sécurisées
                         .anyRequest().authenticated());
 
         http.addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);
@@ -77,7 +91,7 @@ public class SecurityConfig {
     @Bean
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration configuration = new CorsConfiguration();
-        configuration.setAllowedOriginPatterns(Arrays.asList("*")); // autoriser toutes les origines
+        configuration.setAllowedOriginPatterns(Arrays.asList("http://localhost:*")); // tous les ports locaux
         configuration.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "DELETE", "OPTIONS"));
         configuration.setAllowedHeaders(Arrays.asList("*"));
         configuration.setAllowCredentials(true);
@@ -87,4 +101,5 @@ public class SecurityConfig {
 
         return source;
     }
+
 }
