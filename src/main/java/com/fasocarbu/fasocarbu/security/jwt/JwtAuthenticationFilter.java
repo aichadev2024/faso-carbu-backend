@@ -8,7 +8,6 @@ import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.web.authentication.WebAuthenticationDetailsSource;
 import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
@@ -23,38 +22,54 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
     @Autowired
     private UserDetailsServiceImpl userDetailsService;
-@Override
-protected void doFilterInternal(HttpServletRequest request,
-                                HttpServletResponse response,
-                                FilterChain filterChain) throws ServletException, IOException {
 
-    String authHeader = request.getHeader("Authorization");
+    // 🔹 Ajouter ici les endpoints publics
+    private static final String[] PUBLIC_URLS = {
+            "/api/auth/",
+            "/api/carburants/",
+            "/error"
+    };
 
-    try {
-        if (authHeader != null && authHeader.startsWith("Bearer ")) {
-            String token = authHeader.substring(7);
-            String username = jwtUtils.getUsernameFromJwtToken(token);
+    @Override
+    protected void doFilterInternal(HttpServletRequest request,
+            HttpServletResponse response,
+            FilterChain filterChain) throws ServletException, IOException {
 
-            if (username != null && SecurityContextHolder.getContext().getAuthentication() == null) {
-                UserDetails userDetails = userDetailsService.loadUserByUsername(username);
-                if (jwtUtils.validateJwtToken(token)) {
-                    UsernamePasswordAuthenticationToken authToken =
-                            new UsernamePasswordAuthenticationToken(
-                                    userDetails,
-                                    null,
-                                    userDetails.getAuthorities()
-                            );
-                    authToken.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
-                    SecurityContextHolder.getContext().setAuthentication(authToken);
-                }
+        String path = request.getServletPath();
+
+        // 🔹 Vérifie si le chemin est public
+        boolean isPublic = false;
+        for (String url : PUBLIC_URLS) {
+            if (path.startsWith(url)) {
+                isPublic = true;
+                break;
             }
         }
-    } catch (Exception e) {
-    
-        System.out.println("JWT processing failed: " + e.getMessage());
+
+        if (!isPublic) {
+            String authHeader = request.getHeader("Authorization");
+            try {
+                if (authHeader != null && authHeader.startsWith("Bearer ")) {
+                    String token = authHeader.substring(7);
+                    String username = jwtUtils.getUsernameFromJwtToken(token);
+
+                    if (username != null && SecurityContextHolder.getContext().getAuthentication() == null) {
+                        var userDetails = userDetailsService.loadUserByUsername(username);
+                        if (jwtUtils.validateJwtToken(token)) {
+                            var authToken = new UsernamePasswordAuthenticationToken(
+                                    userDetails,
+                                    null,
+                                    userDetails.getAuthorities());
+                            authToken.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
+                            SecurityContextHolder.getContext().setAuthentication(authToken);
+                        }
+                    }
+                }
+            } catch (Exception e) {
+                System.out.println("JWT processing failed: " + e.getMessage());
+            }
+        }
+
+        filterChain.doFilter(request, response);
     }
-
-    filterChain.doFilter(request, response);
-}
-
 }
