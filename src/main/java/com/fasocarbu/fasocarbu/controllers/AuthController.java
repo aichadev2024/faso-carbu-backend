@@ -10,7 +10,6 @@ import com.fasocarbu.fasocarbu.security.services.UserDetailsImpl;
 import com.fasocarbu.fasocarbu.services.interfaces.UtilisateurService;
 import jakarta.validation.Valid;
 
-
 import java.util.HashMap;
 import java.util.Map;
 import org.springframework.http.HttpStatus;
@@ -111,4 +110,38 @@ public class AuthController {
             return ResponseEntity.badRequest().body("Erreur : " + e.getMessage());
         }
     }
+
+    @PostMapping("/forgot-password")
+    public ResponseEntity<?> forgotPassword(@RequestBody Map<String, String> request) {
+        String email = request.get("email");
+        try {
+            utilisateurService.demanderResetMotDePasse(email);
+            Map<String, String> response = new HashMap<>();
+            response.put("message", "Un code de réinitialisation a été envoyé à " + email);
+            return ResponseEntity.ok(response);
+        } catch (Exception e) {
+            Map<String, String> error = new HashMap<>();
+            error.put("message", e.getMessage());
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(error);
+        }
+    }
+
+    @PostMapping("/reset-password")
+    public ResponseEntity<?> resetPassword(@RequestBody Map<String, String> request) {
+        String email = request.get("email");
+        String code = request.get("code"); // code OTP reçu
+        String nouveauMotDePasse = request.get("nouveauMotDePasse");
+
+        try {
+            utilisateurService.resetMotDePasse(email, code, nouveauMotDePasse);
+            Map<String, String> response = new HashMap<>();
+            response.put("message", "Mot de passe réinitialisé avec succès ✅");
+            return ResponseEntity.ok(response);
+        } catch (Exception e) {
+            Map<String, String> error = new HashMap<>();
+            error.put("message", e.getMessage());
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(error);
+        }
+    }
+
 }

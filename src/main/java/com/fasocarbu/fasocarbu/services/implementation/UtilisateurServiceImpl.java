@@ -11,9 +11,11 @@ import com.fasocarbu.fasocarbu.dtos.CreateUserRequest;
 import org.springframework.stereotype.Service;
 import com.fasocarbu.fasocarbu.enums.Role;
 
-import java.util.List;
-import java.util.Optional;
-import java.util.UUID;
+import org.springframework.mail.javamail.JavaMailSender;
+import org.springframework.mail.SimpleMailMessage;
+
+import java.util.*;
+import java.util.concurrent.ConcurrentHashMap;
 
 @Service
 public class UtilisateurServiceImpl implements UtilisateurService {
@@ -23,8 +25,15 @@ public class UtilisateurServiceImpl implements UtilisateurService {
 
     @Autowired
     private PasswordEncoder passwordEncoder;
+
     @Autowired
     private EntrepriseRepository entrepriseRepository;
+
+    @Autowired
+    private JavaMailSender mailSender;
+
+    // 🟢 Map temporaire pour stocker les tokens (clé=email, valeur=code OTP)
+    private final Map<String, String> resetTokens = new ConcurrentHashMap<>();
 
     @Override
     public Utilisateur enregistrerUtilisateur(Utilisateur utilisateur) {
@@ -42,7 +51,6 @@ public class UtilisateurServiceImpl implements UtilisateurService {
 
         switch (roleStr) {
             case "GESTIONNAIRE":
-                // ✅ Vérification que le nom et l'adresse de l'entreprise sont fournis
                 if (registerRequest.getNomEntreprise() == null || registerRequest.getNomEntreprise().isEmpty()) {
                     throw new RuntimeException("Le nom de l'entreprise est obligatoire pour un gestionnaire");
                 }
@@ -51,13 +59,11 @@ public class UtilisateurServiceImpl implements UtilisateurService {
                     throw new RuntimeException("L'adresse de l'entreprise est obligatoire pour un gestionnaire");
                 }
 
-                // Création de l'entreprise
                 Entreprise entreprise = new Entreprise();
                 entreprise.setNom(registerRequest.getNomEntreprise());
                 entreprise.setAdresse(registerRequest.getAdresseEntreprise());
                 entreprise = entrepriseRepository.save(entreprise);
 
-                // Création du gestionnaire
                 Gestionnaire gestionnaire = new Gestionnaire();
                 gestionnaire.setEntreprise(entreprise);
                 utilisateur = gestionnaire;
@@ -76,7 +82,6 @@ public class UtilisateurServiceImpl implements UtilisateurService {
                 throw new RuntimeException("Rôle inconnu : " + roleStr);
         }
 
-        // Champs communs
         utilisateur.setEmail(registerRequest.getEmail());
         utilisateur.setMotDePasse(passwordEncoder.encode(registerRequest.getMotDePasse()));
         utilisateur.setNom(registerRequest.getNom());
@@ -144,13 +149,11 @@ public class UtilisateurServiceImpl implements UtilisateurService {
 
     @Override
     public Utilisateur creerUtilisateurParGestionnaire(CreateUserRequest request, String emailGestionnaire) {
-        // Récupérer le gestionnaire connecté pour connaître son entreprise
         Utilisateur gestionnaire = getUtilisateurByEmail(emailGestionnaire);
         if (gestionnaire == null || gestionnaire.getEntreprise() == null) {
             throw new RuntimeException("Gestionnaire ou entreprise non trouvée");
         }
 
-        // Créer l'utilisateur en fonction du rôle
         Utilisateur utilisateur;
         String roleStr = request.getRole().toUpperCase();
         switch (roleStr) {
@@ -167,7 +170,6 @@ public class UtilisateurServiceImpl implements UtilisateurService {
                 throw new RuntimeException("Rôle inconnu : " + roleStr);
         }
 
-        // Remplir les champs communs
         utilisateur.setNom(request.getNom());
         utilisateur.setPrenom(request.getPrenom());
         utilisateur.setEmail(request.getEmail());
@@ -177,7 +179,6 @@ public class UtilisateurServiceImpl implements UtilisateurService {
         utilisateur.setEntreprise(gestionnaire.getEntreprise());
         utilisateur.setActif(true);
 
-        // Sauvegarder et retourner
         return utilisateurRepository.save(utilisateur);
     }
 
@@ -186,4 +187,37 @@ public class UtilisateurServiceImpl implements UtilisateurService {
         return utilisateurRepository.findByEntreprise_IdAndRole(entrepriseId, Role.CHAUFFEUR);
     }
 
+    @Override
+    public void demanderResetMotDePasse(String email) {
+        Utilisateur user = utilisateurRepository.findByEmail(email)
+                .orElseThrow(() -> new RuntimeException("Utilisateur introuvable"));
+
+        String code = String.valueOf((int) (Math.random() * 900000) + 100000);
+        resetTokens.put(email, code);
+
+        // ✅ Envoi du mail
+        SimpleMailMessage message = new SimpleMailMessage();
+        message.setTo(user.getEmail());
+        message.setSubject("Réinitialisation de votre mot de passe - FasoCarbu");
+        message.setText("Bonjour " + user.getPrenom() + ",\n\nVoici votre code de réinitialisation : "
+                + code + "\n\nCe code est valable 10 minutes.");
+
+        mailSender.send(message);
+    }
+
+    @Override
+    public void resetMotDePasse(String email, String code, String nouveauMotDePasse) {
+        String savedCode = resetTokens.get(email);
+        if (savedCode == null || !savedCode.equals(code)) {
+            throw new RuntimeException("Code invalide ou expiré");
+        }
+
+        Utilisateur user = utilisateurRepository.findByEmail(email)
+                .orElseThrow(() -> new RuntimeException("Utilisateur introuvable"));
+
+        user.setMotDePasse(passwordEncoder.encode(nouveauMotDePasse));
+        utilisateurRepository.save(user);
+
+        resetTokens.remove(email);
+    }
 }

@@ -40,4 +40,8 @@ public interface UtilisateurService {
     Utilisateur creerUtilisateurParGestionnaire(CreateUserRequest request, String emailGestionnaire);
 
     List<Utilisateur> getChauffeursByEntreprise(Long entrepriseId);
+
+    void demanderResetMotDePasse(String email);
+
+    void resetMotDePasse(String email, String code, String nouveauMotDePasse);
 }
