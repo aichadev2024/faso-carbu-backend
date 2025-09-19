@@ -23,46 +23,27 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
     @Autowired
     private UserDetailsServiceImpl userDetailsService;
 
-    // 🔹 Ajouter ici les endpoints publics
-    private static final String[] PUBLIC_URLS = {
-            "/api/auth/",
-            "/api/carburants/",
-            "/error"
-    };
-
     @Override
     protected void doFilterInternal(HttpServletRequest request,
             HttpServletResponse response,
             FilterChain filterChain) throws ServletException, IOException {
 
-        String path = request.getServletPath();
+        String authHeader = request.getHeader("Authorization");
 
-        // 🔹 Vérifie si le chemin est public
-        boolean isPublic = false;
-        for (String url : PUBLIC_URLS) {
-            if (path.startsWith(url)) {
-                isPublic = true;
-                break;
-            }
-        }
-
-        if (!isPublic) {
-            String authHeader = request.getHeader("Authorization");
+        if (authHeader != null && authHeader.startsWith("Bearer ")) {
             try {
-                if (authHeader != null && authHeader.startsWith("Bearer ")) {
-                    String token = authHeader.substring(7);
-                    String username = jwtUtils.getUsernameFromJwtToken(token);
+                String token = authHeader.substring(7);
+                String username = jwtUtils.getUsernameFromJwtToken(token);
 
-                    if (username != null && SecurityContextHolder.getContext().getAuthentication() == null) {
-                        var userDetails = userDetailsService.loadUserByUsername(username);
-                        if (jwtUtils.validateJwtToken(token)) {
-                            var authToken = new UsernamePasswordAuthenticationToken(
-                                    userDetails,
-                                    null,
-                                    userDetails.getAuthorities());
-                            authToken.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
-                            SecurityContextHolder.getContext().setAuthentication(authToken);
-                        }
+                if (username != null && SecurityContextHolder.getContext().getAuthentication() == null) {
+                    var userDetails = userDetailsService.loadUserByUsername(username);
+                    if (jwtUtils.validateJwtToken(token)) {
+                        var authToken = new UsernamePasswordAuthenticationToken(
+                                userDetails,
+                                null,
+                                userDetails.getAuthorities());
+                        authToken.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
+                        SecurityContextHolder.getContext().setAuthentication(authToken);
                     }
                 }
             } catch (Exception e) {
@@ -72,4 +53,5 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
         filterChain.doFilter(request, response);
     }
+
 }
