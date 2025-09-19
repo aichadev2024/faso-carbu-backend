@@ -4,7 +4,6 @@ import com.fasocarbu.fasocarbu.security.jwt.JwtAuthenticationFilter;
 import com.fasocarbu.fasocarbu.security.jwt.AuthEntryPointJwt;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.http.HttpMethod;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
 import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
@@ -53,12 +52,14 @@ public class SecurityConfig {
                 .exceptionHandling(exception -> exception.authenticationEntryPoint(authEntryPointJwt))
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authorizeHttpRequests(auth -> auth
-                        // Endpoints publics
-                        .requestMatchers("/api/auth/**").permitAll()
+                        // ✅ Routes publiques
+                        .requestMatchers("/api/auth/forgot-password").permitAll()
+                        .requestMatchers("/api/auth/reset-password").permitAll()
+                        .requestMatchers("/api/auth/login").permitAll()
+                        .requestMatchers("/api/auth/register").permitAll()
                         .requestMatchers("/api/carburants/**").permitAll()
-                        .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
 
-                        // Endpoints sécurisés
+                        // 🔒 Routes sécurisées
                         .requestMatchers("/api/utilisateurs/update-token").authenticated()
                         .requestMatchers("/api/utilisateurs/ajouter").hasRole("GESTIONNAIRE")
                         .requestMatchers("/api/gestionnaires/**").hasRole("GESTIONNAIRE")
@@ -66,8 +67,6 @@ public class SecurityConfig {
                         .requestMatchers("/api/chauffeurs/**").hasRole("CHAUFFEUR")
                         .requestMatchers("/api/admin-station/**").hasRole("ADMIN_STATION")
                         .requestMatchers("/api/agent-station/**").hasRole("AGENT_STATION")
-
-                        // Toutes les autres routes nécessitent authentification
                         .anyRequest().authenticated());
 
         http.addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);
@@ -78,7 +77,7 @@ public class SecurityConfig {
     @Bean
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration configuration = new CorsConfiguration();
-        configuration.setAllowedOriginPatterns(Arrays.asList("http://localhost:*"));
+        configuration.setAllowedOriginPatterns(Arrays.asList("*")); // autoriser toutes les origines
         configuration.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "DELETE", "OPTIONS"));
         configuration.setAllowedHeaders(Arrays.asList("*"));
         configuration.setAllowCredentials(true);
