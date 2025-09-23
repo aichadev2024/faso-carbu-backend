@@ -129,7 +129,7 @@ public class AuthController {
     @PostMapping("/reset-password")
     public ResponseEntity<?> resetPassword(@RequestBody Map<String, String> request) {
         String email = request.get("email");
-        String code = request.get("code"); // code OTP reçu
+        String code = request.get("code");
         String nouveauMotDePasse = request.get("nouveauMotDePasse");
 
         try {
