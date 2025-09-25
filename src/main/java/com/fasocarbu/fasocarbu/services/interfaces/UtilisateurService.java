@@ -48,5 +48,5 @@ public interface UtilisateurService {
 
     void resetMotDePasse(String email, String code, String nouveauMotDePasse);
 
-    String uploadPhotoProfil(Long userId, MultipartFile file) throws IOException;
+    String uploadPhotoProfil(UUID userId, MultipartFile file) throws IOException;
 }
