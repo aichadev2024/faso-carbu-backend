@@ -91,9 +91,9 @@ public class AuthController {
         }
     }
 
-    @GetMapping("/")
-    public String home() {
-        return "🚀 API FasoCarbu est en ligne avec succès !";
+    @GetMapping("/ping")
+    public String ping() {
+        return "🔐 Auth API FasoCarbu est réveillée et OK !";
     }
 
     @PutMapping("/changer-mot-de-passe")
