@@ -9,6 +9,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import com.fasocarbu.fasocarbu.dtos.CreateUserRequest;
 import org.springframework.stereotype.Service;
+import org.springframework.web.multipart.MultipartFile;
+
 import com.fasocarbu.fasocarbu.enums.Role;
 
 import org.springframework.mail.javamail.JavaMailSender;
@@ -16,6 +18,11 @@ import org.springframework.mail.SimpleMailMessage;
 
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
+import java.io.IOException;
+import java.nio.file.Paths;
+import java.nio.file.StandardCopyOption;
+import java.nio.file.Files;
+import java.nio.file.Path;
 
 @Service
 public class UtilisateurServiceImpl implements UtilisateurService {
@@ -220,4 +227,30 @@ public class UtilisateurServiceImpl implements UtilisateurService {
 
         resetTokens.remove(email);
     }
+
+    @Override
+    public String uploadPhotoProfil(UUID id, MultipartFile file) throws IOException {
+        Utilisateur utilisateur = utilisateurRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Utilisateur introuvable"));
+
+        // Générer un nom unique pour l'image
+        String fileName = "profil_" + id + "_" + System.currentTimeMillis() + "_" + file.getOriginalFilename();
+
+        // Sauvegarder l'image localement ou sur un dossier statique accessible (ex:
+        // /uploads)
+        Path uploadPath = Paths.get("uploads"); // créer ce dossier à la racine du projet
+        if (!Files.exists(uploadPath)) {
+            Files.createDirectories(uploadPath);
+        }
+        Path filePath = uploadPath.resolve(fileName);
+        Files.copy(file.getInputStream(), filePath, StandardCopyOption.REPLACE_EXISTING);
+
+        // Mettre à jour l'utilisateur avec le chemin relatif ou URL
+        String photoUrl = "https://faso-carbu-backend-2.onrender.com/uploads/" + fileName;
+        utilisateur.setPhotoProfil(photoUrl);
+        utilisateurRepository.save(utilisateur);
+
+        return photoUrl;
+    }
+
 }

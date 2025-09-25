@@ -7,6 +7,9 @@ import com.fasocarbu.fasocarbu.models.Utilisateur;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
+import java.io.IOException;
+
+import org.springframework.web.multipart.MultipartFile;
 
 public interface UtilisateurService {
 
@@ -44,4 +47,6 @@ public interface UtilisateurService {
     void demanderResetMotDePasse(String email);
 
     void resetMotDePasse(String email, String code, String nouveauMotDePasse);
+
+    String uploadPhotoProfil(Long userId, MultipartFile file) throws IOException;
 }

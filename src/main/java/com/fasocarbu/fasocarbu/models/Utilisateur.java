@@ -41,6 +41,8 @@ public abstract class Utilisateur {
     private Boolean actif = true;
 
     private String fcmToken = "";
+    @Column(name = "photo_profil")
+    private String photoProfil;
 
     @CreationTimestamp
     @Column(updatable = false)
@@ -111,6 +113,14 @@ public abstract class Utilisateur {
 
     public void setMotDePasse(String motDePasse) {
         this.motDePasse = motDePasse != null ? motDePasse : "";
+    }
+
+    public String getPhotoProfil() {
+        return photoProfil;
+    }
+
+    public void setPhotoProfil(String photoProfil) {
+        this.photoProfil = photoProfil;
     }
 
     public Role getRole() {

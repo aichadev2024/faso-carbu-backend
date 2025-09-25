@@ -13,9 +13,12 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
+import java.util.HashMap;
 import java.util.List;
 import java.util.UUID;
+import java.util.Map;
 
 @RestController
 @RequestMapping("/api/utilisateurs")
@@ -25,7 +28,7 @@ public class UtilisateurController {
     private UtilisateurService utilisateurService;
 
     // =================== Création utilisateur ===================
-    // Seul le gestionnaire peut créer des utilisateurs
+
     @PostMapping("/ajouter")
     @PreAuthorize("hasRole('GESTIONNAIRE')")
     public ResponseEntity<?> ajouterUtilisateur(
@@ -90,6 +93,25 @@ public class UtilisateurController {
                 .stream()
                 .map(UtilisateurDTO::new)
                 .toList();
+    }
+
+    @PostMapping("/{id}/upload-photo")
+    public ResponseEntity<?> uploadPhotoProfil(
+            @PathVariable UUID id,
+            @RequestParam("file") MultipartFile file) {
+
+        try {
+            String photoUrl = utilisateurService.uploadPhotoProfil(id, file);
+
+            Map<String, String> response = new HashMap<>();
+            response.put("photoUrl", photoUrl);
+
+            return ResponseEntity.ok(response);
+        } catch (Exception e) {
+            Map<String, String> error = new HashMap<>();
+            error.put("message", "Erreur upload photo : " + e.getMessage());
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(error);
+        }
     }
 
 }
