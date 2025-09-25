@@ -8,17 +8,21 @@ import com.fasocarbu.fasocarbu.security.services.UserDetailsImpl;
 import com.fasocarbu.fasocarbu.services.interfaces.UtilisateurService;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.core.io.UrlResource;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
+import org.springframework.core.io.Resource;
+import org.springframework.http.HttpHeaders;
+import java.net.MalformedURLException;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 
-import java.util.HashMap;
 import java.util.List;
 import java.util.UUID;
-import java.util.Map;
 
 @RestController
 @RequestMapping("/api/utilisateurs")
@@ -95,6 +99,7 @@ public class UtilisateurController {
                 .toList();
     }
 
+    // =================== Upload photo profil ===================
     @PostMapping("/{id}/upload-photo")
     public ResponseEntity<?> uploadPhotoProfil(
             @PathVariable UUID id,
@@ -102,16 +107,25 @@ public class UtilisateurController {
 
         try {
             String photoUrl = utilisateurService.uploadPhotoProfil(id, file);
-
-            Map<String, String> response = new HashMap<>();
-            response.put("photoUrl", photoUrl);
-
-            return ResponseEntity.ok(response);
+            return ResponseEntity.ok().body("{\"photoUrl\":\"" + photoUrl + "\"}");
         } catch (Exception e) {
-            Map<String, String> error = new HashMap<>();
-            error.put("message", "Erreur upload photo : " + e.getMessage());
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(error);
+            return ResponseEntity.status(500).body("{\"error\":\"" + e.getMessage() + "\"}");
         }
     }
 
+    // =================== Récupérer la photo ===================
+    @GetMapping("/uploads/{filename:.+}")
+    public ResponseEntity<Resource> getFile(@PathVariable String filename) throws MalformedURLException {
+        Path uploadPath = Paths.get(System.getProperty("java.io.tmpdir"), "uploads");
+        Path filePath = uploadPath.resolve(filename).normalize();
+        Resource resource = new UrlResource(filePath.toUri());
+
+        if (!resource.exists()) {
+            return ResponseEntity.notFound().build();
+        }
+
+        return ResponseEntity.ok()
+                .header(HttpHeaders.CONTENT_TYPE, "image/jpeg")
+                .body(resource);
+    }
 }

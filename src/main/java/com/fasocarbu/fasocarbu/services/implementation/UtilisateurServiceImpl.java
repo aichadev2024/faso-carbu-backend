@@ -233,20 +233,23 @@ public class UtilisateurServiceImpl implements UtilisateurService {
         Utilisateur utilisateur = utilisateurRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Utilisateur introuvable"));
 
-        // Générer un nom unique pour l'image
+        // Générer un nom unique pour le fichier
         String fileName = "profil_" + id + "_" + System.currentTimeMillis() + "_" + file.getOriginalFilename();
 
-        // Sauvegarder l'image localement ou sur un dossier statique accessible (ex:
-        // /uploads)
-        Path uploadPath = Paths.get("uploads"); // créer ce dossier à la racine du projet
+        // ⚡ Dossier temporaire compatible Render
+        Path uploadPath = Paths.get(System.getProperty("java.io.tmpdir"), "uploads");
         if (!Files.exists(uploadPath)) {
             Files.createDirectories(uploadPath);
         }
+
         Path filePath = uploadPath.resolve(fileName);
+
+        // Copier le fichier
         Files.copy(file.getInputStream(), filePath, StandardCopyOption.REPLACE_EXISTING);
 
-        // Mettre à jour l'utilisateur avec le chemin relatif ou URL
-        String photoUrl = "https://faso-carbu-backend-2.onrender.com/uploads/" + fileName;
+        // URL publique pour Flutter
+        String photoUrl = "https://faso-carbu-backend-2.onrender.com/api/utilisateurs/uploads/" + fileName;
+
         utilisateur.setPhotoProfil(photoUrl);
         utilisateurRepository.save(utilisateur);
 
