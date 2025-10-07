@@ -1,5 +1,6 @@
 package com.fasocarbu.fasocarbu.security.services;
 
+import com.fasocarbu.fasocarbu.models.Entreprise;
 import com.fasocarbu.fasocarbu.models.Utilisateur;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
@@ -47,15 +48,34 @@ public class UserDetailsImpl implements UserDetails {
         return utilisateur.getPrenom();
     }
 
-    @Override
-    public boolean isAccountNonExpired() { return true; }
+    // 🔹 Getter pour l'entreprise
+    public Entreprise getEntreprise() {
+        return utilisateur.getEntreprise();
+    }
+
+    // 🔹 Getter pour l'id de l'entreprise
+    public Long getEntrepriseId() {
+        Entreprise e = utilisateur.getEntreprise();
+        return e != null ? e.getId() : null;
+    }
 
     @Override
-    public boolean isAccountNonLocked() { return true; }
+    public boolean isAccountNonExpired() {
+        return true;
+    }
 
     @Override
-    public boolean isCredentialsNonExpired() { return true; }
+    public boolean isAccountNonLocked() {
+        return true;
+    }
 
     @Override
-    public boolean isEnabled() { return true; }
+    public boolean isCredentialsNonExpired() {
+        return true;
+    }
+
+    @Override
+    public boolean isEnabled() {
+        return true;
+    }
 }

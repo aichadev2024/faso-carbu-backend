@@ -33,4 +33,5 @@ public class AttributionServiceImpl implements AttributionService {
     public void supprimerAttribution(Long id) {
         attributionRepository.deleteById(id);
     }
+
 }

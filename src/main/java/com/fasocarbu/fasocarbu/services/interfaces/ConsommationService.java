@@ -8,8 +8,11 @@ import java.util.UUID;
 
 public interface ConsommationService {
     Consommation enregistrerConsommation(Consommation consommation);
+
     Consommation getConsommationById(UUID id);
+
     List<Consommation> getAllConsommations();
+
     void supprimerConsommation(UUID id);
 
     interface ChauffeurService {
@@ -18,9 +21,15 @@ public interface ConsommationService {
         Chauffeur createChauffeur(Chauffeur chauffeur);
 
         Chauffeur ajouterChauffeur(Chauffeur chauffeur);
+
         Chauffeur getChauffeur(UUID id);
+
         List<Chauffeur> getTousLesChauffeurs();
+
         Chauffeur updateChauffeur(UUID id, Chauffeur chauffeur);
+
         void supprimerChauffeur(UUID id);
+
     }
+
 }

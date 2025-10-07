@@ -6,7 +6,11 @@ import java.util.List;
 
 public interface AttributionService {
     Attribution ajouterAttribution(Attribution attribution);
+
     List<Attribution> getAllAttributions();
+
     Attribution getAttributionById(Long id);
+
     void supprimerAttribution(Long id);
+
 }

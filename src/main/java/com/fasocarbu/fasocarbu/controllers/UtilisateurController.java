@@ -5,24 +5,23 @@ import com.fasocarbu.fasocarbu.dtos.UpdateFcmTokenRequest;
 import com.fasocarbu.fasocarbu.dtos.UtilisateurDTO;
 import com.fasocarbu.fasocarbu.models.Utilisateur;
 import com.fasocarbu.fasocarbu.security.services.UserDetailsImpl;
-import com.fasocarbu.fasocarbu.services.interfaces.UtilisateurService;
+import com.fasocarbu.fasocarbu.services.interfaces.*;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.io.UrlResource;
+import org.springframework.core.io.Resource;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
-import org.springframework.core.io.Resource;
-import org.springframework.http.HttpHeaders;
+
 import java.net.MalformedURLException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-
-import java.util.List;
-import java.util.UUID;
+import java.util.*;
 
 @RestController
 @RequestMapping("/api/utilisateurs")
@@ -32,7 +31,6 @@ public class UtilisateurController {
     private UtilisateurService utilisateurService;
 
     // =================== Création utilisateur ===================
-
     @PostMapping("/ajouter")
     @PreAuthorize("hasRole('GESTIONNAIRE')")
     public ResponseEntity<?> ajouterUtilisateur(
@@ -40,9 +38,7 @@ public class UtilisateurController {
             @AuthenticationPrincipal UserDetailsImpl userDetails) {
 
         String emailGestionnaire = userDetails.getUsername();
-
         Utilisateur savedUser = utilisateurService.creerUtilisateurParGestionnaire(request, emailGestionnaire);
-
         return ResponseEntity.status(HttpStatus.CREATED).body(savedUser);
     }
 
@@ -85,9 +81,7 @@ public class UtilisateurController {
             @AuthenticationPrincipal UserDetailsImpl userDetails) {
 
         UUID userId = userDetails.getId();
-
         utilisateurService.updateFcmToken(userId, request.getFcmToken());
-
         return ResponseEntity.ok("Token mis à jour avec succès !");
     }
 
@@ -129,4 +123,5 @@ public class UtilisateurController {
                 .header(HttpHeaders.CONTENT_TYPE, "image/jpeg")
                 .body(resource);
     }
+
 }

@@ -36,4 +36,5 @@ public class ConsommationServiceImpl implements ConsommationService {
     public void supprimerConsommation(UUID id) {
         consommationRepository.deleteById(id);
     }
+
 }
