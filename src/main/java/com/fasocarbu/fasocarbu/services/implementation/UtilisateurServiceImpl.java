@@ -3,6 +3,7 @@ package com.fasocarbu.fasocarbu.services.implementation;
 import com.fasocarbu.fasocarbu.dtos.RegisterRequest;
 import com.fasocarbu.fasocarbu.models.*;
 import com.fasocarbu.fasocarbu.repositories.EntrepriseRepository;
+import com.fasocarbu.fasocarbu.repositories.GestionnaireRepository;
 import com.fasocarbu.fasocarbu.repositories.UtilisateurRepository;
 import com.fasocarbu.fasocarbu.services.interfaces.UtilisateurService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -35,6 +36,8 @@ public class UtilisateurServiceImpl implements UtilisateurService {
 
     @Autowired
     private EntrepriseRepository entrepriseRepository;
+    @Autowired
+    private GestionnaireRepository gestionnaireRepository;
 
     @Autowired
     private JavaMailSender mailSender;
@@ -107,7 +110,12 @@ public class UtilisateurServiceImpl implements UtilisateurService {
 
     @Override
     public List<Utilisateur> getUtilisateursParGestionnaire(UUID gestionnaireId) {
-        return utilisateurRepository.findByGestionnaireId(gestionnaireId);
+        Gestionnaire gestionnaire = gestionnaireRepository.findById(gestionnaireId)
+                .orElseThrow(() -> new RuntimeException("Gestionnaire non trouvé"));
+
+        Long entrepriseId = gestionnaire.getEntreprise().getId();
+
+        return utilisateurRepository.findByEntreprise_Id(entrepriseId);
     }
 
     @Override
