@@ -26,8 +26,6 @@ public interface UtilisateurService {
 
     Utilisateur getUtilisateurById(UUID id);
 
-    List<Utilisateur> getAllUtilisateurs();
-
     void supprimerUtilisateur(UUID id);
 
     void changerMotDePasse(String email, String ancien, String nouveau);
@@ -45,6 +43,8 @@ public interface UtilisateurService {
     List<Utilisateur> getChauffeursByEntreprise(Long entrepriseId);
 
     void demanderResetMotDePasse(String email);
+
+    List<Utilisateur> getUtilisateursParGestionnaire(UUID gestionnaireId);
 
     void resetMotDePasse(String email, String code, String nouveauMotDePasse);
 

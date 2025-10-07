@@ -15,4 +15,7 @@ public interface UtilisateurRepository extends JpaRepository<Utilisateur, UUID> 
     List<Utilisateur> findByRole(Role role);
 
     List<Utilisateur> findByEntreprise_IdAndRole(Long entrepriseId, Role role);
+
+    List<Utilisateur> findByGestionnaireId(UUID gestionnaireId);
+
 }

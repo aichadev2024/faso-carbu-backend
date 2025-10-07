@@ -39,10 +39,8 @@ public class UtilisateurController {
             @RequestBody CreateUserRequest request,
             @AuthenticationPrincipal UserDetailsImpl userDetails) {
 
-        // Récupérer l'email du gestionnaire connecté
         String emailGestionnaire = userDetails.getUsername();
 
-        // Créer l'utilisateur en utilisant le service et le DTO
         Utilisateur savedUser = utilisateurService.creerUtilisateurParGestionnaire(request, emailGestionnaire);
 
         return ResponseEntity.status(HttpStatus.CREATED).body(savedUser);
@@ -56,8 +54,12 @@ public class UtilisateurController {
     }
 
     @GetMapping
-    public ResponseEntity<List<Utilisateur>> getAllUtilisateurs() {
-        List<Utilisateur> users = utilisateurService.getAllUtilisateurs();
+    @PreAuthorize("hasRole('GESTIONNAIRE')")
+    public ResponseEntity<List<Utilisateur>> getUtilisateursDuGestionnaire(
+            @AuthenticationPrincipal UserDetailsImpl userDetails) {
+
+        UUID gestionnaireId = userDetails.getId();
+        List<Utilisateur> users = utilisateurService.getUtilisateursParGestionnaire(gestionnaireId);
         return ResponseEntity.ok(users);
     }
 
@@ -82,7 +84,6 @@ public class UtilisateurController {
             @RequestBody UpdateFcmTokenRequest request,
             @AuthenticationPrincipal UserDetailsImpl userDetails) {
 
-        // Récupère directement l'ID de l'utilisateur connecté via JWT
         UUID userId = userDetails.getId();
 
         utilisateurService.updateFcmToken(userId, request.getFcmToken());
