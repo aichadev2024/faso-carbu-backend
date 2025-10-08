@@ -13,12 +13,21 @@ public class Entreprise {
     private String nom;
     private String adresse;
 
-    public Entreprise() {}
+    // Constructeur par défaut
+    public Entreprise() {
+    }
 
+    // Constructeur avec nom
     public Entreprise(String nom) {
         this.nom = nom;
     }
 
+    // Nouveau constructeur avec ID
+    public Entreprise(Long id) {
+        this.id = id;
+    }
+
+    // Getters et setters
     public Long getId() {
         return id;
     }
@@ -34,10 +43,12 @@ public class Entreprise {
     public void setNom(String nom) {
         this.nom = nom;
     }
-    public String getAdresse(){
+
+    public String getAdresse() {
         return adresse;
     }
-    public void setAdresse(String adresse){
-        this.adresse= adresse;
+
+    public void setAdresse(String adresse) {
+        this.adresse = adresse;
     }
 }

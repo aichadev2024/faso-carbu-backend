@@ -11,6 +11,7 @@ public class StationAvecAdminRequest {
     private String emailAdmin;
     private String motDePasseAdmin;
     private String telephoneAdmin;
+    private Long entrepriseId;
 
     public String getNomStation() {
         return nomStation;
@@ -74,5 +75,13 @@ public class StationAvecAdminRequest {
 
     public void setTelephoneAdmin(String telephoneAdmin) {
         this.telephoneAdmin = telephoneAdmin;
+    }
+
+    public void setEntrepriseId(Long entrepriseId) {
+        this.entrepriseId = entrepriseId;
+    }
+
+    public Long getEntrepriseId() {
+        return entrepriseId;
     }
 }

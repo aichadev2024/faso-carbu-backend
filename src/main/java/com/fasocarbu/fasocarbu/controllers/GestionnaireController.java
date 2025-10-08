@@ -15,6 +15,7 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
 import jakarta.validation.Valid;
+import org.springframework.http.HttpHeaders;
 
 import java.util.List;
 import java.util.UUID;
@@ -25,6 +26,8 @@ import java.time.LocalDateTime;
 public class GestionnaireController {
 
     private final GestionnaireService service;
+    @Autowired
+    private GestionnaireService gestionnaireService;
 
     @Autowired
     public GestionnaireController(GestionnaireService service) {
@@ -42,17 +45,23 @@ public class GestionnaireController {
     }
 
     @GetMapping
-    public ResponseEntity<List<Gestionnaire>> obtenirTous() {
-        return ResponseEntity.ok(service.obtenirTousLesGestionnaires());
+    public ResponseEntity<List<Gestionnaire>> obtenirTous(@AuthenticationPrincipal UserDetailsImpl userDetails) {
+        Long entrepriseId = userDetails.getEntrepriseId();
+        return ResponseEntity.ok(service.obtenirGestionnairesParEntreprise(entrepriseId));
     }
 
     @PostMapping
-    public ResponseEntity<Gestionnaire> ajouter(@Valid @RequestBody Gestionnaire gestionnaire) {
+    public ResponseEntity<Gestionnaire> ajouter(@Valid @RequestBody Gestionnaire gestionnaire,
+            @AuthenticationPrincipal UserDetailsImpl userDetails) {
+        gestionnaire.setEntreprise(new Entreprise(userDetails.getEntrepriseId()));
         return ResponseEntity.status(HttpStatus.CREATED).body(service.ajouterGestionnaire(gestionnaire));
     }
 
     @PutMapping("/id/{id}")
-    public ResponseEntity<?> modifier(@PathVariable UUID id, @Valid @RequestBody Gestionnaire gestionnaire) {
+    public ResponseEntity<?> modifier(@PathVariable UUID id,
+            @Valid @RequestBody Gestionnaire gestionnaire,
+            @AuthenticationPrincipal UserDetailsImpl userDetails) {
+        gestionnaire.setEntreprise(new Entreprise(userDetails.getEntrepriseId()));
         Gestionnaire updated = service.modifierGestionnaire(id, gestionnaire);
         if (updated == null) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Gestionnaire introuvable pour mise à jour");
@@ -69,7 +78,9 @@ public class GestionnaireController {
     // ------------------- Chauffeurs -------------------
     @PostMapping("/chauffeurs")
     @PreAuthorize("hasRole('GESTIONNAIRE')")
-    public ResponseEntity<Chauffeur> creerChauffeur(@Valid @RequestBody Chauffeur chauffeur) {
+    public ResponseEntity<Chauffeur> creerChauffeur(@Valid @RequestBody Chauffeur chauffeur,
+            @AuthenticationPrincipal UserDetailsImpl userDetails) {
+        chauffeur.setEntreprise(new Entreprise(userDetails.getEntrepriseId()));
         return ResponseEntity.status(HttpStatus.CREATED).body(service.creerChauffeur(chauffeur));
     }
 
@@ -83,7 +94,9 @@ public class GestionnaireController {
     // ------------------- Véhicules -------------------
     @PostMapping("/vehicules")
     @PreAuthorize("hasRole('GESTIONNAIRE')")
-    public ResponseEntity<Vehicule> creerVehicule(@Valid @RequestBody Vehicule vehicule) {
+    public ResponseEntity<Vehicule> creerVehicule(@Valid @RequestBody Vehicule vehicule,
+            @AuthenticationPrincipal UserDetailsImpl userDetails) {
+        vehicule.setEntreprise(new Entreprise(userDetails.getEntrepriseId()));
         return ResponseEntity.status(HttpStatus.CREATED).body(service.creerVehicule(vehicule));
     }
 
@@ -102,6 +115,7 @@ public class GestionnaireController {
             @AuthenticationPrincipal UserDetailsImpl userDetails) {
 
         UUID gestionnaireId = userDetails.getId();
+        request.setEntrepriseId(userDetails.getEntrepriseId());
         return ResponseEntity.status(HttpStatus.CREATED).body(service.creerStationAvecAdmin(request, gestionnaireId));
     }
 
@@ -109,8 +123,7 @@ public class GestionnaireController {
     @PreAuthorize("hasRole('GESTIONNAIRE')")
     public ResponseEntity<List<Station>> getStations(@AuthenticationPrincipal UserDetailsImpl userDetails) {
         Long entrepriseId = userDetails.getEntrepriseId();
-        List<Station> stations = service.obtenirStationsParEntreprise(entrepriseId);
-        return ResponseEntity.ok(stations);
+        return ResponseEntity.ok(service.obtenirStationsParEntreprise(entrepriseId));
     }
 
     // ------------------- Demandes -------------------
@@ -123,8 +136,10 @@ public class GestionnaireController {
 
     @PostMapping("/demandes/{id}/valider")
     @PreAuthorize("hasRole('GESTIONNAIRE')")
-    public ResponseEntity<?> validerDemande(@PathVariable Long id) {
-        Ticket ticket = service.validerDemandeEtGenererTicket(id);
+    public ResponseEntity<?> validerDemande(@PathVariable Long id,
+            @AuthenticationPrincipal UserDetailsImpl userDetails) {
+        Long entrepriseId = userDetails.getEntrepriseId();
+        Ticket ticket = service.validerDemandeEtGenererTicketParEntreprise(id, entrepriseId);
         if (ticket == null) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Demande introuvable ou déjà traitée");
         }
@@ -133,8 +148,11 @@ public class GestionnaireController {
 
     @PostMapping("/demandes/{id}/rejeter")
     @PreAuthorize("hasRole('GESTIONNAIRE')")
-    public ResponseEntity<?> rejeterDemande(@PathVariable Long id, @Valid @RequestBody MotifRejetRequest motif) {
-        Demande demande = service.rejeterDemande(id, motif.getMotif());
+    public ResponseEntity<?> rejeterDemande(@PathVariable Long id,
+            @Valid @RequestBody MotifRejetRequest motif,
+            @AuthenticationPrincipal UserDetailsImpl userDetails) {
+        Long entrepriseId = userDetails.getEntrepriseId();
+        Demande demande = service.rejeterDemandeParEntreprise(id, motif.getMotif(), entrepriseId);
         if (demande == null) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Demande introuvable ou déjà traitée");
         }
@@ -149,17 +167,20 @@ public class GestionnaireController {
         return ResponseEntity.ok(service.obtenirTicketsParEntreprise(entrepriseId));
     }
 
-    // ------------------- Rapports -------------------
-    @GetMapping("/rapport/consommation")
-    @PreAuthorize("hasRole('GESTIONNAIRE')")
-    public ResponseEntity<Resource> exporterRapport() {
-        return service.exporterRapportConsommation();
+    @GetMapping("/export/consommation/{entrepriseId}")
+    public ResponseEntity<Resource> exporterRapportParEntreprise(@PathVariable Long entrepriseId) {
+        Resource file = gestionnaireService.exporterRapportConsommationParEntreprise(entrepriseId);
+        return ResponseEntity.ok()
+                .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\"rapport.xlsx\"")
+                .body(file);
     }
 
     @GetMapping("/rapport/tickets")
     @PreAuthorize("hasRole('GESTIONNAIRE')")
-    public ResponseEntity<List<TicketDTO>> getTicketsParChauffeur(@RequestParam UUID chauffeurId) {
-        return ResponseEntity.ok(service.getTicketsParChauffeur(chauffeurId));
+    public ResponseEntity<List<TicketDTO>> getTicketsParChauffeur(@RequestParam UUID chauffeurId,
+            @AuthenticationPrincipal UserDetailsImpl userDetails) {
+        Long entrepriseId = userDetails.getEntrepriseId();
+        return ResponseEntity.ok(service.getTicketsParChauffeurEtEntreprise(chauffeurId, entrepriseId));
     }
 
     @GetMapping("/rapport/tickets/filtre")
@@ -167,7 +188,11 @@ public class GestionnaireController {
     public ResponseEntity<List<TicketDTO>> getTicketsParChauffeurEtDates(
             @RequestParam UUID chauffeurId,
             @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime dateDebut,
-            @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime dateFin) {
-        return ResponseEntity.ok(service.getTicketsParChauffeurEtDates(chauffeurId, dateDebut, dateFin));
+            @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime dateFin,
+            @AuthenticationPrincipal UserDetailsImpl userDetails) {
+
+        Long entrepriseId = userDetails.getEntrepriseId();
+        return ResponseEntity
+                .ok(service.getTicketsParChauffeurEtDatesEtEntreprise(chauffeurId, dateDebut, dateFin, entrepriseId));
     }
 }

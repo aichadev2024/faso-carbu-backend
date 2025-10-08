@@ -71,4 +71,18 @@ public interface GestionnaireService {
     List<Consommation> consulterHistoriqueConsommationParVehicule(Long vehiculeId);
 
     ResponseEntity<Resource> exporterRapportConsommation();
+
+    List<Gestionnaire> obtenirGestionnairesParEntreprise(Long entrepriseId);
+
+    Ticket validerDemandeEtGenererTicketParEntreprise(Long demandeId, Long entrepriseId);
+
+    Demande rejeterDemandeParEntreprise(Long demandeId, String motif, Long entrepriseId);
+
+    Resource exporterRapportConsommationParEntreprise(Long entrepriseId);
+
+    List<TicketDTO> getTicketsParChauffeurEtEntreprise(UUID chauffeurId, Long entrepriseId);
+
+    List<TicketDTO> getTicketsParChauffeurEtDatesEtEntreprise(UUID chauffeurId, LocalDateTime debut, LocalDateTime fin,
+            Long entrepriseId);
+
 }

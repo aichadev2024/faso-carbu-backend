@@ -87,6 +87,34 @@ public class GestionnaireServiceImpl implements GestionnaireService {
         gestionnaireRepository.deleteById(id);
     }
 
+    @Override
+    public Gestionnaire ajouterGestionnaireAvecEntreprise(GestionnaireAvecEntrepriseRequest request) {
+        Entreprise entreprise = entrepriseRepository.findByNom(request.getNomEntreprise())
+                .orElseGet(() -> entrepriseRepository.save(new Entreprise(request.getNomEntreprise())));
+
+        Gestionnaire gestionnaire = new Gestionnaire();
+        gestionnaire.setNom(request.getNom());
+        gestionnaire.setPrenom(request.getPrenom());
+        gestionnaire.setEmail(request.getEmail());
+        gestionnaire.setMotDePasse(passwordEncoder.encode(request.getMotDePasse()));
+        gestionnaire.setTelephone(request.getTelephone());
+        gestionnaire.setRole("GESTIONNAIRE");
+        gestionnaire.setEntreprise(entreprise);
+
+        return gestionnaireRepository.save(gestionnaire);
+    }
+
+    @Override
+    public Long getEntrepriseIdFromUser(UUID userId) {
+        Utilisateur utilisateur = gestionnaireRepository.findById(userId)
+                .orElseThrow(() -> new RuntimeException("Utilisateur introuvable : " + userId));
+
+        if (utilisateur.getEntreprise() == null) {
+            throw new RuntimeException("L'utilisateur n'est associé à aucune entreprise");
+        }
+        return utilisateur.getEntreprise().getId();
+    }
+
     // ------------------- Chauffeurs -------------------
     @Override
     public Chauffeur creerChauffeur(Chauffeur chauffeur) {
@@ -119,7 +147,7 @@ public class GestionnaireServiceImpl implements GestionnaireService {
         return vehiculeRepository.findByEntreprise_Id(entrepriseId);
     }
 
-    // ------------------- Stations avec Admin -------------------
+    // ------------------- Stations -------------------
     @Override
     public Station creerStationAvecAdmin(StationAvecAdminRequest request, UUID gestionnaireId) {
         Gestionnaire gestionnaire = gestionnaireRepository.findById(gestionnaireId)
@@ -156,6 +184,20 @@ public class GestionnaireServiceImpl implements GestionnaireService {
     @Override
     public List<Station> obtenirStationsParEntreprise(Long entrepriseId) {
         return stationRepository.findByEntreprise_Id(entrepriseId);
+    }
+
+    // ------------------- Gestionnaires par entreprise -------------------
+    @Override
+    public List<Gestionnaire> obtenirGestionnairesParEntreprise(Long entrepriseId) {
+        return gestionnaireRepository.findByEntreprise_Id(entrepriseId);
+    }
+
+    // ------------------- Demandeurs -------------------
+    @Override
+    public Demandeur creerDemandeur(Demandeur demandeur) {
+        demandeur.setRole("DEMANDEUR");
+        demandeur.setMotDePasse(passwordEncoder.encode(demandeur.getMotDePasse()));
+        return demandeurRepository.save(demandeur);
     }
 
     // ------------------- Demandes -------------------
@@ -245,23 +287,6 @@ public class GestionnaireServiceImpl implements GestionnaireService {
     }
 
     @Override
-    public Gestionnaire ajouterGestionnaireAvecEntreprise(GestionnaireAvecEntrepriseRequest request) {
-        Entreprise entreprise = entrepriseRepository.findByNom(request.getNomEntreprise())
-                .orElseGet(() -> entrepriseRepository.save(new Entreprise(request.getNomEntreprise())));
-
-        Gestionnaire gestionnaire = new Gestionnaire();
-        gestionnaire.setNom(request.getNom());
-        gestionnaire.setPrenom(request.getPrenom());
-        gestionnaire.setEmail(request.getEmail());
-        gestionnaire.setMotDePasse(passwordEncoder.encode(request.getMotDePasse()));
-        gestionnaire.setTelephone(request.getTelephone());
-        gestionnaire.setRole("GESTIONNAIRE");
-        gestionnaire.setEntreprise(entreprise);
-
-        return gestionnaireRepository.save(gestionnaire);
-    }
-
-    @Override
     public List<TicketDTO> getTicketsParChauffeurEtDates(UUID chauffeurId, LocalDateTime debut, LocalDateTime fin) {
         return ticketRepository.findByAttribution_Chauffeur_IdAndDateEmissionBetween(chauffeurId, debut, fin)
                 .stream().map(TicketDTO::new).toList();
@@ -273,12 +298,36 @@ public class GestionnaireServiceImpl implements GestionnaireService {
                 .stream().map(TicketDTO::new).toList();
     }
 
-    // ------------------- Demandeurs -------------------
     @Override
-    public Demandeur creerDemandeur(Demandeur demandeur) {
-        demandeur.setRole("DEMANDEUR");
-        demandeur.setMotDePasse(passwordEncoder.encode(demandeur.getMotDePasse()));
-        return demandeurRepository.save(demandeur);
+    public List<TicketDTO> getTicketsParChauffeurEtEntreprise(UUID chauffeurId, Long entrepriseId) {
+        return ticketRepository.findByAttribution_Chauffeur_IdAndEntreprise_Id(chauffeurId, entrepriseId)
+                .stream().map(TicketDTO::new).toList();
+    }
+
+    @Override
+    public List<TicketDTO> getTicketsParChauffeurEtDatesEtEntreprise(UUID chauffeurId, LocalDateTime debut,
+            LocalDateTime fin, Long entrepriseId) {
+        return ticketRepository.findByAttribution_Chauffeur_IdAndDateEmissionBetweenAndEntreprise_Id(
+                chauffeurId, debut, fin, entrepriseId)
+                .stream().map(TicketDTO::new).toList();
+    }
+
+    // ------------------- Valider/Rejeter demande par entreprise
+    // -------------------
+    @Override
+    public Ticket validerDemandeEtGenererTicketParEntreprise(Long demandeId, Long entrepriseId) {
+        Demande demande = demandeRepository.findByIdAndEntreprise_Id(demandeId, entrepriseId).orElse(null);
+        if (demande == null || demande.getStatut() != StatutDemande.EN_ATTENTE)
+            return null;
+        return validerDemandeEtGenererTicket(demandeId);
+    }
+
+    @Override
+    public Demande rejeterDemandeParEntreprise(Long demandeId, String motif, Long entrepriseId) {
+        Demande demande = demandeRepository.findByIdAndEntreprise_Id(demandeId, entrepriseId).orElse(null);
+        if (demande == null || demande.getStatut() != StatutDemande.EN_ATTENTE)
+            return null;
+        return rejeterDemande(demandeId, motif);
     }
 
     // ------------------- Consommation & rapports -------------------
@@ -292,17 +341,11 @@ public class GestionnaireServiceImpl implements GestionnaireService {
         throw new UnsupportedOperationException("Rapport non encore implémenté.");
     }
 
-    // ------------------- 🔥 Récupération entreprise de l'utilisateur
-    // -------------------
     @Override
-    public Long getEntrepriseIdFromUser(UUID userId) {
-        Utilisateur utilisateur = gestionnaireRepository.findById(userId)
-                .orElseThrow(() -> new RuntimeException("Utilisateur introuvable : " + userId));
-
-        if (utilisateur.getEntreprise() == null) {
-            throw new RuntimeException("L'utilisateur n'est associé à aucune entreprise");
-        }
-        return utilisateur.getEntreprise().getId(); // Long
+    public Resource exporterRapportConsommationParEntreprise(Long entrepriseId) {
+        // TODO: générer un rapport réel (PDF/Excel) filtré par entreprise
+        // Retour temporaire avec la méthode générale
+        return exporterRapportConsommation().getBody();
     }
 
 }

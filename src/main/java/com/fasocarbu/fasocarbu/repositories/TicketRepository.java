@@ -37,4 +37,9 @@ public interface TicketRepository extends JpaRepository<Ticket, Long> {
 
     Optional<Ticket> findByCodeQrAndEntreprise_Id(String codeQr, Long entrepriseId);
 
+    List<Ticket> findByAttribution_Chauffeur_IdAndEntreprise_Id(UUID chauffeurId, Long entrepriseId);
+
+    List<Ticket> findByAttribution_Chauffeur_IdAndDateEmissionBetweenAndEntreprise_Id(
+            UUID chauffeurId, LocalDateTime debut, LocalDateTime fin, Long entrepriseId);
+
 }
