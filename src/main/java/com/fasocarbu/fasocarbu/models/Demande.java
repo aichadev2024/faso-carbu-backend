@@ -44,7 +44,9 @@ public class Demande {
 
     @Enumerated(EnumType.STRING)
     private StatutDemande statut;
-
+    @ManyToOne
+    @JoinColumn(name = "entreprise_id")
+    private Entreprise entreprise;
     @OneToOne(mappedBy = "demande", cascade = CascadeType.ALL)
     @JsonIgnoreProperties("demande")
     private Ticket ticket;
@@ -94,6 +96,14 @@ public class Demande {
 
     public void setDateValidation(LocalDateTime dateValidation) {
         this.dateValidation = dateValidation;
+    }
+
+    public Entreprise getEntreprise() {
+        return entreprise;
+    }
+
+    public void setEntreprise(Entreprise entreprise) {
+        this.entreprise = entreprise;
     }
 
     public Utilisateur getDemandeur() {

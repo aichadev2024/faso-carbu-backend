@@ -9,7 +9,5 @@ import java.util.List;
 @Repository
 public interface RapportRepository extends JpaRepository<Rapport, Long> {
 
-    long countByEntrepriseId(Long entrepriseId);
-
     List<Rapport> findTop5ByEntrepriseIdOrderByDateCreationDesc(Long entrepriseId);
 }

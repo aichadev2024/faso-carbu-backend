@@ -10,6 +10,9 @@ public class Consommation {
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
     private UUID id;
+    @ManyToOne
+    @JoinColumn(name = "id_entreprise")
+    private Entreprise entreprise;
 
     @ManyToOne
     @JoinColumn(name = "attribution_id", nullable = false)
@@ -26,21 +29,59 @@ public class Consommation {
     private String commentaire; // facultatif
 
     // Getters et Setters
-    public UUID getId() { return id; }
-    public void setId(UUID id) { this.id = id; }
+    public UUID getId() {
+        return id;
+    }
 
-    public Attribution getAttribution() { return attribution; }
-    public void setAttribution(Attribution attribution) { this.attribution = attribution; }
+    public void setId(UUID id) {
+        this.id = id;
+    }
 
-    public Carburant getCarburant() { return carburant; }
-    public void setCarburant(Carburant carburant) { this.carburant = carburant; }
+    public Attribution getAttribution() {
+        return attribution;
+    }
 
-    public LocalDateTime getDateConsommation() { return dateConsommation; }
-    public void setDateConsommation(LocalDateTime dateConsommation) { this.dateConsommation = dateConsommation; }
+    public void setAttribution(Attribution attribution) {
+        this.attribution = attribution;
+    }
 
-    public double getQuantiteUtilisee() { return quantiteUtilisee; }
-    public void setQuantiteUtilisee(double quantiteUtilisee) { this.quantiteUtilisee = quantiteUtilisee; }
+    public Carburant getCarburant() {
+        return carburant;
+    }
 
-    public String getCommentaire() { return commentaire; }
-    public void setCommentaire(String commentaire) { this.commentaire = commentaire; }
+    public void setCarburant(Carburant carburant) {
+        this.carburant = carburant;
+    }
+
+    public LocalDateTime getDateConsommation() {
+        return dateConsommation;
+    }
+
+    public void setDateConsommation(LocalDateTime dateConsommation) {
+        this.dateConsommation = dateConsommation;
+    }
+
+    public double getQuantiteUtilisee() {
+        return quantiteUtilisee;
+    }
+
+    public void setQuantiteUtilisee(double quantiteUtilisee) {
+        this.quantiteUtilisee = quantiteUtilisee;
+    }
+
+    public Entreprise getEntreprise() {
+        return entreprise;
+    }
+
+    public void setEntreprise(Entreprise entreprise) {
+        this.entreprise = entreprise;
+    }
+
+    public String getCommentaire() {
+        return commentaire;
+    }
+
+    public void setCommentaire(String commentaire) {
+        this.commentaire = commentaire;
+    }
 }
