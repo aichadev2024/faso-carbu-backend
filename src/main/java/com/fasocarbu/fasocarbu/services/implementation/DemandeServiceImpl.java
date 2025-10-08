@@ -62,12 +62,17 @@ public class DemandeServiceImpl implements DemandeService {
     }
 
     @Override
-    public List<Demande> getDemandesParDemandeur(UUID demandeurId) {
-        return demandeRepository.findByDemandeur_Id(demandeurId);
+    public Demande saveDemande(Demande demande) {
+        return demandeRepository.save(demande);
     }
 
     @Override
-    public Demande saveDemande(Demande demande) {
-        return demandeRepository.save(demande);
+    public List<Demande> getDemandesParEntreprise(Long entrepriseId) {
+        return demandeRepository.findByEntreprise_Id(entrepriseId);
+    }
+
+    @Override
+    public List<Demande> getDemandesParDemandeur(UUID utilisateurId) {
+        return demandeRepository.findByUtilisateur_Id(utilisateurId);
     }
 }

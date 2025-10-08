@@ -6,6 +6,9 @@ import com.fasocarbu.fasocarbu.services.interfaces.ConsommationService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.LocalTime;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
@@ -37,4 +40,24 @@ public class ConsommationServiceImpl implements ConsommationService {
         consommationRepository.deleteById(id);
     }
 
+    @Override
+    public List<Consommation> getConsommationsParEntreprise(Long entrepriseId) {
+        return consommationRepository.findByEntreprise_Id(entrepriseId);
+    }
+
+    @Override
+    public List<Consommation> filtrerConsommations(Long entrepriseId, Long vehiculeId, LocalDate dateDebut,
+            LocalDate dateFin) {
+        LocalDateTime debut = (dateDebut != null) ? dateDebut.atStartOfDay() : LocalDateTime.MIN;
+        LocalDateTime fin = (dateFin != null) ? dateFin.atTime(LocalTime.MAX) : LocalDateTime.MAX;
+
+        if (vehiculeId != null) {
+            return consommationRepository
+                    .findByEntreprise_IdAndAttribution_Ticket_Vehicule_IdAndDateConsommationBetween(
+                            entrepriseId, vehiculeId, debut, fin);
+        } else {
+            return consommationRepository.findByEntreprise_IdAndDateConsommationBetween(
+                    entrepriseId, debut, fin);
+        }
+    }
 }

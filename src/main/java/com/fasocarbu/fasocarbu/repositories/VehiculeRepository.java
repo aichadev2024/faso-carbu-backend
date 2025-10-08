@@ -16,4 +16,6 @@ public interface VehiculeRepository extends JpaRepository<Vehicule, Long> {
 
     Optional<Vehicule> findByIdAndEntreprise_Id(Long id, Long entrepriseId);
 
+    List<Vehicule> findByUtilisateur_Entreprise_Id(Long entrepriseId);
+
 }

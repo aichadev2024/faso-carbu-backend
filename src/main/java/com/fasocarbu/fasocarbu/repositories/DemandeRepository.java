@@ -16,6 +16,8 @@ public interface DemandeRepository extends JpaRepository<Demande, Long> {
 
     List<Demande> findByDemandeur(Utilisateur demandeur);
 
+    List<Demande> findByUtilisateur_Id(UUID utilisateurId);
+
     List<Demande> findByGestionnaire_Id(UUID gestionnaireId);
 
     List<Demande> findByEntreprise_Id(Long entrepriseId);

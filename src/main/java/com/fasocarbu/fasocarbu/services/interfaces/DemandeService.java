@@ -12,6 +12,8 @@ public interface DemandeService {
 
     List<Demande> getAllDemandes();
 
-    List<Demande> getDemandesParDemandeur(UUID demandeurId);
+    List<Demande> getDemandesParDemandeur(UUID utilisateurId);
+
+    List<Demande> getDemandesParEntreprise(Long entrepriseId);
 
 }

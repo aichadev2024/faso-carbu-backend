@@ -13,4 +13,5 @@ public interface VehiculeService {
 
     void supprimerVehicule(Long id);
 
+    List<Vehicule> getVehiculesParEntreprise(Long entrepriseId);
 }

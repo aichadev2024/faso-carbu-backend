@@ -36,4 +36,8 @@ public class VehiculeServiceImpl implements VehiculeService {
         vehiculeRepository.deleteById(id);
     }
 
+    @Override
+    public List<Vehicule> getVehiculesParEntreprise(Long entrepriseId) {
+        return vehiculeRepository.findByUtilisateur_Entreprise_Id(entrepriseId);
+    }
 }

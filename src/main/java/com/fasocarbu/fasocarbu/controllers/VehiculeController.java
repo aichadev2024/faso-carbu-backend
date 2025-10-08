@@ -67,8 +67,18 @@ public class VehiculeController {
 
     // Récupérer tous les véhicules
     @GetMapping
-    public List<VehiculeDTO> getAllVehicules() {
-        return vehiculeService.getAllVehicules()
+    @PreAuthorize("hasAnyRole('GESTIONNAIRE','ADMIN')")
+    public List<VehiculeDTO> getAllVehicules(Authentication authentication) {
+        String email = authentication.getName();
+        Utilisateur utilisateur = utilisateurService.getUtilisateurByEmail(email);
+
+        if (utilisateur == null || utilisateur.getEntreprise() == null) {
+            throw new IllegalArgumentException("Entreprise non trouvée pour l'utilisateur connecté");
+        }
+
+        Long entrepriseId = utilisateur.getEntreprise().getId();
+
+        return vehiculeService.getVehiculesParEntreprise(entrepriseId)
                 .stream()
                 .map(VehiculeDTO::new)
                 .collect(Collectors.toList());

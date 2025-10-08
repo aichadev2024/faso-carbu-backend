@@ -66,18 +66,25 @@ public class DemandeController {
         Utilisateur utilisateur = utilisateurOpt.get();
 
         if (utilisateur.getRole() == Role.GESTIONNAIRE) {
+            // ✅ gestionnaire : toutes les demandes de son entreprise
+            Long entrepriseId = utilisateur.getEntreprise().getId();
+
             return ResponseEntity.ok(
-                    demandeService.getAllDemandes().stream()
+                    demandeService.getDemandesParEntreprise(entrepriseId)
+                            .stream()
                             .map(DemandeResponse::new)
                             .toList());
+
         } else if (utilisateur.getRole() == Role.DEMANDEUR) {
+            // ✅ demandeur : seulement ses propres demandes
             return ResponseEntity.ok(
-                    demandeService.getDemandesParDemandeur(utilisateur.getId()).stream()
+                    demandeService.getDemandesParDemandeur(utilisateur.getId())
+                            .stream()
                             .map(DemandeResponse::new)
                             .toList());
         }
 
-        return ResponseEntity.status(HttpStatus.FORBIDDEN).body("❌ Vous n’êtes pas autorisé à consulter ces demandes");
+        return ResponseEntity.status(HttpStatus.FORBIDDEN).body("❌ Accès refusé");
     }
 
 }
