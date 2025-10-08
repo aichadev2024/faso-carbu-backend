@@ -10,8 +10,4 @@ public class CreateUserRequest {
     private String telephone;
     private String motDePasse;
     private String role;
-
-    public String getMotDePasse() {
-        return motDePasse;
-    }
 }

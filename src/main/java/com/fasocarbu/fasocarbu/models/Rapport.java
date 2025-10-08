@@ -11,9 +11,6 @@ public class Rapport {
     private Long id;
 
     private String titre;
-    @ManyToOne
-    @JoinColumn(name = "id_entreprise")
-    private Entreprise entreprise;
 
     @Column(length = 2000)
     private String description;

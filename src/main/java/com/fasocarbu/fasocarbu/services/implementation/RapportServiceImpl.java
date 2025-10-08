@@ -20,11 +20,6 @@ public class RapportServiceImpl implements RapportService {
     }
 
     @Override
-    public long countByEntreprise(Long entrepriseId) {
-        return rapportRepository.countByEntrepriseId(entrepriseId);
-    }
-
-    @Override
     public List<Rapport> findTop5ByEntrepriseOrderByDateCreationDesc(Long entrepriseId) {
         return rapportRepository.findTop5ByEntrepriseIdOrderByDateCreationDesc(entrepriseId);
     }
