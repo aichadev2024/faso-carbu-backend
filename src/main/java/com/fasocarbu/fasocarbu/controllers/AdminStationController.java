@@ -2,17 +2,19 @@ package com.fasocarbu.fasocarbu.controllers;
 
 import com.fasocarbu.fasocarbu.dtos.CreateUserRequest;
 import com.fasocarbu.fasocarbu.dtos.UtilisateurDTO;
+import com.fasocarbu.fasocarbu.dtos.TicketDTO;
 import com.fasocarbu.fasocarbu.models.AdminStation;
 import com.fasocarbu.fasocarbu.models.AgentStation;
 import com.fasocarbu.fasocarbu.models.Carburant;
-import com.fasocarbu.fasocarbu.models.Ticket;
 import com.fasocarbu.fasocarbu.services.interfaces.AdminStationService;
 import com.fasocarbu.fasocarbu.services.interfaces.AgentStationService;
 import com.fasocarbu.fasocarbu.services.interfaces.CarburantService;
 import com.fasocarbu.fasocarbu.services.interfaces.TicketService;
+import com.fasocarbu.fasocarbu.security.services.UserDetailsImpl;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -78,7 +80,6 @@ public class AdminStationController {
     public ResponseEntity<UtilisateurDTO> createAgent(
             @PathVariable UUID adminStationId,
             @RequestBody CreateUserRequest request) {
-
         AgentStation agent = agentStationService.createAgent(adminStationId, request);
         return ResponseEntity.ok(new UtilisateurDTO(agent));
     }
@@ -99,7 +100,9 @@ public class AdminStationController {
 
     @PostMapping("/{adminStationId}/carburants")
     @PreAuthorize("hasRole('ADMIN_STATION')")
-    public Carburant ajouterCarburant(@PathVariable UUID adminStationId, @RequestBody Carburant carburant) {
+    public Carburant ajouterCarburant(
+            @PathVariable UUID adminStationId,
+            @RequestBody Carburant carburant) {
         return carburantService.ajouterCarburantPourStation(adminStationId, carburant);
     }
 
@@ -129,7 +132,11 @@ public class AdminStationController {
 
     @GetMapping("/{adminStationId}/tickets")
     @PreAuthorize("hasRole('ADMIN_STATION')")
-    public List<Ticket> getTicketsByAdminStation(@PathVariable UUID adminStationId) {
-        return ticketService.getTicketsByAdminStation(adminStationId);
+    public List<TicketDTO> getTicketsByAdminStation(
+            @PathVariable UUID adminStationId,
+            @AuthenticationPrincipal UserDetailsImpl userDetails) {
+
+        Long entrepriseId = userDetails.getEntrepriseId();
+        return ticketService.getTicketsDTOByUtilisateurOuEntreprise(adminStationId, entrepriseId);
     }
 }

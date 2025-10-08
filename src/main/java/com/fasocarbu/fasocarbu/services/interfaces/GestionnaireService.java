@@ -1,16 +1,13 @@
 package com.fasocarbu.fasocarbu.services.interfaces;
 
-import com.fasocarbu.fasocarbu.dtos.DemandeRequest;
-import com.fasocarbu.fasocarbu.dtos.TicketDTO;
-import com.fasocarbu.fasocarbu.dtos.GestionnaireAvecEntrepriseRequest;
-import com.fasocarbu.fasocarbu.dtos.StationAvecAdminRequest;
+import com.fasocarbu.fasocarbu.dtos.*;
 import com.fasocarbu.fasocarbu.models.*;
 import org.springframework.core.io.Resource;
 import org.springframework.http.ResponseEntity;
 
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.UUID;
-import java.time.LocalDateTime;
 
 public interface GestionnaireService {
 
@@ -27,12 +24,29 @@ public interface GestionnaireService {
 
     Gestionnaire ajouterGestionnaireAvecEntreprise(GestionnaireAvecEntrepriseRequest request);
 
+    // Récupération de l’entreprise liée à l’utilisateur connecté
+    Long getEntrepriseIdFromUser(UUID userId);
+
+    // Chauffeurs
     Chauffeur creerChauffeur(Chauffeur chauffeur);
 
+    List<Chauffeur> obtenirChauffeursParEntreprise(Long entrepriseId);
+
+    // Véhicules
     Vehicule creerVehicule(Vehicule vehicule);
 
     Vehicule definirQuotaPourVehicule(Long vehiculeId, double quota);
 
+    List<Vehicule> obtenirVehiculesParEntreprise(Long entrepriseId);
+
+    // Stations
+    List<Station> obtenirToutesLesStations();
+
+    Station creerStationAvecAdmin(StationAvecAdminRequest request, UUID gestionnaireId);
+
+    List<Station> obtenirStationsParEntreprise(Long entrepriseId);
+
+    // Demandes
     Demande creerDemandePourEntreprise(DemandeRequest request);
 
     Ticket validerDemandeEtGenererTicket(Long id);
@@ -41,18 +55,20 @@ public interface GestionnaireService {
 
     List<Demande> getDemandesParStatut(String statut);
 
+    List<Demande> obtenirDemandesParEntreprise(Long entrepriseId);
+
+    // Demandeurs
     Demandeur creerDemandeur(Demandeur demandeur);
 
-    List<Consommation> consulterHistoriqueConsommationParVehicule(Long vehiculeId);
-
-    ResponseEntity<Resource> exporterRapportConsommation();
-
-    List<Station> obtenirToutesLesStations();
-
-    Station creerStationAvecAdmin(StationAvecAdminRequest request, UUID gestionnaireId);
-
+    // Tickets
     List<TicketDTO> getTicketsParChauffeur(UUID chauffeurId);
 
     List<TicketDTO> getTicketsParChauffeurEtDates(UUID chauffeurId, LocalDateTime debut, LocalDateTime fin);
 
+    List<TicketDTO> obtenirTicketsParEntreprise(Long entrepriseId);
+
+    // Consommation & rapports
+    List<Consommation> consulterHistoriqueConsommationParVehicule(Long vehiculeId);
+
+    ResponseEntity<Resource> exporterRapportConsommation();
 }

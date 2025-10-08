@@ -22,6 +22,9 @@ public class Station {
 
     @Column(nullable = false)
     private String statut = "inactif";
+    @ManyToOne
+    @JoinColumn(name = "entreprise_id")
+    private Entreprise entreprise;
 
     @OneToOne(mappedBy = "station", cascade = CascadeType.ALL)
     @JsonIgnoreProperties({ "station", "carburants" })
@@ -73,5 +76,13 @@ public class Station {
 
     public void setAdminStation(AdminStation adminStation) {
         this.adminStation = adminStation;
+    }
+
+    public Entreprise getEntreprise() {
+        return entreprise;
+    }
+
+    public void setEntreprise(Entreprise entreprise) {
+        this.entreprise = entreprise;
     }
 }

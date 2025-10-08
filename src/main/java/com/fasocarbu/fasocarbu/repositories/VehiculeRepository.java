@@ -6,7 +6,11 @@ import org.springframework.stereotype.Repository;
 
 import java.util.Optional;
 
+import java.util.List;
+
 @Repository
 public interface VehiculeRepository extends JpaRepository<Vehicule, Long> {
     Optional<Vehicule> findByImmatriculation(String immatriculation);
+
+    List<Vehicule> findByEntreprise_Id(Long entrepriseId);
 }

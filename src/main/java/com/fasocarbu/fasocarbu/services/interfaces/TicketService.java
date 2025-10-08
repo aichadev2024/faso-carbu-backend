@@ -7,31 +7,31 @@ import java.util.List;
 import java.util.UUID;
 
 public interface TicketService {
-    // Création d’un ticket
+
     TicketDTO enregistrerTicket(Ticket ticket);
 
-    // Détails d’un ticket
     TicketDTO getTicketById(Long id);
 
-    // Suppression
     void supprimerTicket(Long id);
 
-    // Validation (agent station)
     TicketDTO validerTicket(Long ticketId, UUID validateurId);
 
-    // Attribution (gestionnaire -> chauffeur)
     TicketDTO attribuerTicket(Long ticketId, UUID chauffeurId);
 
-    // Tous les tickets (gestionnaire)
+    List<TicketDTO> getTicketsDTOByEntreprise(Long entrepriseId);
+
+    List<TicketDTO> getTicketsDTOByUtilisateurOuEntreprise(UUID userId, Long entrepriseId);
+
+    List<TicketDTO> getTicketsDTOByUtilisateurEtEntreprise(UUID userId, Long entrepriseId);
+
+    TicketDTO validerTicketDansEntreprise(Long ticketId, UUID agentStationId, Long entrepriseId);
+
+    TicketDTO attribuerTicketDansEntreprise(Long ticketId, UUID chauffeurId, Long entrepriseId);
+
+    TicketDTO validerTicketParCodeQrEtMontantDansEntreprise(String codeQr, String montant, UUID agentStationId,
+            Long entrepriseId);
+
     List<TicketDTO> getAllTicketsDTO();
 
-    // Tickets d’un utilisateur (demandeur ou chauffeur)
-    List<TicketDTO> getTicketsByUtilisateurDTO(UUID utilisateurId);
-
-    List<Ticket> getTicketsByAdminStation(UUID adminStationId);
-
-    TicketDTO validerTicketParCodeQrEtMontant(String codeQr, String montant, UUID agentStationId);
-
-    List<TicketDTO> getTicketsValidesByUtilisateur(UUID utilisateurId);
-
+    List<TicketDTO> getTicketsValidesByUtilisateurEtEntreprise(UUID userId, Long entrepriseId);
 }

@@ -44,6 +44,8 @@ public interface UtilisateurService {
 
     void demanderResetMotDePasse(String email);
 
+    Long getEntrepriseIdFromUser(UUID userId);
+
     List<Utilisateur> getUtilisateursParGestionnaire(UUID gestionnaireId);
 
     void resetMotDePasse(String email, String code, String nouveauMotDePasse);

@@ -73,11 +73,25 @@ public class GestionnaireController {
         return ResponseEntity.status(HttpStatus.CREATED).body(service.creerChauffeur(chauffeur));
     }
 
+    @GetMapping("/chauffeurs")
+    @PreAuthorize("hasRole('GESTIONNAIRE')")
+    public ResponseEntity<List<Chauffeur>> getChauffeurs(@AuthenticationPrincipal UserDetailsImpl userDetails) {
+        Long entrepriseId = userDetails.getEntrepriseId();
+        return ResponseEntity.ok(service.obtenirChauffeursParEntreprise(entrepriseId));
+    }
+
     // ------------------- Véhicules -------------------
     @PostMapping("/vehicules")
     @PreAuthorize("hasRole('GESTIONNAIRE')")
     public ResponseEntity<Vehicule> creerVehicule(@Valid @RequestBody Vehicule vehicule) {
         return ResponseEntity.status(HttpStatus.CREATED).body(service.creerVehicule(vehicule));
+    }
+
+    @GetMapping("/vehicules")
+    @PreAuthorize("hasRole('GESTIONNAIRE')")
+    public ResponseEntity<List<Vehicule>> getVehicules(@AuthenticationPrincipal UserDetailsImpl userDetails) {
+        Long entrepriseId = userDetails.getEntrepriseId();
+        return ResponseEntity.ok(service.obtenirVehiculesParEntreprise(entrepriseId));
     }
 
     // ------------------- Stations -------------------
@@ -93,11 +107,20 @@ public class GestionnaireController {
 
     @GetMapping("/stations")
     @PreAuthorize("hasRole('GESTIONNAIRE')")
-    public ResponseEntity<List<Station>> getStations() {
-        return ResponseEntity.ok(service.obtenirToutesLesStations());
+    public ResponseEntity<List<Station>> getStations(@AuthenticationPrincipal UserDetailsImpl userDetails) {
+        Long entrepriseId = userDetails.getEntrepriseId();
+        List<Station> stations = service.obtenirStationsParEntreprise(entrepriseId);
+        return ResponseEntity.ok(stations);
     }
 
-    // ------------------- Validation / Rejet des demandes -------------------
+    // ------------------- Demandes -------------------
+    @GetMapping("/demandes")
+    @PreAuthorize("hasRole('GESTIONNAIRE')")
+    public ResponseEntity<List<Demande>> getDemandes(@AuthenticationPrincipal UserDetailsImpl userDetails) {
+        Long entrepriseId = userDetails.getEntrepriseId();
+        return ResponseEntity.ok(service.obtenirDemandesParEntreprise(entrepriseId));
+    }
+
     @PostMapping("/demandes/{id}/valider")
     @PreAuthorize("hasRole('GESTIONNAIRE')")
     public ResponseEntity<?> validerDemande(@PathVariable Long id) {
@@ -118,6 +141,14 @@ public class GestionnaireController {
         return ResponseEntity.ok(demande);
     }
 
+    // ------------------- Tickets -------------------
+    @GetMapping("/tickets")
+    @PreAuthorize("hasRole('GESTIONNAIRE')")
+    public ResponseEntity<List<TicketDTO>> getTickets(@AuthenticationPrincipal UserDetailsImpl userDetails) {
+        Long entrepriseId = userDetails.getEntrepriseId();
+        return ResponseEntity.ok(service.obtenirTicketsParEntreprise(entrepriseId));
+    }
+
     // ------------------- Rapports -------------------
     @GetMapping("/rapport/consommation")
     @PreAuthorize("hasRole('GESTIONNAIRE')")
@@ -125,15 +156,12 @@ public class GestionnaireController {
         return service.exporterRapportConsommation();
     }
 
-    // ✅ Rapport : tickets par chauffeur (tous)
     @GetMapping("/rapport/tickets")
     @PreAuthorize("hasRole('GESTIONNAIRE')")
-    public ResponseEntity<List<TicketDTO>> getTicketsParChauffeur(
-            @RequestParam UUID chauffeurId) {
+    public ResponseEntity<List<TicketDTO>> getTicketsParChauffeur(@RequestParam UUID chauffeurId) {
         return ResponseEntity.ok(service.getTicketsParChauffeur(chauffeurId));
     }
 
-    // ✅ Rapport : tickets par chauffeur + filtrés par période
     @GetMapping("/rapport/tickets/filtre")
     @PreAuthorize("hasRole('GESTIONNAIRE')")
     public ResponseEntity<List<TicketDTO>> getTicketsParChauffeurEtDates(
@@ -142,5 +170,4 @@ public class GestionnaireController {
             @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime dateFin) {
         return ResponseEntity.ok(service.getTicketsParChauffeurEtDates(chauffeurId, dateDebut, dateFin));
     }
-
 }

@@ -27,4 +27,14 @@ public interface TicketRepository extends JpaRepository<Ticket, Long> {
             LocalDateTime dateDebut,
             LocalDateTime dateFin);
 
+    List<Ticket> findByEntreprise_Id(Long entrepriseId);
+
+    List<Ticket> findByUtilisateur_IdOrEntreprise_Id(UUID utilisateurId, Long entrepriseId);
+
+    List<Ticket> findByUtilisateur_IdAndEntreprise_Id(UUID utilisateurId, Long entrepriseId);
+
+    Optional<Ticket> findByIdAndEntreprise_Id(Long id, Long entrepriseId);
+
+    Optional<Ticket> findByCodeQrAndEntreprise_Id(String codeQr, Long entrepriseId);
+
 }

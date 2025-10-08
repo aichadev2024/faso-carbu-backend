@@ -118,6 +118,12 @@ public class UtilisateurServiceImpl implements UtilisateurService {
         return utilisateurRepository.findByEntreprise_Id(entrepriseId);
     }
 
+    public Long getEntrepriseIdFromUser(UUID userId) {
+        Gestionnaire gestionnaire = gestionnaireRepository.findById(userId)
+                .orElseThrow(() -> new RuntimeException("Gestionnaire non trouvé"));
+        return gestionnaire.getEntreprise().getId();
+    }
+
     @Override
     public void supprimerUtilisateur(UUID id) {
         if (utilisateurRepository.existsById(id)) {
