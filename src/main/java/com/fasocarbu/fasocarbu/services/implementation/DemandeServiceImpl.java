@@ -73,6 +73,7 @@ public class DemandeServiceImpl implements DemandeService {
 
     @Override
     public List<Demande> getDemandesParDemandeur(UUID utilisateurId) {
-        return demandeRepository.findByUtilisateur_Id(utilisateurId);
+        return demandeRepository.findByDemandeur_Id(utilisateurId);
     }
+
 }
