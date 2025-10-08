@@ -15,7 +15,7 @@ public class Ticket {
 
     private LocalDateTime dateEmission;
 
-    private LocalDateTime dateValidation; 
+    private LocalDateTime dateValidation;
 
     @ManyToOne
     @JoinColumn(name = "carburant_id")
@@ -36,7 +36,7 @@ public class Ticket {
     private Utilisateur utilisateur;
 
     @ManyToOne
-    @JoinColumn(name = "id_validateur") 
+    @JoinColumn(name = "id_validateur")
     private Utilisateur validateur;
 
     @ManyToOne
@@ -53,10 +53,12 @@ public class Ticket {
     @OneToOne
     @JoinColumn(name = "demande_id", unique = true)
     private Demande demande;
+    @ManyToOne
+    @JoinColumn(name = "entreprise_id")
+    private Entreprise entreprise;
 
-    public Ticket() {}
-
-    
+    public Ticket() {
+    }
 
     public long getId() {
         return id_ticket;
@@ -161,10 +163,20 @@ public class Ticket {
     public void setDemande(Demande demande) {
         this.demande = demande;
     }
-    public Attribution getAttribution(){
+
+    public Attribution getAttribution() {
         return attribution;
-    } 
-    public void setAttribution(Attribution attribution){
-        this.attribution=attribution;
+    }
+
+    public void setAttribution(Attribution attribution) {
+        this.attribution = attribution;
+    }
+
+    public Entreprise getEntreprise() {
+        return entreprise;
+    }
+
+    public void setEntreprise(Entreprise entreprise) {
+        this.entreprise = entreprise;
     }
 }
