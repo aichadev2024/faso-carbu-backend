@@ -13,7 +13,7 @@ public interface ConsommationRepository extends JpaRepository<Consommation, UUID
 
     List<Consommation> findByEntreprise_Id(Long entrepriseId);
 
-    Optional<Consommation> findByIdAndEntreprise_Id(Long id, Long entrepriseId);
+    Optional<Consommation> findByIdAndEntreprise_Id(UUID id, Long entrepriseId);
 
     List<Consommation> findByAttribution_Ticket_Vehicule_Entreprise_Id(Long entrepriseId);
 
