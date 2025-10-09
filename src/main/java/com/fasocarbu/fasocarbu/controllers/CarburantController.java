@@ -56,6 +56,19 @@ public class CarburantController {
         return ResponseEntity.ok(updated);
     }
 
+    // ---------------- METTRE À JOUR UN CARBURANT COMPLET ----------------
+    @PutMapping("/{idCarburant}")
+    @PreAuthorize("hasRole('ADMIN_STATION')")
+    public ResponseEntity<CarburantDTO> updateCarburant(
+            @PathVariable Long idCarburant,
+            @RequestBody Carburant carburant,
+            @AuthenticationPrincipal UserDetailsImpl userDetails) {
+
+        UUID adminStationId = userDetails.getId();
+        Carburant updated = carburantService.updateCarburant(adminStationId, idCarburant, carburant);
+        return ResponseEntity.ok(carburantService.getCarburantDTOById(updated.getId()));
+    }
+
     // ---------------- SUPPRIMER CARBURANT ----------------
     @DeleteMapping("/{id}")
     @PreAuthorize("hasRole('ADMIN_STATION')")

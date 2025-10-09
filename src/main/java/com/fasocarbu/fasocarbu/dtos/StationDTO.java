@@ -9,15 +9,10 @@ public class StationDTO {
     private String ville;
     private String statut;
 
-    // Constructeur vide
     public StationDTO() {
     }
 
-    // Constructeur depuis l'entité
     public StationDTO(Station station) {
-        if (station == null)
-            return;
-
         this.idStation = station.getId();
         this.nom = station.getNom();
         this.adresse = station.getAdresse();
@@ -25,7 +20,7 @@ public class StationDTO {
         this.statut = station.getStatut();
     }
 
-    // Getters et setters
+    // getters et setters
     public Long getIdStation() {
         return idStation;
     }

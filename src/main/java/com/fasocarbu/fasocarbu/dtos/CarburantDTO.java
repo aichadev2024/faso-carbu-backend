@@ -9,15 +9,8 @@ public class CarburantDTO {
     private StationDTO station;
     private AdminStationDTO adminStation;
 
-    // Constructeur vide
-    public CarburantDTO() {
-    }
-
     // Constructeur depuis l'entité
     public CarburantDTO(Carburant carburant) {
-        if (carburant == null)
-            return;
-
         this.id = carburant.getId();
         this.nom = carburant.getNom();
         this.prix = carburant.getPrix();
@@ -26,12 +19,12 @@ public class CarburantDTO {
             this.station = new StationDTO(carburant.getStation());
         }
 
-        if (carburant.getStation() != null && carburant.getStation().getAdminStation() != null) {
-            this.adminStation = new AdminStationDTO(carburant.getStation().getAdminStation());
+        if (carburant.getAdminStation() != null) {
+            this.adminStation = new AdminStationDTO(carburant.getAdminStation());
         }
     }
 
-    // Getters et setters
+    // getters et setters
     public Long getId() {
         return id;
     }

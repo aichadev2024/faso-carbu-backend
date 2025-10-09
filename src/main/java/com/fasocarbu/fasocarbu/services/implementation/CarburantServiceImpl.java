@@ -6,8 +6,6 @@ import com.fasocarbu.fasocarbu.repositories.CarburantRepository;
 import com.fasocarbu.fasocarbu.repositories.AdminStationRepository;
 import com.fasocarbu.fasocarbu.services.interfaces.CarburantService;
 import com.fasocarbu.fasocarbu.dtos.CarburantDTO;
-import com.fasocarbu.fasocarbu.dtos.StationDTO;
-import com.fasocarbu.fasocarbu.dtos.AdminStationDTO;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -53,11 +51,13 @@ public class CarburantServiceImpl implements CarburantService {
 
         Carburant carburant = carburantRepository.findById(idCarburant)
                 .orElseThrow(() -> new RuntimeException("Carburant non trouvé"));
+
         if (carburant.getStation().getId() != adminStation.getStation().getId()) {
             throw new RuntimeException("Cet admin n'a pas le droit de modifier ce carburant");
         }
 
         carburant.setPrix(nouveauPrix);
+        carburant.setAdminStation(adminStation); // Important pour que le champ ne reste pas null
         return carburantRepository.save(carburant);
     }
 
@@ -90,6 +90,8 @@ public class CarburantServiceImpl implements CarburantService {
                 .orElseThrow(() -> new RuntimeException("AdminStation introuvable"));
 
         carburant.setStation(adminStation.getStation());
+        carburant.setAdminStation(adminStation); // ⚡ important !
+
         return carburantRepository.save(carburant);
     }
 
@@ -108,12 +110,13 @@ public class CarburantServiceImpl implements CarburantService {
 
         Carburant existing = carburantRepository.findById(carburantId)
                 .orElseThrow(() -> new RuntimeException("Carburant introuvable"));
+
         if (existing.getStation().getId() != adminStation.getStation().getId()) {
             throw new RuntimeException("Ce carburant n'appartient pas à la station de cet Admin");
         }
-
         existing.setNom(carburant.getNom());
         existing.setPrix(carburant.getPrix());
+        existing.setAdminStation(adminStation); // ⚡ pour garder la liaison
         return carburantRepository.save(existing);
     }
 
@@ -121,31 +124,12 @@ public class CarburantServiceImpl implements CarburantService {
     public List<CarburantDTO> getAllCarburantsDTOByEntreprise(Long entrepriseId) {
         List<Carburant> carburants = carburantRepository.findByAdminStationEntrepriseId(entrepriseId);
         return carburants.stream()
-                .map(c -> new CarburantDTO(c))
+                .map(CarburantDTO::new)
                 .collect(Collectors.toList());
     }
 
     // -------------------- Conversion Carburant -> DTO --------------------
     private CarburantDTO convertToDTO(Carburant carburant) {
-        CarburantDTO dto = new CarburantDTO();
-        dto.setId(carburant.getId());
-        dto.setNom(carburant.getNom());
-        dto.setPrix(carburant.getPrix());
-
-        // Station
-        StationDTO stationDTO = new StationDTO();
-        stationDTO.setIdStation(carburant.getStation().getId());
-        stationDTO.setNom(carburant.getStation().getNom());
-        dto.setStation(stationDTO);
-
-        // AdminStation
-        if (carburant.getStation().getAdminStation() != null) {
-            AdminStationDTO adminDTO = new AdminStationDTO();
-            adminDTO.setId(carburant.getStation().getAdminStation().getId());
-            adminDTO.setNom(carburant.getStation().getAdminStation().getNom());
-            dto.setAdminStation(adminDTO);
-        }
-
-        return dto;
+        return new CarburantDTO(carburant);
     }
 }

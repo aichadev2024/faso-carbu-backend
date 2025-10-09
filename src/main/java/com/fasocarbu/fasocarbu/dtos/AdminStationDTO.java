@@ -12,25 +12,20 @@ public class AdminStationDTO {
     private Boolean actif;
     private String role;
 
-    // Constructeur vide
     public AdminStationDTO() {
     }
 
-    // Constructeur depuis l'entité
     public AdminStationDTO(AdminStation admin) {
-        if (admin == null)
-            return;
-
         this.id = admin.getId();
         this.nom = admin.getNom();
         this.prenom = admin.getPrenom();
         this.email = admin.getEmail();
         this.telephone = admin.getTelephone();
         this.actif = admin.getActif();
-        this.role = admin.getRole() != null ? admin.getRole().name() : null;
+        this.role = admin.getRole().name();
     }
 
-    // Getters et setters
+    // getters et setters
     public UUID getId() {
         return id;
     }
