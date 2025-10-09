@@ -1,5 +1,7 @@
 package com.fasocarbu.fasocarbu.dtos;
 
+import com.fasocarbu.fasocarbu.models.Station;
+
 public class StationDTO {
     private Long idStation;
     private String nom;
@@ -7,7 +9,23 @@ public class StationDTO {
     private String ville;
     private String statut;
 
-    // getters et setters
+    // Constructeur vide
+    public StationDTO() {
+    }
+
+    // Constructeur depuis l'entité
+    public StationDTO(Station station) {
+        if (station == null)
+            return;
+
+        this.idStation = station.getId();
+        this.nom = station.getNom();
+        this.adresse = station.getAdresse();
+        this.ville = station.getVille();
+        this.statut = station.getStatut();
+    }
+
+    // Getters et setters
     public Long getIdStation() {
         return idStation;
     }

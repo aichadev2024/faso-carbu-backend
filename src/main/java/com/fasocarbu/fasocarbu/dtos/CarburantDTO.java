@@ -1,5 +1,7 @@
 package com.fasocarbu.fasocarbu.dtos;
 
+import com.fasocarbu.fasocarbu.models.Carburant;
+
 public class CarburantDTO {
     private Long id;
     private String nom;
@@ -7,7 +9,29 @@ public class CarburantDTO {
     private StationDTO station;
     private AdminStationDTO adminStation;
 
-    // getters et setters
+    // Constructeur vide
+    public CarburantDTO() {
+    }
+
+    // Constructeur depuis l'entité
+    public CarburantDTO(Carburant carburant) {
+        if (carburant == null)
+            return;
+
+        this.id = carburant.getId();
+        this.nom = carburant.getNom();
+        this.prix = carburant.getPrix();
+
+        if (carburant.getStation() != null) {
+            this.station = new StationDTO(carburant.getStation());
+        }
+
+        if (carburant.getStation() != null && carburant.getStation().getAdminStation() != null) {
+            this.adminStation = new AdminStationDTO(carburant.getStation().getAdminStation());
+        }
+    }
+
+    // Getters et setters
     public Long getId() {
         return id;
     }

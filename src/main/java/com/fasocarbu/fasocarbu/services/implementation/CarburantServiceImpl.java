@@ -117,6 +117,14 @@ public class CarburantServiceImpl implements CarburantService {
         return carburantRepository.save(existing);
     }
 
+    @Override
+    public List<CarburantDTO> getAllCarburantsDTOByEntreprise(Long entrepriseId) {
+        List<Carburant> carburants = carburantRepository.findByAdminStationEntrepriseId(entrepriseId);
+        return carburants.stream()
+                .map(c -> new CarburantDTO(c))
+                .collect(Collectors.toList());
+    }
+
     // -------------------- Conversion Carburant -> DTO --------------------
     private CarburantDTO convertToDTO(Carburant carburant) {
         CarburantDTO dto = new CarburantDTO();

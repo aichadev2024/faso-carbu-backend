@@ -28,5 +28,7 @@ public interface CarburantService {
 
     List<Carburant> getCarburantsByAdminStation(UUID adminStationId);
 
+    List<CarburantDTO> getAllCarburantsDTOByEntreprise(Long entrepriseId);
+
     Carburant updateCarburant(UUID adminStationId, Long carburantId, Carburant carburant);
 }
