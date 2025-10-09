@@ -53,6 +53,9 @@ public class DemandeServiceImpl implements DemandeService {
             throw new RuntimeException("Seuls un gestionnaire ou un demandeur peuvent créer une demande");
         }
 
+        // ✅ Affectation de l'entreprise
+        demande.setEntreprise(user.getEntreprise());
+
         return demandeRepository.save(demande);
     }
 
@@ -75,5 +78,4 @@ public class DemandeServiceImpl implements DemandeService {
     public List<Demande> getDemandesParDemandeur(UUID utilisateurId) {
         return demandeRepository.findByDemandeur_Id(utilisateurId);
     }
-
 }
