@@ -98,11 +98,13 @@ public class AdminStationController {
 
     // ------------------- GESTION DES CARBURANTS -------------------
 
-    @PostMapping("/{adminStationId}/carburants")
+    @PostMapping("/carburants")
     @PreAuthorize("hasRole('ADMIN_STATION')")
     public Carburant ajouterCarburant(
-            @PathVariable UUID adminStationId,
-            @RequestBody Carburant carburant) {
+            @RequestBody Carburant carburant,
+            @AuthenticationPrincipal UserDetailsImpl userDetails) {
+
+        UUID adminStationId = userDetails.getId();
         return carburantService.ajouterCarburantPourStation(adminStationId, carburant);
     }
 
