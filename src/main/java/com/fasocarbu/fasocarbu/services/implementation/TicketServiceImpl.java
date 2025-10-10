@@ -32,13 +32,28 @@ public class TicketServiceImpl implements TicketService {
     @Override
     public TicketDTO enregistrerTicket(Ticket ticket) {
         try {
+            // 🔍 Récupérer le créateur du ticket
+            UUID createurId = ticket.getUtilisateur() != null ? ticket.getUtilisateur().getId() : null;
+            if (createurId == null)
+                throw new RuntimeException("Utilisateur (créateur du ticket) manquant");
+
+            Utilisateur createur = utilisateurRepository.findById(createurId)
+                    .orElseThrow(() -> new RuntimeException("Utilisateur introuvable"));
+
+            // ✅ Associer automatiquement l’entreprise du créateur
+            if (createur.getEntreprise() == null)
+                throw new RuntimeException("L'utilisateur n'est associé à aucune entreprise !");
+            ticket.setEntreprise(createur.getEntreprise());
+
+            // ✅ Génération du QR et infos de base
             ticket.setCodeQr(qrCodeGenerator.generateQRCodeForTicket(ticket));
             ticket.setDateEmission(LocalDateTime.now());
             ticket.setStatut(StatutTicket.EN_ATTENTE);
+
+            return new TicketDTO(ticketRepository.save(ticket));
         } catch (Exception e) {
-            throw new RuntimeException("Erreur lors de la génération du code QR", e);
+            throw new RuntimeException("Erreur lors de la création du ticket : " + e.getMessage(), e);
         }
-        return new TicketDTO(ticketRepository.save(ticket));
     }
 
     @Override

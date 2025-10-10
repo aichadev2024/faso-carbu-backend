@@ -1,7 +1,9 @@
 package com.fasocarbu.fasocarbu.controllers;
 
 import com.fasocarbu.fasocarbu.dtos.TicketDTO;
+import com.fasocarbu.fasocarbu.models.Gestionnaire;
 import com.fasocarbu.fasocarbu.models.Ticket;
+import com.fasocarbu.fasocarbu.models.Utilisateur;
 import com.fasocarbu.fasocarbu.security.services.UserDetailsImpl;
 import com.fasocarbu.fasocarbu.services.interfaces.TicketService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -20,11 +22,18 @@ public class TicketController {
     @Autowired
     private TicketService ticketService;
 
-    // ✅ Ajouter un ticket (gestionnaire)
     @PostMapping("/ajouter")
     @PreAuthorize("hasRole('GESTIONNAIRE')")
-    public TicketDTO ajouterTicket(@RequestBody Ticket ticket) {
+    public TicketDTO ajouterTicket(@RequestBody Ticket ticket,
+            @AuthenticationPrincipal UserDetailsImpl userDetails) {
+
         System.out.println("📥 Reçu ajout ticket: " + ticket);
+
+        // ✅ Lier automatiquement le gestionnaire connecté comme créateur
+        Utilisateur gestionnaire = new Gestionnaire();
+        gestionnaire.setId(userDetails.getId());
+        ticket.setUtilisateur(gestionnaire);
+
         return ticketService.enregistrerTicket(ticket);
     }
 
