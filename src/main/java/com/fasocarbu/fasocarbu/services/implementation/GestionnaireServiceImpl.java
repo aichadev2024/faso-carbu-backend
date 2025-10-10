@@ -312,8 +312,6 @@ public class GestionnaireServiceImpl implements GestionnaireService {
                 .stream().map(TicketDTO::new).toList();
     }
 
-    // ------------------- Valider/Rejeter demande par entreprise
-    // -------------------
     @Override
     public Ticket validerDemandeEtGenererTicketParEntreprise(Long demandeId, Long entrepriseId) {
         // Récupérer la demande en vérifiant l'entreprise
@@ -327,22 +325,14 @@ public class GestionnaireServiceImpl implements GestionnaireService {
         // Vérifier les champs obligatoires
         if (demande.getGestionnaire() == null || demande.getGestionnaire().getEntreprise() == null)
             throw new RuntimeException("Gestionnaire ou entreprise introuvable pour la demande");
+        if (demande.getDemandeur() == null)
+            throw new RuntimeException("Demandeur introuvable pour la demande");
         if (demande.getVehicule() == null)
             throw new RuntimeException("Véhicule introuvable pour la demande");
         if (demande.getStation() == null)
             throw new RuntimeException("Station introuvable pour la demande");
         if (demande.getCarburant() == null)
             throw new RuntimeException("Carburant introuvable pour la demande");
-
-        // Déterminer l'utilisateur associé au ticket : demandeur ou gestionnaire
-        Utilisateur utilisateur;
-        if (demande.getDemandeur() != null) {
-            utilisateur = demande.getDemandeur();
-        } else if (demande.getGestionnaire() != null) {
-            utilisateur = demande.getGestionnaire();
-        } else {
-            throw new RuntimeException("Aucun utilisateur associé à la demande");
-        }
 
         // Mettre à jour le statut de la demande
         demande.setStatut(StatutDemande.VALIDEE);
@@ -356,9 +346,14 @@ public class GestionnaireServiceImpl implements GestionnaireService {
         ticket.setStation(demande.getStation());
         ticket.setVehicule(demande.getVehicule());
         ticket.setQuantite(BigDecimal.valueOf(demande.getQuantite()));
-        ticket.setUtilisateur(utilisateur); // <-- utilise la vérification ci-dessus
         ticket.setValidateur(demande.getGestionnaire());
-        ticket.setEntreprise(demande.getGestionnaire().getEntreprise()); // entreprise obligatoire
+        ticket.setEntreprise(demande.getGestionnaire().getEntreprise()); // obligatoire pour la BD
+
+        // Attribution du chauffeur (demandeur) au ticket
+        Attribution attribution = new Attribution();
+        attribution.setChauffeur((Chauffeur) demande.getDemandeur()); // cast vers Chauffeur
+        attribution.setTicket(ticket);
+        ticket.setAttribution(attribution);
 
         // Génération du QR code
         try {
