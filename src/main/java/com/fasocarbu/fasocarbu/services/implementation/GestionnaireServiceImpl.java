@@ -327,14 +327,22 @@ public class GestionnaireServiceImpl implements GestionnaireService {
         // Vérifier les champs obligatoires
         if (demande.getGestionnaire() == null || demande.getGestionnaire().getEntreprise() == null)
             throw new RuntimeException("Gestionnaire ou entreprise introuvable pour la demande");
-        if (demande.getDemandeur() == null)
-            throw new RuntimeException("Demandeur introuvable pour la demande");
         if (demande.getVehicule() == null)
             throw new RuntimeException("Véhicule introuvable pour la demande");
         if (demande.getStation() == null)
             throw new RuntimeException("Station introuvable pour la demande");
         if (demande.getCarburant() == null)
             throw new RuntimeException("Carburant introuvable pour la demande");
+
+        // Déterminer l'utilisateur associé au ticket : demandeur ou gestionnaire
+        Utilisateur utilisateur;
+        if (demande.getDemandeur() != null) {
+            utilisateur = demande.getDemandeur();
+        } else if (demande.getGestionnaire() != null) {
+            utilisateur = demande.getGestionnaire();
+        } else {
+            throw new RuntimeException("Aucun utilisateur associé à la demande");
+        }
 
         // Mettre à jour le statut de la demande
         demande.setStatut(StatutDemande.VALIDEE);
@@ -348,7 +356,7 @@ public class GestionnaireServiceImpl implements GestionnaireService {
         ticket.setStation(demande.getStation());
         ticket.setVehicule(demande.getVehicule());
         ticket.setQuantite(BigDecimal.valueOf(demande.getQuantite()));
-        ticket.setUtilisateur(demande.getDemandeur());
+        ticket.setUtilisateur(utilisateur); // <-- utilise la vérification ci-dessus
         ticket.setValidateur(demande.getGestionnaire());
         ticket.setEntreprise(demande.getGestionnaire().getEntreprise()); // entreprise obligatoire
 
@@ -377,9 +385,15 @@ public class GestionnaireServiceImpl implements GestionnaireService {
         if (demande.getStatut() != StatutDemande.EN_ATTENTE)
             throw new IllegalStateException("Demande déjà traitée");
 
-        // Vérifier le demandeur
-        if (demande.getDemandeur() == null)
-            throw new RuntimeException("Demandeur introuvable pour la demande");
+        // Déterminer le destinataire de la notification : demandeur ou gestionnaire
+        Utilisateur destinataire;
+        if (demande.getDemandeur() != null) {
+            destinataire = demande.getDemandeur();
+        } else if (demande.getGestionnaire() != null) {
+            destinataire = demande.getGestionnaire();
+        } else {
+            throw new RuntimeException("Aucun utilisateur associé à la demande pour notification");
+        }
 
         // Mettre à jour le statut et la date de validation
         demande.setStatut(StatutDemande.REJETEE);
@@ -389,9 +403,9 @@ public class GestionnaireServiceImpl implements GestionnaireService {
         // Sauvegarder la demande
         demandeRepository.save(demande);
 
-        // Envoyer notification au demandeur
+        // Envoyer notification
         notificationService.sendNotificationToUtilisateur(
-                demande.getDemandeur().getId().toString(),
+                destinataire.getId().toString(),
                 "Votre demande a été rejetée : " + motif);
 
         return demande;
