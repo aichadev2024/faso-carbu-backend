@@ -51,8 +51,8 @@ public abstract class Utilisateur {
     @UpdateTimestamp
     private LocalDateTime dateModification;
 
-    @ManyToOne(fetch = FetchType.EAGER)
-    @JoinColumn(name = "entreprise_id", nullable = false)
+    @ManyToOne
+    @JoinColumn(name = "entreprise_id")
     private Entreprise entreprise;
 
     public Utilisateur() {

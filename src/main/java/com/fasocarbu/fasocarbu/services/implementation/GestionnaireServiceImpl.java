@@ -88,8 +88,31 @@ public class GestionnaireServiceImpl implements GestionnaireService {
     }
 
     @Override
-    public List<Gestionnaire> obtenirGestionnairesParEntreprise(Long entrepriseId) {
-        return gestionnaireRepository.findByEntreprise_Id(entrepriseId);
+    public Gestionnaire ajouterGestionnaireAvecEntreprise(GestionnaireAvecEntrepriseRequest request) {
+        Entreprise entreprise = entrepriseRepository.findByNom(request.getNomEntreprise())
+                .orElseGet(() -> entrepriseRepository.save(new Entreprise(request.getNomEntreprise())));
+
+        Gestionnaire gestionnaire = new Gestionnaire();
+        gestionnaire.setNom(request.getNom());
+        gestionnaire.setPrenom(request.getPrenom());
+        gestionnaire.setEmail(request.getEmail());
+        gestionnaire.setMotDePasse(passwordEncoder.encode(request.getMotDePasse()));
+        gestionnaire.setTelephone(request.getTelephone());
+        gestionnaire.setRole("GESTIONNAIRE");
+        gestionnaire.setEntreprise(entreprise);
+
+        return gestionnaireRepository.save(gestionnaire);
+    }
+
+    @Override
+    public Long getEntrepriseIdFromUser(UUID userId) {
+        Utilisateur utilisateur = gestionnaireRepository.findById(userId)
+                .orElseThrow(() -> new RuntimeException("Utilisateur introuvable : " + userId));
+
+        if (utilisateur.getEntreprise() == null) {
+            throw new RuntimeException("L'utilisateur n'est associé à aucune entreprise");
+        }
+        return utilisateur.getEntreprise().getId();
     }
 
     // ------------------- Chauffeurs -------------------
@@ -154,21 +177,53 @@ public class GestionnaireServiceImpl implements GestionnaireService {
     }
 
     @Override
+    public List<Station> obtenirToutesLesStations() {
+        return stationRepository.findAll();
+    }
+
+    @Override
     public List<Station> obtenirStationsParEntreprise(Long entrepriseId) {
         return stationRepository.findByEntreprise_Id(entrepriseId);
     }
 
+    // ------------------- Gestionnaires par entreprise -------------------
+    @Override
+    public List<Gestionnaire> obtenirGestionnairesParEntreprise(Long entrepriseId) {
+        return gestionnaireRepository.findByEntreprise_Id(entrepriseId);
+    }
+
+    // ------------------- Demandeurs -------------------
+    @Override
+    public Demandeur creerDemandeur(Demandeur demandeur) {
+        demandeur.setRole("DEMANDEUR");
+        demandeur.setMotDePasse(passwordEncoder.encode(demandeur.getMotDePasse()));
+        return demandeurRepository.save(demandeur);
+    }
+
     // ------------------- Demandes -------------------
     @Override
-    public List<Demande> obtenirDemandesParEntreprise(Long entrepriseId) {
-        return demandeRepository.findByEntreprise_Id(entrepriseId);
+    public Demande creerDemandePourEntreprise(DemandeRequest request) {
+        Demande demande = new Demande();
+        demande.setDateDemande(LocalDateTime.now());
+        demande.setQuantite(request.getQuantite());
+        demande.setCarburant(carburantRepository.findById(request.getCarburantId()).orElse(null));
+        demande.setStation(stationRepository.findById(request.getStationId()).orElse(null));
+        demande.setVehicule(vehiculeRepository.findById(request.getVehiculeId()).orElse(null));
+        demande.setGestionnaire(gestionnaireRepository.findById(request.getGestionnaireId()).orElse(null));
+        demande.setStatut(StatutDemande.EN_ATTENTE);
+        return demandeRepository.save(demande);
     }
 
     @Override
-    public Ticket validerDemandeEtGenererTicketParEntreprise(Long demandeId, Long entrepriseId) {
-        Demande demande = demandeRepository.findByIdAndEntreprise_Id(demandeId, entrepriseId).orElse(null);
-        if (demande == null || demande.getStatut() != StatutDemande.EN_ATTENTE)
+    public Ticket validerDemandeEtGenererTicket(Long id) {
+        Optional<Demande> optionalDemande = demandeRepository.findById(id);
+        if (optionalDemande.isEmpty())
             return null;
+
+        Demande demande = optionalDemande.get();
+
+        if (demande.getStatut() == StatutDemande.VALIDEE && demande.getTicket() != null)
+            throw new IllegalStateException("Demande déjà validée");
 
         demande.setStatut(StatutDemande.VALIDEE);
         demande.setDateValidation(LocalDateTime.now());
@@ -182,7 +237,6 @@ public class GestionnaireServiceImpl implements GestionnaireService {
         ticket.setQuantite(BigDecimal.valueOf(demande.getQuantite()));
         ticket.setUtilisateur(demande.getDemandeur());
         ticket.setValidateur(demande.getGestionnaire());
-        ticket.setEntreprise(demande.getEntreprise());
 
         try {
             ticket.setCodeQr(qrCodeGenerator.generateQRCodeForTicket(ticket));
@@ -197,10 +251,12 @@ public class GestionnaireServiceImpl implements GestionnaireService {
     }
 
     @Override
-    public Demande rejeterDemandeParEntreprise(Long demandeId, String motif, Long entrepriseId) {
-        Demande demande = demandeRepository.findByIdAndEntreprise_Id(demandeId, entrepriseId).orElse(null);
-        if (demande == null || demande.getStatut() != StatutDemande.EN_ATTENTE)
-            return null;
+    public Demande rejeterDemande(Long id, String motif) {
+        Demande demande = demandeRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Demande non trouvée"));
+
+        if (demande.getStatut() != StatutDemande.EN_ATTENTE)
+            throw new RuntimeException("Demande déjà traitée");
 
         demande.setStatut(StatutDemande.REJETEE);
         demande.setDateValidation(LocalDateTime.now());
@@ -210,11 +266,32 @@ public class GestionnaireServiceImpl implements GestionnaireService {
         notificationService.sendNotificationToUtilisateur(
                 demande.getDemandeur().getId().toString(),
                 "Votre demande a été rejetée : " + motif);
-
         return demande;
     }
 
+    @Override
+    public List<Demande> getDemandesParStatut(String statut) {
+        return demandeRepository.findByStatut(StatutDemande.valueOf(statut.toUpperCase()));
+    }
+
+    @Override
+    public List<Demande> obtenirDemandesParEntreprise(Long entrepriseId) {
+        return demandeRepository.findByEntreprise_Id(entrepriseId);
+    }
+
     // ------------------- Tickets -------------------
+    @Override
+    public List<TicketDTO> getTicketsParChauffeur(UUID chauffeurId) {
+        return ticketRepository.findByAttribution_Chauffeur_Id(chauffeurId)
+                .stream().map(TicketDTO::new).toList();
+    }
+
+    @Override
+    public List<TicketDTO> getTicketsParChauffeurEtDates(UUID chauffeurId, LocalDateTime debut, LocalDateTime fin) {
+        return ticketRepository.findByAttribution_Chauffeur_IdAndDateEmissionBetween(chauffeurId, debut, fin)
+                .stream().map(TicketDTO::new).toList();
+    }
+
     @Override
     public List<TicketDTO> obtenirTicketsParEntreprise(Long entrepriseId) {
         return ticketRepository.findByEntreprise_Id(entrepriseId)
@@ -222,18 +299,35 @@ public class GestionnaireServiceImpl implements GestionnaireService {
     }
 
     @Override
-    public List<TicketDTO> getTicketsParChauffeur(UUID chauffeurId, Long entrepriseId) {
+    public List<TicketDTO> getTicketsParChauffeurEtEntreprise(UUID chauffeurId, Long entrepriseId) {
         return ticketRepository.findByAttribution_Chauffeur_IdAndEntreprise_Id(chauffeurId, entrepriseId)
                 .stream().map(TicketDTO::new).toList();
     }
 
     @Override
-    public List<TicketDTO> getTicketsParChauffeurEtDates(UUID chauffeurId, LocalDateTime debut, LocalDateTime fin,
-            Long entrepriseId) {
-        return ticketRepository
-                .findByAttribution_Chauffeur_IdAndDateEmissionBetweenAndEntreprise_Id(chauffeurId, debut, fin,
-                        entrepriseId)
+    public List<TicketDTO> getTicketsParChauffeurEtDatesEtEntreprise(UUID chauffeurId, LocalDateTime debut,
+            LocalDateTime fin, Long entrepriseId) {
+        return ticketRepository.findByAttribution_Chauffeur_IdAndDateEmissionBetweenAndEntreprise_Id(
+                chauffeurId, debut, fin, entrepriseId)
                 .stream().map(TicketDTO::new).toList();
+    }
+
+    // ------------------- Valider/Rejeter demande par entreprise
+    // -------------------
+    @Override
+    public Ticket validerDemandeEtGenererTicketParEntreprise(Long demandeId, Long entrepriseId) {
+        Demande demande = demandeRepository.findByIdAndEntreprise_Id(demandeId, entrepriseId).orElse(null);
+        if (demande == null || demande.getStatut() != StatutDemande.EN_ATTENTE)
+            return null;
+        return validerDemandeEtGenererTicket(demandeId);
+    }
+
+    @Override
+    public Demande rejeterDemandeParEntreprise(Long demandeId, String motif, Long entrepriseId) {
+        Demande demande = demandeRepository.findByIdAndEntreprise_Id(demandeId, entrepriseId).orElse(null);
+        if (demande == null || demande.getStatut() != StatutDemande.EN_ATTENTE)
+            return null;
+        return rejeterDemande(demandeId, motif);
     }
 
     // ------------------- Consommation & rapports -------------------
