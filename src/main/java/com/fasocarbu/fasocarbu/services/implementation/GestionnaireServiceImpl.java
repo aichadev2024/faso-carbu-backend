@@ -314,19 +314,17 @@ public class GestionnaireServiceImpl implements GestionnaireService {
 
     @Override
     public Ticket validerDemandeEtGenererTicketParEntreprise(Long demandeId, Long entrepriseId) {
-        // Récupérer la demande en vérifiant l'entreprise
+        // 🔹 Récupérer la demande en vérifiant l'entreprise
         Demande demande = demandeRepository.findByIdAndEntreprise_Id(demandeId, entrepriseId)
                 .orElseThrow(() -> new RuntimeException("Demande introuvable ou hors entreprise"));
 
-        // Vérifier que la demande est en attente
+        // 🔹 Vérifier que la demande est en attente
         if (demande.getStatut() != StatutDemande.EN_ATTENTE)
             throw new IllegalStateException("Demande déjà traitée");
 
-        // Vérifier les champs obligatoires
+        // 🔹 Vérifier les champs obligatoires
         if (demande.getGestionnaire() == null || demande.getGestionnaire().getEntreprise() == null)
             throw new RuntimeException("Gestionnaire ou entreprise introuvable pour la demande");
-        if (demande.getDemandeur() == null)
-            throw new RuntimeException("Demandeur introuvable pour la demande");
         if (demande.getVehicule() == null)
             throw new RuntimeException("Véhicule introuvable pour la demande");
         if (demande.getStation() == null)
@@ -334,11 +332,11 @@ public class GestionnaireServiceImpl implements GestionnaireService {
         if (demande.getCarburant() == null)
             throw new RuntimeException("Carburant introuvable pour la demande");
 
-        // Mettre à jour le statut de la demande
+        // 🔹 Mettre à jour le statut de la demande
         demande.setStatut(StatutDemande.VALIDEE);
         demande.setDateValidation(LocalDateTime.now());
 
-        // Créer le ticket
+        // 🔹 Créer le ticket
         Ticket ticket = new Ticket();
         ticket.setDemande(demande);
         ticket.setDateEmission(LocalDateTime.now());
@@ -349,20 +347,24 @@ public class GestionnaireServiceImpl implements GestionnaireService {
         ticket.setValidateur(demande.getGestionnaire());
         ticket.setEntreprise(demande.getGestionnaire().getEntreprise()); // obligatoire pour la BD
 
-        // Attribution du chauffeur (demandeur) au ticket
-        Attribution attribution = new Attribution();
-        attribution.setChauffeur((Chauffeur) demande.getDemandeur()); // cast vers Chauffeur
-        attribution.setTicket(ticket);
-        ticket.setAttribution(attribution);
+        // 🔹 Trouver le chauffeur lié au véhicule
+        if (demande.getVehicule().getUtilisateur() instanceof Chauffeur chauffeur) {
+            Attribution attribution = new Attribution();
+            attribution.setChauffeur(chauffeur);
+            attribution.setTicket(ticket);
+            ticket.setAttribution(attribution);
+        } else {
+            throw new RuntimeException("Aucun chauffeur associé à ce véhicule !");
+        }
 
-        // Génération du QR code
+        // 🔹 Génération du QR code
         try {
             ticket.setCodeQr(qrCodeGenerator.generateQRCodeForTicket(ticket));
         } catch (Exception e) {
             throw new RuntimeException("Erreur génération QR", e);
         }
 
-        // Sauvegarder le ticket et l'associer à la demande
+        // 🔹 Sauvegarder le ticket et la demande
         Ticket savedTicket = ticketRepository.save(ticket);
         demande.setTicket(savedTicket);
         demandeRepository.save(demande);
