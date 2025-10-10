@@ -313,16 +313,16 @@ public class GestionnaireServiceImpl implements GestionnaireService {
     }
 
     @Override
-    public Ticket validerDemandeEtGenererTicketParEntreprise(Long demandeId, Long entrepriseId) {
-        // 🔹 Récupérer la demande en vérifiant l'entreprise
+    public Ticket validerDemandeEtGenererTicketParEntreprise(Long demandeId, Long entrepriseId, UUID chauffeurId) {
+        // Récupérer la demande en vérifiant l'entreprise
         Demande demande = demandeRepository.findByIdAndEntreprise_Id(demandeId, entrepriseId)
                 .orElseThrow(() -> new RuntimeException("Demande introuvable ou hors entreprise"));
 
-        // 🔹 Vérifier que la demande est en attente
+        // Vérifier que la demande est en attente
         if (demande.getStatut() != StatutDemande.EN_ATTENTE)
             throw new IllegalStateException("Demande déjà traitée");
 
-        // 🔹 Vérifier les champs obligatoires
+        // Vérifier les champs obligatoires de la demande
         if (demande.getGestionnaire() == null || demande.getGestionnaire().getEntreprise() == null)
             throw new RuntimeException("Gestionnaire ou entreprise introuvable pour la demande");
         if (demande.getVehicule() == null)
@@ -332,11 +332,15 @@ public class GestionnaireServiceImpl implements GestionnaireService {
         if (demande.getCarburant() == null)
             throw new RuntimeException("Carburant introuvable pour la demande");
 
-        // 🔹 Mettre à jour le statut de la demande
+        // Récupérer le chauffeur sélectionné
+        Chauffeur chauffeur = chauffeurRepository.findById(chauffeurId)
+                .orElseThrow(() -> new RuntimeException("Chauffeur introuvable"));
+
+        // Mettre à jour le statut et la date de validation
         demande.setStatut(StatutDemande.VALIDEE);
         demande.setDateValidation(LocalDateTime.now());
 
-        // 🔹 Créer le ticket
+        // Créer le ticket
         Ticket ticket = new Ticket();
         ticket.setDemande(demande);
         ticket.setDateEmission(LocalDateTime.now());
@@ -345,26 +349,22 @@ public class GestionnaireServiceImpl implements GestionnaireService {
         ticket.setVehicule(demande.getVehicule());
         ticket.setQuantite(BigDecimal.valueOf(demande.getQuantite()));
         ticket.setValidateur(demande.getGestionnaire());
-        ticket.setEntreprise(demande.getGestionnaire().getEntreprise()); // obligatoire pour la BD
+        ticket.setEntreprise(demande.getGestionnaire().getEntreprise());
 
-        // 🔹 Trouver le chauffeur lié au véhicule
-        if (demande.getVehicule().getUtilisateur() instanceof Chauffeur chauffeur) {
-            Attribution attribution = new Attribution();
-            attribution.setChauffeur(chauffeur);
-            attribution.setTicket(ticket);
-            ticket.setAttribution(attribution);
-        } else {
-            throw new RuntimeException("Aucun chauffeur associé à ce véhicule !");
-        }
+        // Attribution correcte du chauffeur
+        Attribution attribution = new Attribution();
+        attribution.setChauffeur(chauffeur);
+        attribution.setTicket(ticket);
+        ticket.setAttribution(attribution);
 
-        // 🔹 Génération du QR code
+        // Génération du QR code
         try {
             ticket.setCodeQr(qrCodeGenerator.generateQRCodeForTicket(ticket));
         } catch (Exception e) {
             throw new RuntimeException("Erreur génération QR", e);
         }
 
-        // 🔹 Sauvegarder le ticket et la demande
+        // Sauvegarder le ticket et l'associer à la demande
         Ticket savedTicket = ticketRepository.save(ticket);
         demande.setTicket(savedTicket);
         demandeRepository.save(demande);

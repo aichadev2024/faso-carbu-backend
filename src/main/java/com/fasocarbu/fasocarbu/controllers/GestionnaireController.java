@@ -136,10 +136,14 @@ public class GestionnaireController {
 
     @PostMapping("/demandes/{id}/valider")
     @PreAuthorize("hasRole('GESTIONNAIRE')")
-    public ResponseEntity<?> validerDemande(@PathVariable Long id,
+    public ResponseEntity<?> validerDemande(
+            @PathVariable Long id,
+            @RequestParam UUID chauffeurId, // <-- on récupère l'UUID du chauffeur
             @AuthenticationPrincipal UserDetailsImpl userDetails) {
+
         Long entrepriseId = userDetails.getEntrepriseId();
-        Ticket ticket = service.validerDemandeEtGenererTicketParEntreprise(id, entrepriseId);
+        Ticket ticket = service.validerDemandeEtGenererTicketParEntreprise(id, entrepriseId, chauffeurId);
+
         if (ticket == null) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Demande introuvable ou déjà traitée");
         }

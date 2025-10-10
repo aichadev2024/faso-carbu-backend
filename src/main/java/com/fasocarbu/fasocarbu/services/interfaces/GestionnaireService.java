@@ -66,7 +66,7 @@ public interface GestionnaireService {
     List<TicketDTO> getTicketsParChauffeurEtDatesEtEntreprise(UUID chauffeurId, LocalDateTime debut, LocalDateTime fin,
             Long entrepriseId);
 
-    Ticket validerDemandeEtGenererTicketParEntreprise(Long demandeId, Long entrepriseId);
+    Ticket validerDemandeEtGenererTicketParEntreprise(Long demandeId, Long entrepriseId, UUID chauffeurId);
 
     Demande rejeterDemandeParEntreprise(Long demandeId, String motif, Long entrepriseId);
 
