@@ -316,18 +316,85 @@ public class GestionnaireServiceImpl implements GestionnaireService {
     // -------------------
     @Override
     public Ticket validerDemandeEtGenererTicketParEntreprise(Long demandeId, Long entrepriseId) {
-        Demande demande = demandeRepository.findByIdAndEntreprise_Id(demandeId, entrepriseId).orElse(null);
-        if (demande == null || demande.getStatut() != StatutDemande.EN_ATTENTE)
-            return null;
-        return validerDemandeEtGenererTicket(demandeId);
+        // Récupérer la demande en vérifiant l'entreprise
+        Demande demande = demandeRepository.findByIdAndEntreprise_Id(demandeId, entrepriseId)
+                .orElseThrow(() -> new RuntimeException("Demande introuvable ou hors entreprise"));
+
+        // Vérifier que la demande est en attente
+        if (demande.getStatut() != StatutDemande.EN_ATTENTE)
+            throw new IllegalStateException("Demande déjà traitée");
+
+        // Vérifier les champs obligatoires
+        if (demande.getGestionnaire() == null || demande.getGestionnaire().getEntreprise() == null)
+            throw new RuntimeException("Gestionnaire ou entreprise introuvable pour la demande");
+        if (demande.getDemandeur() == null)
+            throw new RuntimeException("Demandeur introuvable pour la demande");
+        if (demande.getVehicule() == null)
+            throw new RuntimeException("Véhicule introuvable pour la demande");
+        if (demande.getStation() == null)
+            throw new RuntimeException("Station introuvable pour la demande");
+        if (demande.getCarburant() == null)
+            throw new RuntimeException("Carburant introuvable pour la demande");
+
+        // Mettre à jour le statut de la demande
+        demande.setStatut(StatutDemande.VALIDEE);
+        demande.setDateValidation(LocalDateTime.now());
+
+        // Créer le ticket
+        Ticket ticket = new Ticket();
+        ticket.setDemande(demande);
+        ticket.setDateEmission(LocalDateTime.now());
+        ticket.setCarburant(demande.getCarburant());
+        ticket.setStation(demande.getStation());
+        ticket.setVehicule(demande.getVehicule());
+        ticket.setQuantite(BigDecimal.valueOf(demande.getQuantite()));
+        ticket.setUtilisateur(demande.getDemandeur());
+        ticket.setValidateur(demande.getGestionnaire());
+        ticket.setEntreprise(demande.getGestionnaire().getEntreprise()); // entreprise obligatoire
+
+        // Génération du QR code
+        try {
+            ticket.setCodeQr(qrCodeGenerator.generateQRCodeForTicket(ticket));
+        } catch (Exception e) {
+            throw new RuntimeException("Erreur génération QR", e);
+        }
+
+        // Sauvegarder le ticket et l'associer à la demande
+        Ticket savedTicket = ticketRepository.save(ticket);
+        demande.setTicket(savedTicket);
+        demandeRepository.save(demande);
+
+        return savedTicket;
     }
 
     @Override
     public Demande rejeterDemandeParEntreprise(Long demandeId, String motif, Long entrepriseId) {
-        Demande demande = demandeRepository.findByIdAndEntreprise_Id(demandeId, entrepriseId).orElse(null);
-        if (demande == null || demande.getStatut() != StatutDemande.EN_ATTENTE)
-            return null;
-        return rejeterDemande(demandeId, motif);
+        // Récupérer la demande en vérifiant l'entreprise
+        Demande demande = demandeRepository.findByIdAndEntreprise_Id(demandeId, entrepriseId)
+                .orElseThrow(() -> new RuntimeException("Demande introuvable ou hors entreprise"));
+
+        // Vérifier que la demande est en attente
+        if (demande.getStatut() != StatutDemande.EN_ATTENTE)
+            throw new IllegalStateException("Demande déjà traitée");
+
+        // Vérifier le demandeur
+        if (demande.getDemandeur() == null)
+            throw new RuntimeException("Demandeur introuvable pour la demande");
+
+        // Mettre à jour le statut et la date de validation
+        demande.setStatut(StatutDemande.REJETEE);
+        demande.setDateValidation(LocalDateTime.now());
+        demande.setMotifRejet(motif);
+
+        // Sauvegarder la demande
+        demandeRepository.save(demande);
+
+        // Envoyer notification au demandeur
+        notificationService.sendNotificationToUtilisateur(
+                demande.getDemandeur().getId().toString(),
+                "Votre demande a été rejetée : " + motif);
+
+        return demande;
     }
 
     // ------------------- Consommation & rapports -------------------
