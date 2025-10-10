@@ -4,7 +4,6 @@ import com.fasocarbu.fasocarbu.models.*;
 import com.fasocarbu.fasocarbu.security.services.UserDetailsImpl;
 import com.fasocarbu.fasocarbu.services.interfaces.GestionnaireService;
 import com.fasocarbu.fasocarbu.dtos.StationAvecAdminRequest;
-import com.fasocarbu.fasocarbu.dtos.MotifRejetRequest;
 import com.fasocarbu.fasocarbu.dtos.TicketDTO;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -20,6 +19,7 @@ import org.springframework.http.HttpHeaders;
 import java.util.List;
 import java.util.UUID;
 import java.time.LocalDateTime;
+import java.util.Map;
 
 @RestController
 @RequestMapping("/api/gestionnaires")
@@ -133,33 +133,53 @@ public class GestionnaireController {
         Long entrepriseId = userDetails.getEntrepriseId();
         return ResponseEntity.ok(service.obtenirDemandesParEntreprise(entrepriseId));
     }
+    // <-- à ajouter en haut du fichier
 
     @PostMapping("/demandes/{id}/valider")
     @PreAuthorize("hasRole('GESTIONNAIRE')")
     public ResponseEntity<?> validerDemande(
             @PathVariable Long id,
-            @RequestParam UUID chauffeurId, // <-- on récupère l'UUID du chauffeur
+            @RequestBody Map<String, String> body, // récupère le JSON du body
             @AuthenticationPrincipal UserDetailsImpl userDetails) {
 
         Long entrepriseId = userDetails.getEntrepriseId();
-        Ticket ticket = service.validerDemandeEtGenererTicketParEntreprise(id, entrepriseId, chauffeurId);
-
-        if (ticket == null) {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Demande introuvable ou déjà traitée");
+        String chauffeurIdStr = body.get("chauffeurId"); // récupère le chauffeurId depuis le body
+        if (chauffeurIdStr == null) {
+            return ResponseEntity.badRequest().body("Le champ 'chauffeurId' est obligatoire");
         }
+
+        UUID chauffeurId = UUID.fromString(chauffeurIdStr);
+
+        Ticket ticket;
+        try {
+            ticket = service.validerDemandeEtGenererTicketParEntreprise(id, entrepriseId, chauffeurId);
+        } catch (RuntimeException e) { // <-- uniquement RuntimeException
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(e.getMessage());
+        }
+
         return ResponseEntity.ok(ticket);
     }
 
     @PostMapping("/demandes/{id}/rejeter")
     @PreAuthorize("hasRole('GESTIONNAIRE')")
-    public ResponseEntity<?> rejeterDemande(@PathVariable Long id,
-            @Valid @RequestBody MotifRejetRequest motif,
+    public ResponseEntity<?> rejeterDemande(
+            @PathVariable Long id,
+            @RequestBody Map<String, String> body, // récupère le JSON du body
             @AuthenticationPrincipal UserDetailsImpl userDetails) {
+
         Long entrepriseId = userDetails.getEntrepriseId();
-        Demande demande = service.rejeterDemandeParEntreprise(id, motif.getMotif(), entrepriseId);
-        if (demande == null) {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Demande introuvable ou déjà traitée");
+        String motif = body.get("motif"); // récupère le motif depuis le body
+        if (motif == null || motif.isEmpty()) {
+            return ResponseEntity.badRequest().body("Le champ 'motif' est obligatoire");
         }
+
+        Demande demande;
+        try {
+            demande = service.rejeterDemandeParEntreprise(id, motif, entrepriseId);
+        } catch (RuntimeException e) { // <-- uniquement RuntimeException
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(e.getMessage());
+        }
+
         return ResponseEntity.ok(demande);
     }
 
