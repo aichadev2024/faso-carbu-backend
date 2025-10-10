@@ -53,8 +53,8 @@ public class Ticket {
     @OneToOne
     @JoinColumn(name = "demande_id", unique = true)
     private Demande demande;
-    @ManyToOne
-    @JoinColumn(name = "entreprise_id")
+    @ManyToOne(fetch = FetchType.EAGER)
+    @JoinColumn(name = "entreprise_id", nullable = false)
     private Entreprise entreprise;
 
     public Ticket() {

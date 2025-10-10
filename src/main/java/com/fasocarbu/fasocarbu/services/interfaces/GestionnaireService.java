@@ -11,7 +11,6 @@ import java.util.UUID;
 
 public interface GestionnaireService {
 
-    // Gestionnaires
     Gestionnaire ajouterGestionnaire(Gestionnaire gestionnaire);
 
     Gestionnaire obtenirGestionnaire(UUID id);
@@ -24,29 +23,28 @@ public interface GestionnaireService {
 
     Gestionnaire ajouterGestionnaireAvecEntreprise(GestionnaireAvecEntrepriseRequest request);
 
-    // Récupération de l’entreprise liée à l’utilisateur connecté
     Long getEntrepriseIdFromUser(UUID userId);
 
-    // Chauffeurs
     Chauffeur creerChauffeur(Chauffeur chauffeur);
 
     List<Chauffeur> obtenirChauffeursParEntreprise(Long entrepriseId);
 
-    // Véhicules
     Vehicule creerVehicule(Vehicule vehicule);
 
     Vehicule definirQuotaPourVehicule(Long vehiculeId, double quota);
 
     List<Vehicule> obtenirVehiculesParEntreprise(Long entrepriseId);
 
-    // Stations
-    List<Station> obtenirToutesLesStations();
-
     Station creerStationAvecAdmin(StationAvecAdminRequest request, UUID gestionnaireId);
+
+    List<Station> obtenirToutesLesStations();
 
     List<Station> obtenirStationsParEntreprise(Long entrepriseId);
 
-    // Demandes
+    List<Gestionnaire> obtenirGestionnairesParEntreprise(Long entrepriseId);
+
+    Demandeur creerDemandeur(Demandeur demandeur);
+
     Demande creerDemandePourEntreprise(DemandeRequest request);
 
     Ticket validerDemandeEtGenererTicket(Long id);
@@ -57,32 +55,24 @@ public interface GestionnaireService {
 
     List<Demande> obtenirDemandesParEntreprise(Long entrepriseId);
 
-    // Demandeurs
-    Demandeur creerDemandeur(Demandeur demandeur);
-
-    // Tickets
     List<TicketDTO> getTicketsParChauffeur(UUID chauffeurId);
 
     List<TicketDTO> getTicketsParChauffeurEtDates(UUID chauffeurId, LocalDateTime debut, LocalDateTime fin);
 
     List<TicketDTO> obtenirTicketsParEntreprise(Long entrepriseId);
 
-    // Consommation & rapports
-    List<Consommation> consulterHistoriqueConsommationParVehicule(Long vehiculeId);
-
-    ResponseEntity<Resource> exporterRapportConsommation();
-
-    List<Gestionnaire> obtenirGestionnairesParEntreprise(Long entrepriseId);
-
-    Ticket validerDemandeEtGenererTicketParEntreprise(Long demandeId, Long entrepriseId);
-
-    Demande rejeterDemandeParEntreprise(Long demandeId, String motif, Long entrepriseId);
-
-    Resource exporterRapportConsommationParEntreprise(Long entrepriseId);
-
     List<TicketDTO> getTicketsParChauffeurEtEntreprise(UUID chauffeurId, Long entrepriseId);
 
     List<TicketDTO> getTicketsParChauffeurEtDatesEtEntreprise(UUID chauffeurId, LocalDateTime debut, LocalDateTime fin,
             Long entrepriseId);
 
+    Ticket validerDemandeEtGenererTicketParEntreprise(Long demandeId, Long entrepriseId);
+
+    Demande rejeterDemandeParEntreprise(Long demandeId, String motif, Long entrepriseId);
+
+    List<Consommation> consulterHistoriqueConsommationParVehicule(Long vehiculeId);
+
+    ResponseEntity<Resource> exporterRapportConsommation();
+
+    Resource exporterRapportConsommationParEntreprise(Long entrepriseId);
 }

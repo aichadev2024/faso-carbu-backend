@@ -2,19 +2,18 @@ package com.fasocarbu.fasocarbu.controllers;
 
 import com.fasocarbu.fasocarbu.dtos.TicketDTO;
 import com.fasocarbu.fasocarbu.models.Ticket;
-import lombok.RequiredArgsConstructor;
-
 import com.fasocarbu.fasocarbu.models.Utilisateur;
 import com.fasocarbu.fasocarbu.repositories.UtilisateurRepository;
 import com.fasocarbu.fasocarbu.security.services.UserDetailsImpl;
 import com.fasocarbu.fasocarbu.services.interfaces.TicketService;
+import lombok.RequiredArgsConstructor;
 import org.springframework.security.access.prepost.PreAuthorize;
-import org.springframework.web.bind.annotation.*;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.web.bind.annotation.*;
 
-import java.util.UUID;
 import java.util.List;
 import java.util.Map;
+import java.util.UUID;
 
 @RestController
 @RequestMapping("/api/tickets")
@@ -37,7 +36,10 @@ public class TicketController {
 
         ticket.setUtilisateur(gestionnaire);
 
-        // Assigner automatiquement l'entreprise
+        // Assigner automatiquement l'entreprise attachée
+        if (gestionnaire.getEntreprise() == null) {
+            throw new RuntimeException("L'utilisateur n'est associé à aucune entreprise !");
+        }
         ticket.setEntreprise(gestionnaire.getEntreprise());
 
         return ticketService.enregistrerTicket(ticket);
@@ -114,5 +116,4 @@ public class TicketController {
         Long entrepriseId = userDetails.getEntrepriseId();
         return ticketService.getTicketsValidesByUtilisateurEtEntreprise(userId, entrepriseId);
     }
-
 }

@@ -31,13 +31,13 @@ public class TicketDTO {
 
     // Infos carburant
     private String carburantNom;
-    private Double carburantPrix; // ✅ ajout prix unitaire
+    private Double carburantPrix;
 
-    // ✅ Ajout entreprise
+    // Infos entreprise
     private Long entrepriseId;
     private String entrepriseNom;
 
-    // ✅ Ajout somme calculée
+    // Somme calculée
     private BigDecimal somme;
 
     // ---------- CONSTRUCTEURS ----------
@@ -65,19 +65,6 @@ public class TicketDTO {
 
         if (ticket.getStation() != null) {
             this.stationNom = ticket.getStation().getNom();
-
-            if (ticket.getStation().getAdminStation() != null &&
-                    ticket.getStation().getAdminStation().getEntreprise() != null) {
-                this.entrepriseId = ticket.getStation()
-                        .getAdminStation()
-                        .getEntreprise()
-                        .getId();
-
-                this.entrepriseNom = ticket.getStation()
-                        .getAdminStation()
-                        .getEntreprise()
-                        .getNom();
-            }
         }
 
         if (ticket.getVehicule() != null) {
@@ -88,10 +75,15 @@ public class TicketDTO {
             this.carburantNom = ticket.getCarburant().getNom();
             this.carburantPrix = ticket.getCarburant().getPrix();
 
-            // ✅ somme = prix × quantite
             if (this.quantite != null && this.carburantPrix != null) {
                 this.somme = BigDecimal.valueOf(this.carburantPrix).multiply(this.quantite);
             }
+        }
+
+        // ✅ Toujours récupérer l'entreprise directement depuis le ticket
+        if (ticket.getEntreprise() != null) {
+            this.entrepriseId = ticket.getEntreprise().getId();
+            this.entrepriseNom = ticket.getEntreprise().getNom();
         }
     }
 
