@@ -63,6 +63,31 @@ public class TicketServiceImpl implements TicketService {
                 .orElseThrow(() -> new RuntimeException("Ticket introuvable"));
     }
 
+    public List<TicketDTO> getTicketsValidesByUtilisateurEtEntreprise(UUID userId, Long entrepriseId, String role) {
+        List<Ticket> tickets;
+
+        if (role.equals("ROLE_CHAUFFEUR")) {
+            // Chauffeur → tickets où il est l’utilisateur du ticket
+            tickets = ticketRepository.findByUtilisateur_IdAndEntreprise_Id(userId, entrepriseId);
+            tickets = tickets.stream()
+                    .filter(t -> t.getStatut() == StatutTicket.VALIDER)
+                    .toList();
+        } else if (role.equals("ROLE_AGENT_STATION")) {
+            // Agent → tickets qu’il a validés
+            tickets = ticketRepository.findByValidateur_IdAndEntreprise_IdAndStatut(
+                    userId,
+                    entrepriseId,
+                    StatutTicket.VALIDER);
+        } else {
+            tickets = List.of();
+        }
+
+        return tickets.stream()
+                .map(TicketDTO::new)
+                .collect(Collectors.toList());
+
+    }
+
     @Override
     public void supprimerTicket(Long id) {
         if (!ticketRepository.existsById(id))

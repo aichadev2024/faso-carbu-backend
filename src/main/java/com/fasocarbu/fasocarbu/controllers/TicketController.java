@@ -108,12 +108,14 @@ public class TicketController {
                 entrepriseId);
     }
 
-    // 🔹 Tickets validés pour l'utilisateur courant
     @GetMapping("/mes-tickets-valides")
     @PreAuthorize("hasAnyRole('AGENT_STATION','CHAUFFEUR')")
     public List<TicketDTO> getMesTicketsValides(@AuthenticationPrincipal UserDetailsImpl userDetails) {
         UUID userId = userDetails.getId();
         Long entrepriseId = userDetails.getEntrepriseId();
-        return ticketService.getTicketsValidesByUtilisateurEtEntreprise(userId, entrepriseId);
+        String role = userDetails.getAuthorities().iterator().next().getAuthority();
+
+        return ticketService.getTicketsValidesByUtilisateurEtEntreprise(userId, entrepriseId, role);
     }
+
 }

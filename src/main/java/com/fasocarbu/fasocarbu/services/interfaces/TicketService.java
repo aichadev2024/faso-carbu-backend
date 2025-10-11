@@ -34,4 +34,7 @@ public interface TicketService {
     List<TicketDTO> getAllTicketsDTO();
 
     List<TicketDTO> getTicketsValidesByUtilisateurEtEntreprise(UUID userId, Long entrepriseId);
+
+    List<TicketDTO> getTicketsValidesByUtilisateurEtEntreprise(UUID userId, Long entrepriseId, String role);
+
 }
