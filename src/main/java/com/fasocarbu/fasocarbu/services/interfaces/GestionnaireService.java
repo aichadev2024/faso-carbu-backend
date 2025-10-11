@@ -11,16 +11,6 @@ import java.util.UUID;
 
 public interface GestionnaireService {
 
-    Gestionnaire ajouterGestionnaire(Gestionnaire gestionnaire);
-
-    Gestionnaire obtenirGestionnaire(UUID id);
-
-    List<Gestionnaire> obtenirTousLesGestionnaires();
-
-    Gestionnaire modifierGestionnaire(UUID id, Gestionnaire gestionnaire);
-
-    void supprimerGestionnaire(UUID id);
-
     Gestionnaire ajouterGestionnaireAvecEntreprise(GestionnaireAvecEntrepriseRequest request);
 
     Long getEntrepriseIdFromUser(UUID userId);

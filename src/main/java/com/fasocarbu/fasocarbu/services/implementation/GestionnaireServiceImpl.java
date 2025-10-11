@@ -1,6 +1,7 @@
 package com.fasocarbu.fasocarbu.services.implementation;
 
 import com.fasocarbu.fasocarbu.dtos.*;
+import com.fasocarbu.fasocarbu.enums.StatutAttribution;
 import com.fasocarbu.fasocarbu.enums.StatutDemande;
 import com.fasocarbu.fasocarbu.models.*;
 import com.fasocarbu.fasocarbu.repositories.*;
@@ -51,44 +52,7 @@ public class GestionnaireServiceImpl implements GestionnaireService {
     private NotificationService notificationService;
     @Autowired
     private QRCodeGenerator qrCodeGenerator;
-    @Autowired
     private AttributionRepository attributionRepository;
-
-    // ------------------- Gestionnaires -------------------
-    @Override
-    public Gestionnaire ajouterGestionnaire(Gestionnaire gestionnaire) {
-        gestionnaire.setMotDePasse(passwordEncoder.encode(gestionnaire.getMotDePasse()));
-        gestionnaire.setRole("GESTIONNAIRE");
-        return gestionnaireRepository.save(gestionnaire);
-    }
-
-    @Override
-    public Gestionnaire obtenirGestionnaire(UUID id) {
-        return gestionnaireRepository.findById(id).orElse(null);
-    }
-
-    @Override
-    public List<Gestionnaire> obtenirTousLesGestionnaires() {
-        return gestionnaireRepository.findAll();
-    }
-
-    @Override
-    public Gestionnaire modifierGestionnaire(UUID id, Gestionnaire gestionnaire) {
-        return gestionnaireRepository.findById(id)
-                .map(existing -> {
-                    gestionnaire.setId(id);
-                    if (gestionnaire.getMotDePasse() != null) {
-                        gestionnaire.setMotDePasse(passwordEncoder.encode(gestionnaire.getMotDePasse()));
-                    }
-                    return gestionnaireRepository.save(gestionnaire);
-                })
-                .orElse(null);
-    }
-
-    @Override
-    public void supprimerGestionnaire(UUID id) {
-        gestionnaireRepository.deleteById(id);
-    }
 
     @Override
     public Gestionnaire ajouterGestionnaireAvecEntreprise(GestionnaireAvecEntrepriseRequest request) {
@@ -352,7 +316,7 @@ public class GestionnaireServiceImpl implements GestionnaireService {
         demande.setStatut(StatutDemande.VALIDEE);
         demande.setDateValidation(LocalDateTime.now());
 
-        // 5️⃣ Créer le ticket
+        // 5️⃣ Créer et sauvegarder le ticket (⚠️ D’abord sauvegarder le ticket seul)
         Ticket ticket = new Ticket();
         ticket.setDemande(demande);
         ticket.setDateEmission(LocalDateTime.now());
@@ -363,28 +327,34 @@ public class GestionnaireServiceImpl implements GestionnaireService {
         ticket.setValidateur(demande.getGestionnaire());
         ticket.setEntreprise(demande.getEntreprise());
 
-        // 6️⃣ Créer et sauvegarder l’attribution (UUID)
+        Ticket savedTicket = ticketRepository.save(ticket);
+
+        // 6️⃣ Créer l’attribution après (le ticket a maintenant un ID)
         Attribution attribution = new Attribution();
         attribution.setChauffeur(chauffeur);
-        attribution = attributionRepository.save(attribution); // ✅ Sauvegarde explicite (UUID généré automatiquement)
+        attribution.setTicket(savedTicket);
+        attribution.setDateAttribution(LocalDateTime.now().toLocalDate());
+        attribution.setQuantite(demande.getQuantite());
+        attribution.setStatutAttribution(StatutAttribution.EN_COURS); // ✅ cohérent avec ton enum
 
-        // 7️⃣ Lier attribution ↔ ticket
-        attribution.setTicket(ticket);
-        ticket.setAttribution(attribution);
+        Attribution savedAttribution = attributionRepository.save(attribution);
+
+        // 7️⃣ Mettre à jour le ticket avec l’attribution
+        savedTicket.setAttribution(savedAttribution);
 
         // 8️⃣ Générer le QR code
         try {
-            ticket.setCodeQr(qrCodeGenerator.generateQRCodeForTicket(ticket));
+            savedTicket.setCodeQr(qrCodeGenerator.generateQRCodeForTicket(savedTicket));
+            savedTicket = ticketRepository.save(savedTicket);
         } catch (Exception e) {
             throw new RuntimeException("Erreur lors de la génération du QR code du ticket.", e);
         }
 
-        // 9️⃣ Sauvegarder ticket et demande
-        Ticket savedTicket = ticketRepository.save(ticket);
+        // 9️⃣ Lier le ticket validé à la demande
         demande.setTicket(savedTicket);
         demandeRepository.save(demande);
 
-        // 🔟 (Optionnel) Notification au demandeur
+        // 🔔 Notification au demandeur
         if (demande.getDemandeur() != null) {
             notificationService.sendNotificationToUtilisateur(
                     demande.getDemandeur().getId().toString(),

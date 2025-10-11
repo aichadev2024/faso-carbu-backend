@@ -26,8 +26,6 @@ import java.util.Map;
 public class GestionnaireController {
 
     private final GestionnaireService service;
-    @Autowired
-    private GestionnaireService gestionnaireService;
 
     @Autowired
     public GestionnaireController(GestionnaireService service) {
@@ -35,44 +33,11 @@ public class GestionnaireController {
     }
 
     // ------------------- Gestionnaires -------------------
-    @GetMapping("/id/{id}")
-    public ResponseEntity<?> obtenir(@PathVariable UUID id) {
-        Gestionnaire gestionnaire = service.obtenirGestionnaire(id);
-        if (gestionnaire == null) {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Gestionnaire introuvable");
-        }
-        return ResponseEntity.ok(gestionnaire);
-    }
 
     @GetMapping
     public ResponseEntity<List<Gestionnaire>> obtenirTous(@AuthenticationPrincipal UserDetailsImpl userDetails) {
         Long entrepriseId = userDetails.getEntrepriseId();
         return ResponseEntity.ok(service.obtenirGestionnairesParEntreprise(entrepriseId));
-    }
-
-    @PostMapping
-    public ResponseEntity<Gestionnaire> ajouter(@Valid @RequestBody Gestionnaire gestionnaire,
-            @AuthenticationPrincipal UserDetailsImpl userDetails) {
-        gestionnaire.setEntreprise(new Entreprise(userDetails.getEntrepriseId()));
-        return ResponseEntity.status(HttpStatus.CREATED).body(service.ajouterGestionnaire(gestionnaire));
-    }
-
-    @PutMapping("/id/{id}")
-    public ResponseEntity<?> modifier(@PathVariable UUID id,
-            @Valid @RequestBody Gestionnaire gestionnaire,
-            @AuthenticationPrincipal UserDetailsImpl userDetails) {
-        gestionnaire.setEntreprise(new Entreprise(userDetails.getEntrepriseId()));
-        Gestionnaire updated = service.modifierGestionnaire(id, gestionnaire);
-        if (updated == null) {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Gestionnaire introuvable pour mise à jour");
-        }
-        return ResponseEntity.ok(updated);
-    }
-
-    @DeleteMapping("/id/{id}")
-    public ResponseEntity<Void> supprimer(@PathVariable UUID id) {
-        service.supprimerGestionnaire(id);
-        return ResponseEntity.noContent().build();
     }
 
     // ------------------- Chauffeurs -------------------
@@ -110,13 +75,12 @@ public class GestionnaireController {
     // ------------------- Stations -------------------
     @PostMapping("/stations")
     @PreAuthorize("hasRole('GESTIONNAIRE')")
-    public ResponseEntity<Station> creerStationAvecAdmin(
-            @RequestBody StationAvecAdminRequest request,
+    public ResponseEntity<Station> creerStationAvecAdmin(@RequestBody StationAvecAdminRequest request,
             @AuthenticationPrincipal UserDetailsImpl userDetails) {
-
         UUID gestionnaireId = userDetails.getId();
         request.setEntrepriseId(userDetails.getEntrepriseId());
-        return ResponseEntity.status(HttpStatus.CREATED).body(service.creerStationAvecAdmin(request, gestionnaireId));
+        return ResponseEntity.status(HttpStatus.CREATED)
+                .body(service.creerStationAvecAdmin(request, gestionnaireId));
     }
 
     @GetMapping("/stations")
@@ -136,13 +100,10 @@ public class GestionnaireController {
 
     @PostMapping("/demandes/{id}/valider")
     @PreAuthorize("hasRole('GESTIONNAIRE')")
-    public ResponseEntity<?> validerDemande(
-            @PathVariable Long id,
+    public ResponseEntity<?> validerDemande(@PathVariable Long id,
             @RequestParam UUID chauffeurId,
             @AuthenticationPrincipal UserDetailsImpl userDetails) {
-
         Long entrepriseId = userDetails.getEntrepriseId();
-
         try {
             Ticket ticket = service.validerDemandeEtGenererTicketParEntreprise(id, entrepriseId, chauffeurId);
             return ResponseEntity.ok(ticket);
@@ -153,25 +114,22 @@ public class GestionnaireController {
 
     @PostMapping("/demandes/{id}/rejeter")
     @PreAuthorize("hasRole('GESTIONNAIRE')")
-    public ResponseEntity<?> rejeterDemande(
-            @PathVariable Long id,
-            @RequestBody Map<String, String> body, // récupère le JSON du body
+    public ResponseEntity<?> rejeterDemande(@PathVariable Long id,
+            @RequestBody Map<String, String> body,
             @AuthenticationPrincipal UserDetailsImpl userDetails) {
-
         Long entrepriseId = userDetails.getEntrepriseId();
-        String motif = body.get("motif"); // récupère le motif depuis le body
+        String motif = body.get("motif");
+
         if (motif == null || motif.isEmpty()) {
             return ResponseEntity.badRequest().body("Le champ 'motif' est obligatoire");
         }
 
-        Demande demande;
         try {
-            demande = service.rejeterDemandeParEntreprise(id, motif, entrepriseId);
-        } catch (RuntimeException e) { // <-- uniquement RuntimeException
+            Demande demande = service.rejeterDemandeParEntreprise(id, motif, entrepriseId);
+            return ResponseEntity.ok(demande);
+        } catch (RuntimeException e) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(e.getMessage());
         }
-
-        return ResponseEntity.ok(demande);
     }
 
     // ------------------- Tickets -------------------
@@ -184,7 +142,7 @@ public class GestionnaireController {
 
     @GetMapping("/export/consommation/{entrepriseId}")
     public ResponseEntity<Resource> exporterRapportParEntreprise(@PathVariable Long entrepriseId) {
-        Resource file = gestionnaireService.exporterRapportConsommationParEntreprise(entrepriseId);
+        Resource file = service.exporterRapportConsommationParEntreprise(entrepriseId);
         return ResponseEntity.ok()
                 .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\"rapport.xlsx\"")
                 .body(file);
