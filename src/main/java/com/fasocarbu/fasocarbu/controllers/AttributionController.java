@@ -6,6 +6,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.UUID;
 
 @RestController
 @RequestMapping("/api/attributions")
@@ -25,12 +26,12 @@ public class AttributionController {
     }
 
     @GetMapping("/{id}")
-    public Attribution getById(@PathVariable Long id) {
+    public Attribution getById(@PathVariable UUID id) {
         return attributionService.getAttributionById(id);
     }
 
     @DeleteMapping("/{id}")
-    public void delete(@PathVariable Long id) {
+    public void delete(@PathVariable UUID id) {
         attributionService.supprimerAttribution(id);
     }
 }

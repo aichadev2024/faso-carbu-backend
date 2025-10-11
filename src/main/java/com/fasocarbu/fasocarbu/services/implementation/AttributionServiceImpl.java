@@ -7,6 +7,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+import java.util.UUID;
 
 @Service
 public class AttributionServiceImpl implements AttributionService {
@@ -25,12 +26,12 @@ public class AttributionServiceImpl implements AttributionService {
     }
 
     @Override
-    public Attribution getAttributionById(Long id) {
+    public Attribution getAttributionById(UUID id) {
         return attributionRepository.findById(id).orElse(null);
     }
 
     @Override
-    public void supprimerAttribution(Long id) {
+    public void supprimerAttribution(UUID id) {
         attributionRepository.deleteById(id);
     }
 

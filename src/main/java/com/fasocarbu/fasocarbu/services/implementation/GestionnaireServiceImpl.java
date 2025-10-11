@@ -52,6 +52,7 @@ public class GestionnaireServiceImpl implements GestionnaireService {
     private NotificationService notificationService;
     @Autowired
     private QRCodeGenerator qrCodeGenerator;
+    @Autowired
     private AttributionRepository attributionRepository;
 
     @Override
