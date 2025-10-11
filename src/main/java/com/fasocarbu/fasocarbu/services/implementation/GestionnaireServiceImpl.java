@@ -51,6 +51,8 @@ public class GestionnaireServiceImpl implements GestionnaireService {
     private NotificationService notificationService;
     @Autowired
     private QRCodeGenerator qrCodeGenerator;
+    @Autowired
+    private AttributionRepository attributionRepository;
 
     // ------------------- Gestionnaires -------------------
     @Override
@@ -316,8 +318,8 @@ public class GestionnaireServiceImpl implements GestionnaireService {
     @Override
     @Transactional
     public Ticket validerDemandeEtGenererTicketParEntreprise(Long demandeId, Long entrepriseId, UUID chauffeurId) {
-        // 🔹 1. Récupérer la demande et vérifier qu’elle appartient à la bonne
-        // entreprise
+
+        // 1️⃣ Vérifier la demande et l’entreprise
         Demande demande = demandeRepository.findByIdAndEntreprise_Id(demandeId, entrepriseId)
                 .orElseThrow(() -> new IllegalArgumentException(
                         "Demande introuvable ou ne correspond pas à votre entreprise."));
@@ -326,16 +328,15 @@ public class GestionnaireServiceImpl implements GestionnaireService {
             throw new IllegalStateException("Cette demande a déjà été traitée (" + demande.getStatut() + ").");
         }
 
-        if (demande.getVehicule() == null) {
-            throw new IllegalArgumentException("La demande ne contient pas de véhicule valide.");
-        }
-        if (demande.getStation() == null) {
+        // 2️⃣ Vérifications de base
+        if (demande.getVehicule() == null)
+            throw new IllegalArgumentException("La demande ne contient pas de véhicule.");
+        if (demande.getStation() == null)
             throw new IllegalArgumentException("La demande ne contient pas de station.");
-        }
-        if (demande.getCarburant() == null) {
+        if (demande.getCarburant() == null)
             throw new IllegalArgumentException("La demande ne contient pas de carburant.");
-        }
 
+        // 3️⃣ Récupérer le chauffeur
         Chauffeur chauffeur = chauffeurRepository.findById(chauffeurId)
                 .orElseThrow(() -> new IllegalArgumentException("Chauffeur introuvable."));
 
@@ -347,11 +348,11 @@ public class GestionnaireServiceImpl implements GestionnaireService {
             throw new IllegalArgumentException("Ce chauffeur n'appartient pas à votre entreprise.");
         }
 
-        // 🔹 5. Mettre à jour la demande
+        // 4️⃣ Mettre à jour la demande
         demande.setStatut(StatutDemande.VALIDEE);
         demande.setDateValidation(LocalDateTime.now());
 
-        // 🔹 6. Créer le ticket carburant
+        // 5️⃣ Créer le ticket
         Ticket ticket = new Ticket();
         ticket.setDemande(demande);
         ticket.setDateEmission(LocalDateTime.now());
@@ -362,25 +363,28 @@ public class GestionnaireServiceImpl implements GestionnaireService {
         ticket.setValidateur(demande.getGestionnaire());
         ticket.setEntreprise(demande.getEntreprise());
 
-        // 🔹 7. Lier le chauffeur via Attribution
+        // 6️⃣ Créer et sauvegarder l’attribution (UUID)
         Attribution attribution = new Attribution();
         attribution.setChauffeur(chauffeur);
+        attribution = attributionRepository.save(attribution); // ✅ Sauvegarde explicite (UUID généré automatiquement)
+
+        // 7️⃣ Lier attribution ↔ ticket
         attribution.setTicket(ticket);
         ticket.setAttribution(attribution);
 
-        // 🔹 8. Générer un QR code unique
+        // 8️⃣ Générer le QR code
         try {
             ticket.setCodeQr(qrCodeGenerator.generateQRCodeForTicket(ticket));
         } catch (Exception e) {
             throw new RuntimeException("Erreur lors de la génération du QR code du ticket.", e);
         }
 
-        // 🔹 9. Sauvegarder le ticket et la demande
+        // 9️⃣ Sauvegarder ticket et demande
         Ticket savedTicket = ticketRepository.save(ticket);
         demande.setTicket(savedTicket);
         demandeRepository.save(demande);
 
-        // 🔹 10. (Optionnel) Envoyer une notification au demandeur
+        // 🔟 (Optionnel) Notification au demandeur
         if (demande.getDemandeur() != null) {
             notificationService.sendNotificationToUtilisateur(
                     demande.getDemandeur().getId().toString(),
