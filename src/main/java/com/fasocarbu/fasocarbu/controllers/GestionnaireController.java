@@ -133,31 +133,22 @@ public class GestionnaireController {
         Long entrepriseId = userDetails.getEntrepriseId();
         return ResponseEntity.ok(service.obtenirDemandesParEntreprise(entrepriseId));
     }
-    // <-- à ajouter en haut du fichier
 
     @PostMapping("/demandes/{id}/valider")
     @PreAuthorize("hasRole('GESTIONNAIRE')")
     public ResponseEntity<?> validerDemande(
             @PathVariable Long id,
-            @RequestBody Map<String, String> body, // récupère le JSON du body
+            @RequestParam UUID chauffeurId,
             @AuthenticationPrincipal UserDetailsImpl userDetails) {
 
         Long entrepriseId = userDetails.getEntrepriseId();
-        String chauffeurIdStr = body.get("chauffeurId"); // récupère le chauffeurId depuis le body
-        if (chauffeurIdStr == null) {
-            return ResponseEntity.badRequest().body("Le champ 'chauffeurId' est obligatoire");
-        }
 
-        UUID chauffeurId = UUID.fromString(chauffeurIdStr);
-
-        Ticket ticket;
         try {
-            ticket = service.validerDemandeEtGenererTicketParEntreprise(id, entrepriseId, chauffeurId);
-        } catch (RuntimeException e) { // <-- uniquement RuntimeException
+            Ticket ticket = service.validerDemandeEtGenererTicketParEntreprise(id, entrepriseId, chauffeurId);
+            return ResponseEntity.ok(ticket);
+        } catch (RuntimeException e) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(e.getMessage());
         }
-
-        return ResponseEntity.ok(ticket);
     }
 
     @PostMapping("/demandes/{id}/rejeter")

@@ -12,6 +12,7 @@ import org.springframework.core.io.Resource;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
@@ -313,34 +314,44 @@ public class GestionnaireServiceImpl implements GestionnaireService {
     }
 
     @Override
+    @Transactional
     public Ticket validerDemandeEtGenererTicketParEntreprise(Long demandeId, Long entrepriseId, UUID chauffeurId) {
-        // Récupérer la demande en vérifiant l'entreprise
+        // 🔹 1. Récupérer la demande et vérifier qu’elle appartient à la bonne
+        // entreprise
         Demande demande = demandeRepository.findByIdAndEntreprise_Id(demandeId, entrepriseId)
-                .orElseThrow(() -> new RuntimeException("Demande introuvable ou hors entreprise"));
+                .orElseThrow(() -> new IllegalArgumentException(
+                        "Demande introuvable ou ne correspond pas à votre entreprise."));
 
-        // Vérifier que la demande est en attente
-        if (demande.getStatut() != StatutDemande.EN_ATTENTE)
-            throw new IllegalStateException("Demande déjà traitée");
+        if (demande.getStatut() != StatutDemande.EN_ATTENTE) {
+            throw new IllegalStateException("Cette demande a déjà été traitée (" + demande.getStatut() + ").");
+        }
 
-        // Vérifier les champs obligatoires de la demande
-        if (demande.getGestionnaire() == null || demande.getGestionnaire().getEntreprise() == null)
-            throw new RuntimeException("Gestionnaire ou entreprise introuvable pour la demande");
-        if (demande.getVehicule() == null)
-            throw new RuntimeException("Véhicule introuvable pour la demande");
-        if (demande.getStation() == null)
-            throw new RuntimeException("Station introuvable pour la demande");
-        if (demande.getCarburant() == null)
-            throw new RuntimeException("Carburant introuvable pour la demande");
+        if (demande.getVehicule() == null) {
+            throw new IllegalArgumentException("La demande ne contient pas de véhicule valide.");
+        }
+        if (demande.getStation() == null) {
+            throw new IllegalArgumentException("La demande ne contient pas de station.");
+        }
+        if (demande.getCarburant() == null) {
+            throw new IllegalArgumentException("La demande ne contient pas de carburant.");
+        }
 
-        // Récupérer le chauffeur sélectionné
         Chauffeur chauffeur = chauffeurRepository.findById(chauffeurId)
-                .orElseThrow(() -> new RuntimeException("Chauffeur introuvable"));
+                .orElseThrow(() -> new IllegalArgumentException("Chauffeur introuvable."));
 
-        // Mettre à jour le statut et la date de validation
+        if (chauffeur.getEntreprise() == null) {
+            throw new IllegalArgumentException("Ce chauffeur n'est pas associé à une entreprise valide.");
+        }
+
+        if (!chauffeur.getEntreprise().getId().equals(entrepriseId)) {
+            throw new IllegalArgumentException("Ce chauffeur n'appartient pas à votre entreprise.");
+        }
+
+        // 🔹 5. Mettre à jour la demande
         demande.setStatut(StatutDemande.VALIDEE);
         demande.setDateValidation(LocalDateTime.now());
 
-        // Créer le ticket
+        // 🔹 6. Créer le ticket carburant
         Ticket ticket = new Ticket();
         ticket.setDemande(demande);
         ticket.setDateEmission(LocalDateTime.now());
@@ -349,25 +360,32 @@ public class GestionnaireServiceImpl implements GestionnaireService {
         ticket.setVehicule(demande.getVehicule());
         ticket.setQuantite(BigDecimal.valueOf(demande.getQuantite()));
         ticket.setValidateur(demande.getGestionnaire());
-        ticket.setEntreprise(demande.getGestionnaire().getEntreprise());
+        ticket.setEntreprise(demande.getEntreprise());
 
-        // Attribution correcte du chauffeur
+        // 🔹 7. Lier le chauffeur via Attribution
         Attribution attribution = new Attribution();
         attribution.setChauffeur(chauffeur);
         attribution.setTicket(ticket);
         ticket.setAttribution(attribution);
 
-        // Génération du QR code
+        // 🔹 8. Générer un QR code unique
         try {
             ticket.setCodeQr(qrCodeGenerator.generateQRCodeForTicket(ticket));
         } catch (Exception e) {
-            throw new RuntimeException("Erreur génération QR", e);
+            throw new RuntimeException("Erreur lors de la génération du QR code du ticket.", e);
         }
 
-        // Sauvegarder le ticket et l'associer à la demande
+        // 🔹 9. Sauvegarder le ticket et la demande
         Ticket savedTicket = ticketRepository.save(ticket);
         demande.setTicket(savedTicket);
         demandeRepository.save(demande);
+
+        // 🔹 10. (Optionnel) Envoyer une notification au demandeur
+        if (demande.getDemandeur() != null) {
+            notificationService.sendNotificationToUtilisateur(
+                    demande.getDemandeur().getId().toString(),
+                    "Votre demande de carburant a été validée. Ticket généré avec succès.");
+        }
 
         return savedTicket;
     }
