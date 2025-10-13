@@ -66,8 +66,8 @@ public class SecurityConfig {
                         .requestMatchers("/api/utilisateurs/ajouter").hasRole("GESTIONNAIRE")
 
                         // Gestionnaire : accès aux autres endpoints
-                        .requestMatchers("/api/gestionnaires/**").hasRole("GESTIONNAIRE")
                         .requestMatchers("/api/gestionnaires/stations/**").hasAnyRole("GESTIONNAIRE", "DEMANDEUR")
+                        .requestMatchers("/api/gestionnaires/**").hasRole("GESTIONNAIRE")
 
                         // Gestionnaire + Demandeur
                         .requestMatchers("/api/demandes/**").hasAnyRole("GESTIONNAIRE", "DEMANDEUR")
