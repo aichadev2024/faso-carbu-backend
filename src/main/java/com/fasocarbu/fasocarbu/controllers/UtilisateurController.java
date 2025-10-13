@@ -5,7 +5,7 @@ import com.fasocarbu.fasocarbu.dtos.UpdateFcmTokenRequest;
 import com.fasocarbu.fasocarbu.dtos.UtilisateurDTO;
 import com.fasocarbu.fasocarbu.models.Utilisateur;
 import com.fasocarbu.fasocarbu.security.services.UserDetailsImpl;
-import com.fasocarbu.fasocarbu.services.interfaces.*;
+import com.fasocarbu.fasocarbu.services.interfaces.UtilisateurService;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.io.UrlResource;
@@ -42,21 +42,39 @@ public class UtilisateurController {
         return ResponseEntity.status(HttpStatus.CREATED).body(savedUser);
     }
 
-    // =================== Récupération ===================
+    // =================== Récupération par ID ===================
     @GetMapping("/{id}")
     public ResponseEntity<Utilisateur> getUtilisateurById(@PathVariable UUID id) {
         Utilisateur u = utilisateurService.getUtilisateurById(id);
         return ResponseEntity.ok(u);
     }
 
+    // =================== Liste des utilisateurs (Gestionnaire & Demandeur)
+    // ===================
     @GetMapping
-    @PreAuthorize("hasRole('GESTIONNAIRE')")
-    public ResponseEntity<List<Utilisateur>> getUtilisateursDuGestionnaire(
-            @AuthenticationPrincipal UserDetailsImpl userDetails) {
+    @PreAuthorize("hasAnyRole('GESTIONNAIRE', 'DEMANDEUR')")
+    public ResponseEntity<?> getUtilisateurs(@AuthenticationPrincipal UserDetailsImpl userDetails) {
 
-        UUID gestionnaireId = userDetails.getId();
-        List<Utilisateur> users = utilisateurService.getUtilisateursParGestionnaire(gestionnaireId);
-        return ResponseEntity.ok(users);
+        // Si c’est un gestionnaire → retourne ses utilisateurs
+        if (userDetails.getAuthorities().stream().anyMatch(a -> a.getAuthority().equals("ROLE_GESTIONNAIRE"))) {
+            UUID gestionnaireId = userDetails.getId();
+            List<Utilisateur> users = utilisateurService.getUtilisateursParGestionnaire(gestionnaireId);
+            return ResponseEntity.ok(users);
+        }
+
+        // Si c’est un demandeur → retourne les chauffeurs de son entreprise
+        if (userDetails.getAuthorities().stream().anyMatch(a -> a.getAuthority().equals("ROLE_DEMANDEUR"))) {
+            Long entrepriseId = utilisateurService.getEntrepriseIdFromUser(userDetails.getId());
+            List<UtilisateurDTO> chauffeurs = utilisateurService.getChauffeursByEntreprise(entrepriseId)
+                    .stream()
+                    .map(UtilisateurDTO::new)
+                    .toList();
+            return ResponseEntity.ok(chauffeurs);
+        }
+
+        // 🟡 Si aucun rôle correspondant → renvoyer une réponse claire
+        return ResponseEntity.status(HttpStatus.FORBIDDEN)
+                .body("Accès non autorisé pour cet utilisateur.");
     }
 
     // =================== Suppression ===================
@@ -85,8 +103,10 @@ public class UtilisateurController {
         return ResponseEntity.ok("Token mis à jour avec succès !");
     }
 
+    // =================== Chauffeurs par entreprise (Gestionnaire & Demandeur)
+    // ===================
     @GetMapping("/chauffeurs/{entrepriseId}")
-    @PreAuthorize("hasRole('GESTIONNAIRE')")
+    @PreAuthorize("hasAnyRole('GESTIONNAIRE', 'DEMANDEUR')")
     public List<UtilisateurDTO> getChauffeursByEntreprise(@PathVariable Long entrepriseId) {
         return utilisateurService.getChauffeursByEntreprise(entrepriseId)
                 .stream()
