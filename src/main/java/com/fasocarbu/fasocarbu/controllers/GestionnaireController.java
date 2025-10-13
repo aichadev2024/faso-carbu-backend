@@ -84,7 +84,7 @@ public class GestionnaireController {
     }
 
     @GetMapping("/stations")
-    @PreAuthorize("hasRole('GESTIONNAIRE','DEMANDEUR')")
+    @PreAuthorize("hasAnyRole('GESTIONNAIRE', 'DEMANDEUR')")
     public ResponseEntity<List<Station>> getStations(@AuthenticationPrincipal UserDetailsImpl userDetails) {
         Long entrepriseId = userDetails.getEntrepriseId();
         return ResponseEntity.ok(service.obtenirStationsParEntreprise(entrepriseId));
