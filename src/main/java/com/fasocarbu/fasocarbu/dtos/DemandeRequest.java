@@ -6,6 +6,7 @@ public class DemandeRequest {
 
     private UUID demandeurId;
     private UUID gestionnaireId;
+    private UUID chauffeurId; // ✅ nouveau champ
     private Long carburantId;
     private Long stationId;
     private Long vehiculeId;
@@ -25,6 +26,14 @@ public class DemandeRequest {
 
     public void setGestionnaireId(UUID gestionnaireId) {
         this.gestionnaireId = gestionnaireId;
+    }
+
+    public UUID getChauffeurId() {
+        return chauffeurId;
+    }
+
+    public void setChauffeurId(UUID chauffeurId) {
+        this.chauffeurId = chauffeurId;
     }
 
     public Long getCarburantId() {

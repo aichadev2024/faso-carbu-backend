@@ -1,7 +1,6 @@
 package com.fasocarbu.fasocarbu.services.implementation;
 
 import com.fasocarbu.fasocarbu.dtos.*;
-import com.fasocarbu.fasocarbu.enums.StatutAttribution;
 import com.fasocarbu.fasocarbu.enums.StatutDemande;
 import com.fasocarbu.fasocarbu.models.*;
 import com.fasocarbu.fasocarbu.repositories.*;
@@ -52,8 +51,6 @@ public class GestionnaireServiceImpl implements GestionnaireService {
     private NotificationService notificationService;
     @Autowired
     private QRCodeGenerator qrCodeGenerator;
-    @Autowired
-    private AttributionRepository attributionRepository;
 
     @Override
     public Gestionnaire ajouterGestionnaireAvecEntreprise(GestionnaireAvecEntrepriseRequest request) {
@@ -179,6 +176,17 @@ public class GestionnaireServiceImpl implements GestionnaireService {
         demande.setVehicule(vehiculeRepository.findById(request.getVehiculeId()).orElse(null));
         demande.setGestionnaire(gestionnaireRepository.findById(request.getGestionnaireId()).orElse(null));
         demande.setStatut(StatutDemande.EN_ATTENTE);
+        // ✅ Associer le demandeur et le chauffeur
+        if (request.getDemandeurId() != null) {
+            demande.setDemandeur(demandeurRepository.findById(request.getDemandeurId())
+                    .orElseThrow(() -> new RuntimeException("Demandeur introuvable")));
+        }
+
+        if (request.getChauffeurId() != null) {
+            demande.setChauffeur(chauffeurRepository.findById(request.getChauffeurId())
+                    .orElseThrow(() -> new RuntimeException("Chauffeur introuvable")));
+        }
+
         return demandeRepository.save(demande);
     }
 
@@ -284,7 +292,7 @@ public class GestionnaireServiceImpl implements GestionnaireService {
     @Transactional
     public Ticket validerDemandeEtGenererTicketParEntreprise(Long demandeId, Long entrepriseId, UUID chauffeurId) {
 
-        // 1️⃣ Vérifier la demande et l’entreprise
+        // 1️⃣ Récupérer la demande et vérifier l’entreprise
         Demande demande = demandeRepository.findByIdAndEntreprise_Id(demandeId, entrepriseId)
                 .orElseThrow(() -> new IllegalArgumentException(
                         "Demande introuvable ou ne correspond pas à votre entreprise."));
@@ -301,23 +309,21 @@ public class GestionnaireServiceImpl implements GestionnaireService {
         if (demande.getCarburant() == null)
             throw new IllegalArgumentException("La demande ne contient pas de carburant.");
 
-        // 3️⃣ Récupérer le chauffeur
-        Chauffeur chauffeur = chauffeurRepository.findById(chauffeurId)
-                .orElseThrow(() -> new IllegalArgumentException("Chauffeur introuvable."));
-
-        if (chauffeur.getEntreprise() == null) {
-            throw new IllegalArgumentException("Ce chauffeur n'est pas associé à une entreprise valide.");
+        // 3️⃣ Si un chauffeurId est présent, vérifier qu’il est valide (optionnel)
+        Chauffeur chauffeur = null;
+        if (chauffeurId != null) {
+            chauffeur = chauffeurRepository.findById(chauffeurId)
+                    .orElseThrow(() -> new IllegalArgumentException("Chauffeur introuvable."));
+            if (!chauffeur.getEntreprise().getId().equals(entrepriseId)) {
+                throw new IllegalArgumentException("Ce chauffeur n'appartient pas à votre entreprise.");
+            }
         }
 
-        if (!chauffeur.getEntreprise().getId().equals(entrepriseId)) {
-            throw new IllegalArgumentException("Ce chauffeur n'appartient pas à votre entreprise.");
-        }
-
-        // 4️⃣ Mettre à jour la demande
+        // 4️⃣ Mettre à jour le statut de la demande
         demande.setStatut(StatutDemande.VALIDEE);
         demande.setDateValidation(LocalDateTime.now());
 
-        // 5️⃣ Créer et sauvegarder le ticket (⚠️ D’abord sauvegarder le ticket seul)
+        // 5️⃣ Créer le ticket sans attribution
         Ticket ticket = new Ticket();
         ticket.setDemande(demande);
         ticket.setDateEmission(LocalDateTime.now());
@@ -328,34 +334,26 @@ public class GestionnaireServiceImpl implements GestionnaireService {
         ticket.setValidateur(demande.getGestionnaire());
         ticket.setEntreprise(demande.getEntreprise());
 
-        Ticket savedTicket = ticketRepository.save(ticket);
-
-        // 6️⃣ Créer l’attribution après (le ticket a maintenant un ID)
-        Attribution attribution = new Attribution();
-        attribution.setChauffeur(chauffeur);
-        attribution.setTicket(savedTicket);
-        attribution.setDateAttribution(LocalDateTime.now().toLocalDate());
-        attribution.setQuantite(demande.getQuantite());
-        attribution.setStatutAttribution(StatutAttribution.EN_COURS); // ✅ cohérent avec ton enum
-
-        Attribution savedAttribution = attributionRepository.save(attribution);
-
-        // 7️⃣ Mettre à jour le ticket avec l’attribution
-        savedTicket.setAttribution(savedAttribution);
-
-        // 8️⃣ Générer le QR code
-        try {
-            savedTicket.setCodeQr(qrCodeGenerator.generateQRCodeForTicket(savedTicket));
-            savedTicket = ticketRepository.save(savedTicket);
-        } catch (Exception e) {
-            throw new RuntimeException("Erreur lors de la génération du QR code du ticket.", e);
+        // 🚗 Associer le chauffeur si présent (facultatif)
+        if (chauffeur != null) {
+            ticket.setUtilisateur(chauffeur);
         }
 
-        // 9️⃣ Lier le ticket validé à la demande
+        // 6️⃣ Générer le QR Code
+        try {
+            ticket.setCodeQr(qrCodeGenerator.generateQRCodeForTicket(ticket));
+        } catch (Exception e) {
+            throw new RuntimeException("Erreur lors de la génération du QR code.", e);
+        }
+
+        // 7️⃣ Sauvegarder le ticket
+        Ticket savedTicket = ticketRepository.save(ticket);
+
+        // 8️⃣ Lier le ticket à la demande
         demande.setTicket(savedTicket);
         demandeRepository.save(demande);
 
-        // 🔔 Notification au demandeur
+        // 9️⃣ Notifier le demandeur
         if (demande.getDemandeur() != null) {
             notificationService.sendNotificationToUtilisateur(
                     demande.getDemandeur().getId().toString(),

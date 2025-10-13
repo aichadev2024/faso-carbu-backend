@@ -18,4 +18,6 @@ public interface UtilisateurRepository extends JpaRepository<Utilisateur, UUID> 
 
     List<Utilisateur> findByEntreprise_Id(Long entrepriseId);
 
+    Optional<Utilisateur> findFirstByEntreprise_IdAndRole(Long entrepriseId, Role role);
+
 }

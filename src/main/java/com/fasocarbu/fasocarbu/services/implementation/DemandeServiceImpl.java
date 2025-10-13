@@ -20,41 +20,40 @@ public class DemandeServiceImpl implements DemandeService {
     private final VehiculeRepository vehiculeRepository;
     private final StationRepository stationRepository;
     private final CarburantRepository carburantRepository;
+    private final GestionnaireRepository gestionnaireRepository;
 
     @Override
-    public Demande creerDemandeAvecTicket(UUID userId, Long carburantId, Long stationId, Long vehiculeId,
-            double quantite) {
-        Utilisateur user = utilisateurRepository.findById(userId)
-                .orElseThrow(() -> new RuntimeException("Utilisateur introuvable"));
+    public Demande creerDemande(UUID demandeurId, UUID gestionnaireId, Long entrepriseId,
+            Long carburantId, Long stationId, Long vehiculeId,
+            Double quantite, UUID chauffeurId) { // ✅ ajout du chauffeurId
 
-        Vehicule vehicule = vehiculeRepository.findById(vehiculeId)
-                .orElseThrow(() -> new RuntimeException("Véhicule introuvable"));
+        Utilisateur demandeur = utilisateurRepository.findById(demandeurId)
+                .orElseThrow(() -> new RuntimeException("Demandeur introuvable"));
+        Gestionnaire gestionnaire = gestionnaireRepository.findById(gestionnaireId)
+                .orElseThrow(() -> new RuntimeException("Gestionnaire introuvable"));
+
+        // ✅ Nouveau : récupération du chauffeur
+        Utilisateur chauffeur = utilisateurRepository.findById(chauffeurId)
+                .orElseThrow(() -> new RuntimeException("Chauffeur introuvable"));
 
         Station station = stationRepository.findById(stationId)
                 .orElseThrow(() -> new RuntimeException("Station introuvable"));
-
+        Vehicule vehicule = vehiculeRepository.findById(vehiculeId)
+                .orElseThrow(() -> new RuntimeException("Véhicule introuvable"));
         Carburant carburant = carburantRepository.findById(carburantId)
                 .orElseThrow(() -> new RuntimeException("Carburant introuvable"));
 
         Demande demande = new Demande();
-        demande.setVehicule(vehicule);
+        demande.setDemandeur(demandeur);
+        demande.setGestionnaire(gestionnaire);
+        demande.setChauffeur(chauffeur);
+        demande.setEntreprise(new Entreprise(entrepriseId));
         demande.setStation(station);
+        demande.setVehicule(vehicule);
         demande.setCarburant(carburant);
         demande.setQuantite(quantite);
         demande.setStatut(StatutDemande.EN_ATTENTE);
         demande.setDateDemande(LocalDateTime.now());
-
-        // ✅ Affectation selon le type d'utilisateur
-        if (user instanceof Gestionnaire) {
-            demande.setGestionnaire((Gestionnaire) user);
-        } else if (user instanceof Demandeur) {
-            demande.setDemandeur((Demandeur) user);
-        } else {
-            throw new RuntimeException("Seuls un gestionnaire ou un demandeur peuvent créer une demande");
-        }
-
-        // ✅ Affectation de l'entreprise
-        demande.setEntreprise(user.getEntreprise());
 
         return demandeRepository.save(demande);
     }

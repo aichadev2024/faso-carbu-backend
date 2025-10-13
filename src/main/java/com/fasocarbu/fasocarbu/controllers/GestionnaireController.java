@@ -66,7 +66,7 @@ public class GestionnaireController {
     }
 
     @GetMapping("/vehicules")
-    @PreAuthorize("hasRole('GESTIONNAIRE')")
+    @PreAuthorize("hasRole('GESTIONNAIRE','DEMANDEUR')")
     public ResponseEntity<List<Vehicule>> getVehicules(@AuthenticationPrincipal UserDetailsImpl userDetails) {
         Long entrepriseId = userDetails.getEntrepriseId();
         return ResponseEntity.ok(service.obtenirVehiculesParEntreprise(entrepriseId));
@@ -84,7 +84,7 @@ public class GestionnaireController {
     }
 
     @GetMapping("/stations")
-    @PreAuthorize("hasRole('GESTIONNAIRE')")
+    @PreAuthorize("hasRole('GESTIONNAIRE','DEMANDEUR')")
     public ResponseEntity<List<Station>> getStations(@AuthenticationPrincipal UserDetailsImpl userDetails) {
         Long entrepriseId = userDetails.getEntrepriseId();
         return ResponseEntity.ok(service.obtenirStationsParEntreprise(entrepriseId));
@@ -100,15 +100,21 @@ public class GestionnaireController {
 
     @PostMapping("/demandes/{id}/valider")
     @PreAuthorize("hasRole('GESTIONNAIRE')")
-    public ResponseEntity<?> validerDemande(@PathVariable Long id,
-            @RequestParam UUID chauffeurId,
+    public ResponseEntity<?> validerDemande(
+            @PathVariable Long id,
+            @RequestParam(required = false) UUID chauffeurId, // ✅ rendu optionnel
             @AuthenticationPrincipal UserDetailsImpl userDetails) {
+
         Long entrepriseId = userDetails.getEntrepriseId();
+
         try {
             Ticket ticket = service.validerDemandeEtGenererTicketParEntreprise(id, entrepriseId, chauffeurId);
             return ResponseEntity.ok(ticket);
-        } catch (RuntimeException e) {
+        } catch (IllegalArgumentException | IllegalStateException e) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(e.getMessage());
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body("Erreur lors de la validation de la demande : " + e.getMessage());
         }
     }
 

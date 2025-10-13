@@ -67,7 +67,7 @@ public class VehiculeController {
 
     // Récupérer tous les véhicules
     @GetMapping
-    @PreAuthorize("hasAnyRole('GESTIONNAIRE','ADMIN')")
+    @PreAuthorize("hasAnyRole('GESTIONNAIRE','DEMANDEUR')")
     public List<VehiculeDTO> getAllVehicules(Authentication authentication) {
         String email = authentication.getName();
         Utilisateur utilisateur = utilisateurService.getUtilisateurByEmail(email);

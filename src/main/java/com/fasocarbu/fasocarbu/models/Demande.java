@@ -29,6 +29,8 @@ public class Demande {
             "credentialsNonExpired", "accountNonLocked"
     })
     private Utilisateur demandeur;
+    @ManyToOne
+    private Utilisateur chauffeur;
 
     @ManyToOne
     @JoinColumn(name = "carburant_id")
@@ -112,6 +114,14 @@ public class Demande {
 
     public void setDemandeur(Utilisateur demandeur) {
         this.demandeur = demandeur;
+    }
+
+    public Utilisateur getChauffeur() {
+        return chauffeur;
+    }
+
+    public void setChauffeur(Utilisateur chauffeur) {
+        this.chauffeur = chauffeur;
     }
 
     public Carburant getCarburant() {
