@@ -47,6 +47,8 @@
             <version>${spring-security.version}</version> 
         </dependency> 
 
+
+
         <!-- JWT Dependencies --> 
         <dependency> 
             <groupId>io.jsonwebtoken</groupId> 
@@ -164,5 +166,16 @@
             </plugin> 
         </plugins> 
     </build> 
+    <repositories>
+    <repository>
+        <id>jitpack.io</id>
+        <url>https://jitpack.io</url>
+    </repository>
+    <repository>
+        <id>central</id>
+        <url>https://repo1.maven.org/maven2/</url>
+    </repository>
+</repositories>
+
 
 </project>
