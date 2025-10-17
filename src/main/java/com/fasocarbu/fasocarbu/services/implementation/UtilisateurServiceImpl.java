@@ -1,29 +1,31 @@
 package com.fasocarbu.fasocarbu.services.implementation;
 
+import com.fasocarbu.fasocarbu.dtos.CreateUserRequest;
 import com.fasocarbu.fasocarbu.dtos.RegisterRequest;
+import com.fasocarbu.fasocarbu.enums.Role;
 import com.fasocarbu.fasocarbu.models.*;
 import com.fasocarbu.fasocarbu.repositories.EntrepriseRepository;
 import com.fasocarbu.fasocarbu.repositories.GestionnaireRepository;
 import com.fasocarbu.fasocarbu.repositories.UtilisateurRepository;
 import com.fasocarbu.fasocarbu.services.interfaces.UtilisateurService;
+import org.apache.http.client.methods.CloseableHttpResponse;
+import org.apache.http.client.methods.HttpPost;
+import org.apache.http.entity.mime.MultipartEntityBuilder;
+import org.apache.http.impl.client.CloseableHttpClient;
+import org.apache.http.impl.client.HttpClients;
+import org.apache.http.util.EntityUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.crypto.password.PasswordEncoder;
-import com.fasocarbu.fasocarbu.dtos.CreateUserRequest;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
-
-import com.fasocarbu.fasocarbu.enums.Role;
-
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.mail.SimpleMailMessage;
 
+import java.io.IOException;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
-import java.io.IOException;
-import java.nio.file.Paths;
-import java.nio.file.StandardCopyOption;
-import java.nio.file.Files;
-import java.nio.file.Path;
+import java.util.UUID;
 
 @Service
 public class UtilisateurServiceImpl implements UtilisateurService {
@@ -32,19 +34,27 @@ public class UtilisateurServiceImpl implements UtilisateurService {
     private UtilisateurRepository utilisateurRepository;
 
     @Autowired
-    private PasswordEncoder passwordEncoder;
-
-    @Autowired
     private EntrepriseRepository entrepriseRepository;
+
     @Autowired
     private GestionnaireRepository gestionnaireRepository;
 
     @Autowired
+    private PasswordEncoder passwordEncoder;
+
+    @Autowired
     private JavaMailSender mailSender;
 
-    // 🟢 Map temporaire pour stocker les tokens (clé=email, valeur=code OTP)
+    @Value("${uploadcare.publicKey}")
+    private String UPLOADCARE_PUBLIC_KEY;
+
+    @Value("${uploadcare.secretKey}")
+    private String UPLOADCARE_SECRET_KEY;
+
+    // Map temporaire pour tokens OTP
     private final Map<String, String> resetTokens = new ConcurrentHashMap<>();
 
+    // =================== Utilisateurs ===================
     @Override
     public Utilisateur enregistrerUtilisateur(Utilisateur utilisateur) {
         return utilisateurRepository.save(utilisateur);
@@ -61,13 +71,10 @@ public class UtilisateurServiceImpl implements UtilisateurService {
 
         switch (roleStr) {
             case "GESTIONNAIRE":
-                if (registerRequest.getNomEntreprise() == null || registerRequest.getNomEntreprise().isEmpty()) {
-                    throw new RuntimeException("Le nom de l'entreprise est obligatoire pour un gestionnaire");
-                }
-                if (registerRequest.getAdresseEntreprise() == null
-                        || registerRequest.getAdresseEntreprise().isEmpty()) {
-                    throw new RuntimeException("L'adresse de l'entreprise est obligatoire pour un gestionnaire");
-                }
+                if (registerRequest.getNomEntreprise() == null || registerRequest.getNomEntreprise().isEmpty())
+                    throw new RuntimeException("Le nom de l'entreprise est obligatoire");
+                if (registerRequest.getAdresseEntreprise() == null || registerRequest.getAdresseEntreprise().isEmpty())
+                    throw new RuntimeException("L'adresse de l'entreprise est obligatoire");
 
                 Entreprise entreprise = new Entreprise();
                 entreprise.setNom(registerRequest.getNomEntreprise());
@@ -114,7 +121,6 @@ public class UtilisateurServiceImpl implements UtilisateurService {
                 .orElseThrow(() -> new RuntimeException("Gestionnaire non trouvé"));
 
         Long entrepriseId = gestionnaire.getEntreprise().getId();
-
         return utilisateurRepository.findByEntreprise_Id(entrepriseId);
     }
 
@@ -123,25 +129,18 @@ public class UtilisateurServiceImpl implements UtilisateurService {
         Utilisateur utilisateur = utilisateurRepository.findById(userId)
                 .orElseThrow(() -> new RuntimeException("Utilisateur non trouvé"));
 
-        if (utilisateur.getEntreprise() != null) {
+        if (utilisateur.getEntreprise() != null)
             return utilisateur.getEntreprise().getId();
-        }
-
-        // Cas particulier : gestionnaire
-        if (utilisateur instanceof Gestionnaire gestionnaire) {
-            if (gestionnaire.getEntreprise() != null) {
-                return gestionnaire.getEntreprise().getId();
-            }
-        }
+        if (utilisateur instanceof Gestionnaire gestionnaire && gestionnaire.getEntreprise() != null)
+            return gestionnaire.getEntreprise().getId();
 
         throw new RuntimeException("Aucune entreprise associée à cet utilisateur");
     }
 
     @Override
     public void supprimerUtilisateur(UUID id) {
-        if (utilisateurRepository.existsById(id)) {
+        if (utilisateurRepository.existsById(id))
             utilisateurRepository.deleteById(id);
-        }
     }
 
     @Override
@@ -149,9 +148,8 @@ public class UtilisateurServiceImpl implements UtilisateurService {
         Utilisateur utilisateur = utilisateurRepository.findByEmail(email)
                 .orElseThrow(() -> new RuntimeException("Utilisateur non trouvé"));
 
-        if (!passwordEncoder.matches(ancien, utilisateur.getMotDePasse())) {
+        if (!passwordEncoder.matches(ancien, utilisateur.getMotDePasse()))
             throw new RuntimeException("Ancien mot de passe incorrect");
-        }
 
         utilisateur.setMotDePasse(passwordEncoder.encode(nouveau));
         utilisateurRepository.save(utilisateur);
@@ -184,9 +182,8 @@ public class UtilisateurServiceImpl implements UtilisateurService {
     @Override
     public Utilisateur creerUtilisateurParGestionnaire(CreateUserRequest request, String emailGestionnaire) {
         Utilisateur gestionnaire = getUtilisateurByEmail(emailGestionnaire);
-        if (gestionnaire == null || gestionnaire.getEntreprise() == null) {
+        if (gestionnaire == null || gestionnaire.getEntreprise() == null)
             throw new RuntimeException("Gestionnaire ou entreprise non trouvée");
-        }
 
         Utilisateur utilisateur;
         String roleStr = request.getRole().toUpperCase();
@@ -221,6 +218,7 @@ public class UtilisateurServiceImpl implements UtilisateurService {
         return utilisateurRepository.findByEntreprise_IdAndRole(entrepriseId, Role.CHAUFFEUR);
     }
 
+    // =================== Réinitialisation mot de passe ===================
     @Override
     public void demanderResetMotDePasse(String email) {
         Utilisateur user = utilisateurRepository.findByEmail(email)
@@ -229,12 +227,11 @@ public class UtilisateurServiceImpl implements UtilisateurService {
         String code = String.valueOf((int) (Math.random() * 900000) + 100000);
         resetTokens.put(email, code);
 
-        // ✅ Envoi du mail
         SimpleMailMessage message = new SimpleMailMessage();
         message.setTo(user.getEmail());
         message.setSubject("Réinitialisation de votre mot de passe - FasoCarbu");
-        message.setText("Bonjour " + user.getPrenom() + ",\n\nVoici votre code de réinitialisation : "
-                + code + "\n\nCe code est valable 10 minutes.");
+        message.setText("Bonjour " + user.getPrenom() + ",\n\nVoici votre code de réinitialisation : " + code
+                + "\n\nCe code est valable 10 minutes.");
 
         mailSender.send(message);
     }
@@ -242,45 +239,46 @@ public class UtilisateurServiceImpl implements UtilisateurService {
     @Override
     public void resetMotDePasse(String email, String code, String nouveauMotDePasse) {
         String savedCode = resetTokens.get(email);
-        if (savedCode == null || !savedCode.equals(code)) {
+        if (savedCode == null || !savedCode.equals(code))
             throw new RuntimeException("Code invalide ou expiré");
-        }
 
         Utilisateur user = utilisateurRepository.findByEmail(email)
                 .orElseThrow(() -> new RuntimeException("Utilisateur introuvable"));
 
         user.setMotDePasse(passwordEncoder.encode(nouveauMotDePasse));
         utilisateurRepository.save(user);
-
         resetTokens.remove(email);
     }
 
+    // =================== Upload Photo Profil via Uploadcare ===================
     @Override
     public String uploadPhotoProfil(UUID id, MultipartFile file) throws IOException {
         Utilisateur utilisateur = utilisateurRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Utilisateur introuvable"));
 
-        // Générer un nom unique pour le fichier
-        String fileName = "profil_" + id + "_" + System.currentTimeMillis() + "_" + file.getOriginalFilename();
+        try (CloseableHttpClient client = HttpClients.createDefault()) {
+            HttpPost post = new HttpPost("https://upload.uploadcare.com/base/");
 
-        // ⚡ Dossier temporaire compatible Render
-        Path uploadPath = Paths.get(System.getProperty("java.io.tmpdir"), "uploads");
-        if (!Files.exists(uploadPath)) {
-            Files.createDirectories(uploadPath);
+            MultipartEntityBuilder builder = MultipartEntityBuilder.create();
+            builder.addTextBody("UPLOADCARE_PUB_KEY", UPLOADCARE_PUBLIC_KEY);
+            builder.addTextBody("UPLOADCARE_STORE", "1"); // Stockage permanent
+            builder.addBinaryBody("file", file.getInputStream(),
+                    org.apache.http.entity.ContentType.MULTIPART_FORM_DATA, file.getOriginalFilename());
+
+            post.setEntity(builder.build());
+
+            try (CloseableHttpResponse response = client.execute(post)) {
+                String json = EntityUtils.toString(response.getEntity());
+                String fileUuid = json.split("\"file\":\"")[1].split("\"")[0];
+                String fileUrl = "https://ucarecdn.com/" + fileUuid + "/";
+
+                utilisateur.setPhotoProfil(fileUrl);
+                utilisateurRepository.save(utilisateur);
+
+                return fileUrl;
+            }
+        } catch (Exception e) {
+            throw new RuntimeException("Erreur Uploadcare : " + e.getMessage(), e);
         }
-
-        Path filePath = uploadPath.resolve(fileName);
-
-        // Copier le fichier
-        Files.copy(file.getInputStream(), filePath, StandardCopyOption.REPLACE_EXISTING);
-
-        // URL publique pour Flutter
-        String photoUrl = "https://faso-carbu-backend-2.onrender.com/api/utilisateurs/uploads/" + fileName;
-
-        utilisateur.setPhotoProfil(photoUrl);
-        utilisateurRepository.save(utilisateur);
-
-        return photoUrl;
     }
-
 }
