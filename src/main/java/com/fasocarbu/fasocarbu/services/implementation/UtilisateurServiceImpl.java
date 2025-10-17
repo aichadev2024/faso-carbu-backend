@@ -18,14 +18,15 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.web.client.RestTemplate;
 import org.springframework.web.multipart.MultipartFile;
-import org.springframework.mail.javamail.JavaMailSender;
-import org.springframework.mail.SimpleMailMessage;
 
 import java.io.IOException;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.UUID;
+import org.springframework.http.HttpEntity;
+import org.springframework.http.MediaType;
+import org.springframework.http.HttpHeaders;
 
 @Service
 public class UtilisateurServiceImpl implements UtilisateurService {
@@ -42,8 +43,11 @@ public class UtilisateurServiceImpl implements UtilisateurService {
     @Autowired
     private PasswordEncoder passwordEncoder;
 
-    @Autowired
-    private JavaMailSender mailSender;
+    @Value("${brevo.api.key}")
+    private String BREVO_API_KEY;
+
+    @Value("${brevo.url}")
+    private String BREVO_URL;
 
     @Value("${uploadcare.publicKey}")
     private String UPLOADCARE_PUBLIC_KEY;
@@ -227,13 +231,28 @@ public class UtilisateurServiceImpl implements UtilisateurService {
         String code = String.valueOf((int) (Math.random() * 900000) + 100000);
         resetTokens.put(email, code);
 
-        SimpleMailMessage message = new SimpleMailMessage();
-        message.setTo(user.getEmail());
-        message.setSubject("Réinitialisation de votre mot de passe - FasoCarbu");
-        message.setText("Bonjour " + user.getPrenom() + ",\n\nVoici votre code de réinitialisation : " + code
-                + "\n\nCe code est valable 10 minutes.");
+        try {
+            RestTemplate restTemplate = new RestTemplate();
 
-        mailSender.send(message);
+            HttpHeaders headers = new HttpHeaders();
+            headers.set("api-key", BREVO_API_KEY);
+            headers.setContentType(MediaType.APPLICATION_JSON);
+
+            String body = """
+                    {
+                      "sender": {"name": "FasoCarbu", "email": "contact@fasocarbu.com"},
+                      "to": [{"email": "%s"}],
+                      "subject": "Code de réinitialisation FasoCarbu",
+                      "htmlContent": "<p>Bonjour %s, voici votre code de réinitialisation : <strong>%s</strong></p>"
+                    }
+                    """.formatted(user.getEmail(), user.getPrenom(), code);
+
+            HttpEntity<String> entity = new HttpEntity<>(body, headers);
+            restTemplate.postForEntity(BREVO_URL, entity, String.class);
+
+        } catch (Exception e) {
+            throw new RuntimeException("Erreur d’envoi de l’email : " + e.getMessage());
+        }
     }
 
     @Override
@@ -243,7 +262,7 @@ public class UtilisateurServiceImpl implements UtilisateurService {
             throw new RuntimeException("Code invalide ou expiré");
 
         Utilisateur user = utilisateurRepository.findByEmail(email)
-                .orElseThrow(() -> new RuntimeException("Utilisateur introuvable"));
+                .orElseThrow(() -> new RuntimeException("Utilisateur non trouvé"));
 
         user.setMotDePasse(passwordEncoder.encode(nouveauMotDePasse));
         utilisateurRepository.save(user);
