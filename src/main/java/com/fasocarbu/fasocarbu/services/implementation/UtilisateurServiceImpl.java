@@ -240,7 +240,7 @@ public class UtilisateurServiceImpl implements UtilisateurService {
 
             String body = """
                     {
-                      "sender": {"name": "FasoCarbu", "email": "contact@fasocarbu.com"},
+                      "sender": {"name": "FasoCarbu", "email": "diarrassoubaa505@gmail.com"},
                       "to": [{"email": "%s"}],
                       "subject": "Code de réinitialisation FasoCarbu",
                       "htmlContent": "<p>Bonjour %s, voici votre code de réinitialisation : <strong>%s</strong></p>"
