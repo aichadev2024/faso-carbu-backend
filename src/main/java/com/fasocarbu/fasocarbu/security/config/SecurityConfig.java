@@ -2,7 +2,6 @@ package com.fasocarbu.fasocarbu.security.config;
 
 import com.fasocarbu.fasocarbu.security.jwt.JwtAuthenticationFilter;
 import com.fasocarbu.fasocarbu.security.jwt.AuthEntryPointJwt;
-
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpMethod;
@@ -19,7 +18,6 @@ import org.springframework.security.web.authentication.UsernamePasswordAuthentic
 import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
-
 import java.util.Arrays;
 
 @Configuration
@@ -58,6 +56,9 @@ public class SecurityConfig {
                         .requestMatchers("/api/auth/**").permitAll()
                         .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
                         .requestMatchers("/api/carburants/**").permitAll()
+
+                        // ✅ Rendre les photos de profil accessibles publiquement
+                        .requestMatchers("/api/utilisateurs/uploads/**").permitAll()
 
                         // Endpoint FCM : tout utilisateur authentifié peut envoyer son token
                         .requestMatchers("/api/utilisateurs/update-token").authenticated()
@@ -102,5 +103,4 @@ public class SecurityConfig {
 
         return source;
     }
-
 }
