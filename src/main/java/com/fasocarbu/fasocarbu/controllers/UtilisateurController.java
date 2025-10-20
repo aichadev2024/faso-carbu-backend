@@ -119,12 +119,11 @@ public class UtilisateurController {
     public ResponseEntity<?> uploadPhotoProfil(
             @PathVariable UUID id,
             @RequestParam("file") MultipartFile file) {
-
         try {
             String photoUrl = utilisateurService.uploadPhotoProfil(id, file);
-            return ResponseEntity.ok().body("{\"photoUrl\":\"" + photoUrl + "\"}");
+            return ResponseEntity.ok(Map.of("photoProfil", photoUrl)); // ✅ renvoie le bon champ
         } catch (Exception e) {
-            return ResponseEntity.status(500).body("{\"error\":\"" + e.getMessage() + "\"}");
+            return ResponseEntity.status(500).body(Map.of("error", e.getMessage()));
         }
     }
 
