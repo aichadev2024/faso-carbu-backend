@@ -160,13 +160,17 @@ public class TicketServiceImpl implements TicketService {
         Ticket ticket = ticketRepository.findByIdAndEntreprise_Id(ticketId, entrepriseId)
                 .orElseThrow(() -> new RuntimeException("Ticket introuvable ou hors entreprise"));
 
+        // 🛑 Vérifie que l'agent appartient bien à la même entreprise que le ticket
+        Utilisateur agent = utilisateurRepository.findById(agentStationId)
+                .orElseThrow(() -> new RuntimeException("Agent introuvable"));
+        if (!agent.getEntreprise().getId().equals(ticket.getEntreprise().getId())) {
+            throw new RuntimeException("Vous ne pouvez valider que les tickets de votre entreprise !");
+        }
+
         if (ticket.getStatut() == StatutTicket.VALIDER)
             throw new RuntimeException("Ticket déjà validé !");
 
-        Utilisateur validateur = utilisateurRepository.findById(agentStationId)
-                .orElseThrow(() -> new RuntimeException("Validateur introuvable"));
-
-        ticket.setValidateur(validateur);
+        ticket.setValidateur(agent);
         ticket.setDateValidation(LocalDateTime.now());
         ticket.setStatut(StatutTicket.VALIDER);
 
@@ -191,16 +195,20 @@ public class TicketServiceImpl implements TicketService {
         Ticket ticket = ticketRepository.findByCodeQrAndEntreprise_Id(codeQr, entrepriseId)
                 .orElseThrow(() -> new RuntimeException("Ticket introuvable ou hors entreprise"));
 
+        Utilisateur validateur = utilisateurRepository.findById(agentStationId)
+                .orElseThrow(() -> new RuntimeException("Validateur introuvable"));
+
+        // 🛑 Vérifie cohérence d’entreprise
+        if (!validateur.getEntreprise().getId().equals(ticket.getEntreprise().getId())) {
+            throw new RuntimeException("Vous ne pouvez pas valider un ticket d’une autre entreprise !");
+        }
+
         if (ticket.getStatut() == StatutTicket.VALIDER)
             throw new RuntimeException("Ticket déjà validé !");
 
         ticket.setMontant(new BigDecimal(montant));
         ticket.setDateValidation(LocalDateTime.now());
         ticket.setStatut(StatutTicket.VALIDER);
-
-        Utilisateur validateur = utilisateurRepository.findById(agentStationId)
-                .orElseThrow(() -> new RuntimeException("Validateur introuvable"));
-
         ticket.setValidateur(validateur);
 
         return new TicketDTO(ticketRepository.save(ticket));
