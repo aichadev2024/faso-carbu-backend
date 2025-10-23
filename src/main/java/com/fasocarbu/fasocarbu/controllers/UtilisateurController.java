@@ -119,11 +119,20 @@ public class UtilisateurController {
     public ResponseEntity<?> uploadPhotoProfil(
             @PathVariable UUID id,
             @RequestParam("file") MultipartFile file) {
+
         try {
             String photoUrl = utilisateurService.uploadPhotoProfil(id, file);
-            return ResponseEntity.ok(Map.of("photoProfil", photoUrl)); // ✅ renvoie le bon champ
+
+            // 👀 Debug : print URL dans le backend
+            System.out.println("🚀 URL renvoyée par le backend : " + photoUrl);
+
+            // Renvoie vers Flutter
+            return ResponseEntity.ok(Map.of("photoProfil", photoUrl));
+
         } catch (Exception e) {
-            return ResponseEntity.status(500).body(Map.of("error", e.getMessage()));
+            e.printStackTrace();
+            return ResponseEntity.status(500)
+                    .body(Map.of("error", e.getMessage()));
         }
     }
 
@@ -142,5 +151,4 @@ public class UtilisateurController {
                 .header(HttpHeaders.CONTENT_TYPE, "image/jpeg")
                 .body(resource);
     }
-
 }

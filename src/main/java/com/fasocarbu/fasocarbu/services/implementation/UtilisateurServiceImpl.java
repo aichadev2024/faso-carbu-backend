@@ -272,12 +272,14 @@ public class UtilisateurServiceImpl implements UtilisateurService {
     // =================== Upload Photo Profil via Uploadcare ===================
     @Override
     public String uploadPhotoProfil(UUID id, MultipartFile file) throws IOException {
+        // Récupérer l'utilisateur
         Utilisateur utilisateur = utilisateurRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Utilisateur introuvable"));
 
         try (CloseableHttpClient client = HttpClients.createDefault()) {
             HttpPost post = new HttpPost("https://upload.uploadcare.com/base/");
 
+            // Construire la requête multipart
             MultipartEntityBuilder builder = MultipartEntityBuilder.create();
             builder.addTextBody("UPLOADCARE_PUB_KEY", UPLOADCARE_PUBLIC_KEY);
             builder.addTextBody("UPLOADCARE_STORE", "1"); // Stockage permanent
@@ -286,13 +288,23 @@ public class UtilisateurServiceImpl implements UtilisateurService {
 
             post.setEntity(builder.build());
 
+            // Exécuter l’upload
             try (CloseableHttpResponse response = client.execute(post)) {
                 String json = EntityUtils.toString(response.getEntity());
-                String fileUuid = json.split("\"file\":\"")[1].split("\"")[0];
-                String fileUrl = "https://ucarecdn.com/" + fileUuid + "/";
 
+                // Récupérer l'UUID renvoyé par Uploadcare
+                String fileUuid = json.split("\"file\":\"")[1].split("\"")[0];
+
+                // Construire une URL finale valide avec transformation
+                // Option /-/format/jpeg/ permet d'avoir une image directe affichable
+                String fileUrl = "https://ucarecdn.com/" + fileUuid + "/-/format/jpeg/";
+
+                // Sauvegarder dans la base de données
                 utilisateur.setPhotoProfil(fileUrl);
                 utilisateurRepository.save(utilisateur);
+
+                // 👀 Debug : voir ce que le backend renvoie
+                System.out.println("🚀 URL renvoyée par Uploadcare : " + fileUrl);
 
                 return fileUrl;
             }
@@ -300,4 +312,5 @@ public class UtilisateurServiceImpl implements UtilisateurService {
             throw new RuntimeException("Erreur Uploadcare : " + e.getMessage(), e);
         }
     }
+
 }
