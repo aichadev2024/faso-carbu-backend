@@ -48,6 +48,7 @@ public class AgentStationServiceImpl implements AgentStationService {
         agent.setPrenom(request.getPrenom());
         agent.setEmail(request.getEmail());
         agent.setTelephone(request.getTelephone());
+        agent.setNomUtilisateur(request.getNomUtilisateur()); // ✅ Ajout du nomUtilisateur
         agent.setMotDePasse(passwordEncoder.encode(request.getMotDePasse())); // ✅ sécurisé
         agent.setRole(Role.AGENT_STATION); // ✅ enum bien importé
 
