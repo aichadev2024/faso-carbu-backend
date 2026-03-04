@@ -103,6 +103,7 @@ public class UtilisateurServiceImpl implements UtilisateurService {
         utilisateur.setNom(registerRequest.getNom());
         utilisateur.setPrenom(registerRequest.getPrenom());
         utilisateur.setTelephone(registerRequest.getTelephone());
+        utilisateur.setNomUtilisateur(registerRequest.getNomUtilisateur());
         utilisateur.setRole(roleStr);
         utilisateur.setActif(true);
 

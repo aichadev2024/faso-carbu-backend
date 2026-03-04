@@ -66,6 +66,8 @@ public abstract class Utilisateur {
         this.telephone = telephone != null ? telephone : "";
         this.email = email != null ? email : "inconnu@exemple.com";
         this.motDePasse = motDePasse != null ? motDePasse : "";
+        // Générer automatiquement nomUtilisateur si non fourni
+        this.nomUtilisateur = email != null ? email.split("@")[0] : "user_" + UUID.randomUUID().toString().substring(0, 8);
     }
 
     // getters/setters avec sécurités null

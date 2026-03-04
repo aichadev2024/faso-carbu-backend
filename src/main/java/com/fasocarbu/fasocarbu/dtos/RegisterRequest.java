@@ -25,6 +25,10 @@ public class RegisterRequest {
 
     @NotBlank
     private String telephone;
+    
+    @NotBlank
+    private String nomUtilisateur;
+    
     private String nomEntreprise;
     private String adresseEntreprise;
 
@@ -76,6 +80,14 @@ public class RegisterRequest {
 
     public void setTelephone(String telephone) {
         this.telephone = telephone;
+    }
+
+    public String getNomUtilisateur() {
+        return nomUtilisateur;
+    }
+
+    public void setNomUtilisateur(String nomUtilisateur) {
+        this.nomUtilisateur = nomUtilisateur;
     }
 
     public String getNomEntreprise() {
