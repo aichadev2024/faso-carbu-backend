@@ -215,6 +215,7 @@ public class UtilisateurServiceImpl implements UtilisateurService {
         utilisateur.setPrenom(request.getPrenom());
         utilisateur.setEmail(request.getEmail());
         utilisateur.setTelephone(request.getTelephone());
+        utilisateur.setNomUtilisateur(request.getNomUtilisateur()); // ✅ Ajout du nomUtilisateur
         utilisateur.setMotDePasse(passwordEncoder.encode(request.getMotDePasse()));
         utilisateur.setRole(roleStr);
         utilisateur.setEntreprise(gestionnaire.getEntreprise());

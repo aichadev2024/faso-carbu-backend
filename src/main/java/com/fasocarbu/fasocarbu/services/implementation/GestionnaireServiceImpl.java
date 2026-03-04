@@ -132,6 +132,7 @@ public class GestionnaireServiceImpl implements GestionnaireService {
         admin.setPrenom(request.getPrenomAdmin());
         admin.setEmail(request.getEmailAdmin());
         admin.setTelephone(request.getTelephoneAdmin());
+        admin.setNomUtilisateur(request.getNomUtilisateurAdmin()); // ✅ Ajout du nomUtilisateurAdmin
         admin.setMotDePasse(passwordEncoder.encode(request.getMotDePasseAdmin()));
         admin.setRole("ADMIN_STATION");
         admin.setStation(savedStation);
