@@ -64,6 +64,16 @@ public class UtilisateurServiceImpl implements UtilisateurService {
         if (utilisateurRepository.findByEmail(registerRequest.getEmail()).isPresent()) {
             throw new RuntimeException("Email déjà utilisé");
         }
+        
+        // Vérifier l'unicité du nomUtilisateur
+        String username = registerRequest.getNomUtilisateur();
+        if (username == null || username.isBlank()) {
+            username = registerRequest.getEmail().split("@")[0];
+        }
+        
+        if (utilisateurRepository.findByNomUtilisateur(username).isPresent()) {
+            throw new RuntimeException("Nom d'utilisateur déjà utilisé");
+        }
 
         Utilisateur utilisateur;
         String roleStr = registerRequest.getRole().toUpperCase();
@@ -103,11 +113,6 @@ public class UtilisateurServiceImpl implements UtilisateurService {
         utilisateur.setNom(registerRequest.getNom());
         utilisateur.setPrenom(registerRequest.getPrenom());
         utilisateur.setTelephone(registerRequest.getTelephone());
-        // si le nom d'utilisateur n'est pas fourni, génère à partir de l'email
-        String username = registerRequest.getNomUtilisateur();
-        if (username == null || username.isBlank()) {
-            username = registerRequest.getEmail().split("@")[0];
-        }
         utilisateur.setNomUtilisateur(username);
         utilisateur.setRole(roleStr);
         utilisateur.setActif(true);
