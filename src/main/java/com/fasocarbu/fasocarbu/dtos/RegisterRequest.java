@@ -26,7 +26,8 @@ public class RegisterRequest {
     @NotBlank
     private String telephone;
     
-    @NotBlank
+    // champ facultatif : si l’application mobile n’envoie rien, on générera
+    // automatiquement un nom dérivé de l’email dans le service
     private String nomUtilisateur;
     
     private String nomEntreprise;
