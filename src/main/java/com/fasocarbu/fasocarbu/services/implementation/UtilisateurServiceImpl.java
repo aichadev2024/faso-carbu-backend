@@ -8,12 +8,6 @@ import com.fasocarbu.fasocarbu.repositories.EntrepriseRepository;
 import com.fasocarbu.fasocarbu.repositories.GestionnaireRepository;
 import com.fasocarbu.fasocarbu.repositories.UtilisateurRepository;
 import com.fasocarbu.fasocarbu.services.interfaces.UtilisateurService;
-import org.apache.http.client.methods.CloseableHttpResponse;
-import org.apache.http.client.methods.HttpPost;
-import org.apache.http.entity.mime.MultipartEntityBuilder;
-import org.apache.http.impl.client.CloseableHttpClient;
-import org.apache.http.impl.client.HttpClients;
-import org.apache.http.util.EntityUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -22,6 +16,10 @@ import org.springframework.web.client.RestTemplate;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.nio.file.StandardCopyOption;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import org.springframework.http.HttpEntity;
@@ -49,11 +47,8 @@ public class UtilisateurServiceImpl implements UtilisateurService {
     @Value("${brevo.url}")
     private String BREVO_URL;
 
-    @Value("${uploadcare.publicKey}")
-    private String UPLOADCARE_PUBLIC_KEY;
-
-    @Value("${uploadcare.secretKey}")
-    private String UPLOADCARE_SECRET_KEY;
+    @Value("${upload.dir:${java.io.tmpdir}/uploads}")
+    private String uploadDir;
 
     // Map temporaire pour tokens OTP
     private final Map<String, String> resetTokens = new ConcurrentHashMap<>();
@@ -269,48 +264,50 @@ public class UtilisateurServiceImpl implements UtilisateurService {
         resetTokens.remove(email);
     }
 
-    // =================== Upload Photo Profil via Uploadcare ===================
+    // =================== Upload Photo Profil (stockage local) ===================
     @Override
     public String uploadPhotoProfil(UUID id, MultipartFile file) throws IOException {
         // Récupérer l'utilisateur
         Utilisateur utilisateur = utilisateurRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Utilisateur introuvable"));
 
-        try (CloseableHttpClient client = HttpClients.createDefault()) {
-            HttpPost post = new HttpPost("https://upload.uploadcare.com/base/");
-
-            // Construire la requête multipart
-            MultipartEntityBuilder builder = MultipartEntityBuilder.create();
-            builder.addTextBody("UPLOADCARE_PUB_KEY", UPLOADCARE_PUBLIC_KEY);
-            builder.addTextBody("UPLOADCARE_STORE", "1"); // Stockage permanent
-            builder.addBinaryBody("file", file.getInputStream(),
-                    org.apache.http.entity.ContentType.MULTIPART_FORM_DATA, file.getOriginalFilename());
-
-            post.setEntity(builder.build());
-
-            // Exécuter l’upload
-            try (CloseableHttpResponse response = client.execute(post)) {
-                String json = EntityUtils.toString(response.getEntity());
-
-                // Récupérer l'UUID renvoyé par Uploadcare
-                String fileUuid = json.split("\"file\":\"")[1].split("\"")[0];
-
-                // Construire une URL finale valide avec transformation
-                // Option /-/format/jpeg/ permet d'avoir une image directe affichable
-                String fileUrl = "https://ucarecdn.com/" + fileUuid + "/-/format/jpeg/";
-
-                // Sauvegarder dans la base de données
-                utilisateur.setPhotoProfil(fileUrl);
-                utilisateurRepository.save(utilisateur);
-
-                // 👀 Debug : voir ce que le backend renvoie
-                System.out.println("🚀 URL renvoyée par Uploadcare : " + fileUrl);
-
-                return fileUrl;
-            }
-        } catch (Exception e) {
-            throw new RuntimeException("Erreur Uploadcare : " + e.getMessage(), e);
+        if (file.isEmpty()) {
+            throw new RuntimeException("Fichier vide");
         }
+
+        // dossier de stockage
+        Path uploadPath = Paths.get(uploadDir);
+        if (!Files.exists(uploadPath)) {
+            Files.createDirectories(uploadPath);
+        }
+
+        // suppression éventuelle de l'ancienne photo locale
+        String oldPhoto = utilisateur.getPhotoProfil();
+        if (oldPhoto != null && oldPhoto.startsWith("/api/utilisateurs/uploads/")) {
+            String oldFilename = oldPhoto.substring(oldPhoto.lastIndexOf('/') + 1);
+            try {
+                Files.deleteIfExists(uploadPath.resolve(oldFilename));
+            } catch (IOException ignored) {
+            }
+        }
+
+        // construire un nom unique
+        String original = file.getOriginalFilename();
+        String extension = "";
+        if (original != null && original.contains(".")) {
+            extension = original.substring(original.lastIndexOf('.'));
+        }
+        String filename = UUID.randomUUID().toString() + extension;
+        Path target = uploadPath.resolve(filename);
+
+        Files.copy(file.getInputStream(), target, StandardCopyOption.REPLACE_EXISTING);
+
+        // URL renvoyée utilisable par le front
+        String fileUrl = "/api/utilisateurs/uploads/" + filename;
+        utilisateur.setPhotoProfil(fileUrl);
+        utilisateurRepository.save(utilisateur);
+
+        return fileUrl;
     }
 
 }

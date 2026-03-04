@@ -8,6 +8,7 @@ import com.fasocarbu.fasocarbu.security.services.UserDetailsImpl;
 import com.fasocarbu.fasocarbu.services.interfaces.UtilisateurService;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.io.UrlResource;
 import org.springframework.core.io.Resource;
 import org.springframework.http.HttpHeaders;
@@ -29,6 +30,9 @@ public class UtilisateurController {
 
     @Autowired
     private UtilisateurService utilisateurService;
+
+    @Value("${upload.dir:${java.io.tmpdir}/uploads}")
+    private String uploadDir;
 
     // =================== Création utilisateur ===================
     @PostMapping("/ajouter")
@@ -139,7 +143,7 @@ public class UtilisateurController {
     // =================== Récupérer la photo ===================
     @GetMapping("/uploads/{filename:.+}")
     public ResponseEntity<Resource> getFile(@PathVariable String filename) throws MalformedURLException {
-        Path uploadPath = Paths.get(System.getProperty("java.io.tmpdir"), "uploads");
+        Path uploadPath = Paths.get(uploadDir);
         Path filePath = uploadPath.resolve(filename).normalize();
         Resource resource = new UrlResource(filePath.toUri());
 

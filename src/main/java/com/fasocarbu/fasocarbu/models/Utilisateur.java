@@ -27,6 +27,8 @@ public abstract class Utilisateur {
     private String prenom = "Inconnu";
 
     private String telephone = "";
+    @Column(unique = true, nullable = false) // ✅ Unique et obligatoire
+    private String nomUtilisateur;
 
     @Column(nullable = false, unique = true)
     private String email = "inconnu@exemple.com";
@@ -89,6 +91,14 @@ public abstract class Utilisateur {
 
     public void setPrenom(String prenom) {
         this.prenom = prenom != null ? prenom : "Inconnu";
+    }
+
+    public String getNomUtilisateur() {
+        return nomUtilisateur;
+    }
+
+    public void setNomUtilisateur(String nomUtilisateur) {
+        this.nomUtilisateur = nomUtilisateur;
     }
 
     public String getEmail() {

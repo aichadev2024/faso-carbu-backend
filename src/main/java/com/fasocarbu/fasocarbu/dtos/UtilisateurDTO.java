@@ -12,6 +12,7 @@ public class UtilisateurDTO {
     private String email;
     private String telephone;
     private String role;
+    private String nomUtilisateur;
 
     // ✅ Constructeur à partir de l’entité
     public UtilisateurDTO(Utilisateur utilisateur) {
@@ -21,5 +22,6 @@ public class UtilisateurDTO {
         this.email = utilisateur.getEmail();
         this.telephone = utilisateur.getTelephone();
         this.role = utilisateur.getRole().name(); // ex: "ROLE_CHAUFFEUR"
+        this.nomUtilisateur = utilisateur.getNomUtilisateur();
     }
 }
