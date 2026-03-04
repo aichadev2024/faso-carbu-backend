@@ -11,6 +11,7 @@ public class StationAvecAdminRequest {
     private String emailAdmin;
     private String motDePasseAdmin;
     private String telephoneAdmin;
+    private String nomUtilisateurAdmin; // ✅ Ajout du champ nomUtilisateurAdmin
     private Long entrepriseId;
 
     public String getNomStation() {
@@ -75,6 +76,14 @@ public class StationAvecAdminRequest {
 
     public void setTelephoneAdmin(String telephoneAdmin) {
         this.telephoneAdmin = telephoneAdmin;
+    }
+
+    public String getNomUtilisateurAdmin() {
+        return nomUtilisateurAdmin;
+    }
+
+    public void setNomUtilisateurAdmin(String nomUtilisateurAdmin) {
+        this.nomUtilisateurAdmin = nomUtilisateurAdmin;
     }
 
     public void setEntrepriseId(Long entrepriseId) {

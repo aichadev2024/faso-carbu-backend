@@ -10,4 +10,5 @@ public class CreateUserRequest {
     private String telephone;
     private String motDePasse;
     private String role;
+    private String nomUtilisateur; // ✅ Ajout du champ nomUtilisateur
 }
