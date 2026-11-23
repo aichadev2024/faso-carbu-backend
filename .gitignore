@@ -31,3 +31,13 @@ build/
 
 ### VS Code ###
 .vscode/
+
+### FasoCarbu ###
+# Secrets et configuration locale
+.env
+*.env.local
+firebase-service-account*.json
+# Logs et fichiers générés à l'exécution
+*.log
+*.log.*.gz
+uploads/

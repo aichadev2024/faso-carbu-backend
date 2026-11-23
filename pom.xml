@@ -19,8 +19,7 @@
     <description>Demo project for Spring Boot</description> 
 
     <properties> 
-        <java.version>21</java.version> 
-        <spring-security.version>6.2.1</spring-security.version> 
+        <java.version>21</java.version>
     </properties> 
 
     <dependencies> 
@@ -39,16 +38,6 @@
             <groupId>org.springframework.boot</groupId> 
             <artifactId>spring-boot-starter-security</artifactId> 
         </dependency> 
-
-        <!-- Explicit Spring Security Config (version alignée) --> 
-        <dependency> 
-            <groupId>org.springframework.security</groupId> 
-            <artifactId>spring-security-config</artifactId> 
-            <version>${spring-security.version}</version> 
-        </dependency> 
-
-
-
         <!-- JWT Dependencies --> 
         <dependency> 
             <groupId>io.jsonwebtoken</groupId> 
@@ -112,12 +101,28 @@
             <artifactId>hibernate-validator</artifactId> 
         </dependency> 
 
-        <!-- MySQL Connector --> 
+        <!-- PostgreSQL Driver --> 
         <dependency> 
-            <groupId>mysql</groupId> 
-            <artifactId>mysql-connector-java</artifactId> 
-            <version>8.0.32</version> 
+            <groupId>org.postgresql</groupId> 
+            <artifactId>postgresql</artifactId> 
             <scope>runtime</scope> 
+        </dependency> 
+
+        <!-- Flyway : migrations versionnées du schéma -->
+        <dependency>
+            <groupId>org.flywaydb</groupId>
+            <artifactId>flyway-core</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.flywaydb</groupId>
+            <artifactId>flyway-database-postgresql</artifactId>
+        </dependency>
+
+        <!-- Springdoc OpenAPI (Swagger UI) --> 
+        <dependency> 
+            <groupId>org.springdoc</groupId> 
+            <artifactId>springdoc-openapi-starter-webmvc-ui</artifactId> 
+            <version>2.8.9</version> 
         </dependency> 
 
         <!-- Development Tools --> 
@@ -147,14 +152,6 @@
             <artifactId>javase</artifactId> 
             <version>3.5.3</version> 
             <scope>compile</scope> 
-        </dependency> 
-
-        <!-- JavaEE API (Optional) --> 
-        <dependency> 
-            <groupId>javax</groupId> 
-            <artifactId>javaee-api</artifactId> 
-            <version>8.0.1</version> 
-            <scope>provided</scope> 
         </dependency> 
     </dependencies> 
 
