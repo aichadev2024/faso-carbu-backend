@@ -1,6 +1,7 @@
 package com.fasocarbu.fasocarbu.modules.user.domain;
 
 import com.fasocarbu.fasocarbu.modules.entreprise.domain.Entreprise;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
@@ -38,6 +39,8 @@ public abstract class Utilisateur {
     @Column(nullable = false, unique = true)
     private String email = "inconnu@exemple.com";
 
+    // Jamais renvoyé dans les réponses JSON (accepté en entrée uniquement)
+    @JsonProperty(access = JsonProperty.Access.WRITE_ONLY)
     @Column(nullable = false)
     private String motDePasse = "";
 
@@ -47,6 +50,7 @@ public abstract class Utilisateur {
     @Column(nullable = false)
     private Boolean actif = true;
 
+    @JsonProperty(access = JsonProperty.Access.WRITE_ONLY)
     private String fcmToken = "";
 
     @Column(name = "photo_profil")

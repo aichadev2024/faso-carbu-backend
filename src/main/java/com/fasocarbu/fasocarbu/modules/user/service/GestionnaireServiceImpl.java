@@ -14,6 +14,7 @@ import com.fasocarbu.fasocarbu.modules.notification.service.NotificationService;
 import com.fasocarbu.fasocarbu.modules.station.domain.Station;
 import com.fasocarbu.fasocarbu.modules.station.repository.CarburantRepository;
 import com.fasocarbu.fasocarbu.modules.station.repository.StationRepository;
+import com.fasocarbu.fasocarbu.modules.ticket.domain.StatutTicket;
 import com.fasocarbu.fasocarbu.modules.ticket.domain.Ticket;
 import com.fasocarbu.fasocarbu.modules.ticket.dto.TicketDTO;
 import com.fasocarbu.fasocarbu.modules.ticket.repository.TicketRepository;
@@ -245,13 +246,8 @@ public class GestionnaireServiceImpl implements GestionnaireService {
         ticket.setUtilisateur(demande.getDemandeur());
         ticket.setValidateur(demande.getGestionnaire());
 
-        try {
-            ticket.setCodeQr(qrCodeGenerator.generateQRCodeForTicket(ticket));
-        } catch (Exception e) {
-            throw new RuntimeException("Erreur génération QR", e);
-        }
-
-        Ticket savedTicket = ticketRepository.save(ticket);
+        ticket.setEntreprise(demande.getEntreprise());
+        Ticket savedTicket = finaliserTicket(ticket);
         demande.setTicket(savedTicket);
         demandeRepository.save(demande);
         return savedTicket;
@@ -361,17 +357,10 @@ public class GestionnaireServiceImpl implements GestionnaireService {
         ticket.setValidateur(demande.getGestionnaire());
         ticket.setEntreprise(demande.getEntreprise());
 
-        if (chauffeur != null) {
-            ticket.setUtilisateur(chauffeur);
-        }
+        // Bénéficiaire : le chauffeur choisi à la validation, sinon celui de la demande.
+        ticket.setUtilisateur(chauffeur != null ? chauffeur : demande.getChauffeur());
 
-        try {
-            ticket.setCodeQr(qrCodeGenerator.generateQRCodeForTicket(ticket));
-        } catch (Exception e) {
-            throw new RuntimeException("Erreur lors de la génération du QR code.", e);
-        }
-
-        Ticket savedTicket = ticketRepository.save(ticket);
+        Ticket savedTicket = finaliserTicket(ticket);
         demande.setTicket(savedTicket);
         demandeRepository.save(demande);
 
@@ -427,5 +416,25 @@ public class GestionnaireServiceImpl implements GestionnaireService {
     @Override
     public Resource exporterRapportConsommationParEntreprise(Long entrepriseId) {
         return exporterRapportConsommation().getBody();
+    }
+
+    /**
+     * Complète un ticket nouvellement émis (statut, montant), l'enregistre pour
+     * obtenir son identifiant, puis génère le QR code qui contient cet identifiant.
+     */
+    private Ticket finaliserTicket(Ticket ticket) {
+        ticket.setStatut(StatutTicket.EN_ATTENTE);
+        if (ticket.getCarburant() != null && ticket.getQuantite() != null) {
+            ticket.setMontant(BigDecimal.valueOf(ticket.getCarburant().getPrix())
+                    .multiply(ticket.getQuantite())
+                    .setScale(2, java.math.RoundingMode.HALF_UP));
+        }
+        Ticket saved = ticketRepository.save(ticket);
+        try {
+            saved.setCodeQr(qrCodeGenerator.generateQRCodeForTicket(saved));
+        } catch (Exception e) {
+            throw new RuntimeException("Erreur lors de la génération du QR code.", e);
+        }
+        return ticketRepository.save(saved);
     }
 }
