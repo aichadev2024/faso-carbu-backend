@@ -13,6 +13,7 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.client.RestTemplate;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -62,6 +63,7 @@ public class UtilisateurServiceImpl implements UtilisateurService {
     }
 
     @Override
+    @Transactional
     public Utilisateur registerUser(RegisterRequest registerRequest) {
         if (utilisateurRepository.findByEmail(registerRequest.getEmail()).isPresent()) {
             throw new RuntimeException("Email déjà utilisé");
@@ -76,38 +78,27 @@ public class UtilisateurServiceImpl implements UtilisateurService {
             throw new RuntimeException("Nom d'utilisateur déjà utilisé");
         }
 
-        Utilisateur utilisateur;
-        String roleStr = registerRequest.getRole().toUpperCase();
-
-        switch (roleStr) {
-            case "GESTIONNAIRE":
-                if (registerRequest.getNomEntreprise() == null || registerRequest.getNomEntreprise().isEmpty())
-                    throw new RuntimeException("Le nom de l'entreprise est obligatoire");
-                if (registerRequest.getAdresseEntreprise() == null || registerRequest.getAdresseEntreprise().isEmpty())
-                    throw new RuntimeException("L'adresse de l'entreprise est obligatoire");
-
-                Entreprise entreprise = new Entreprise();
-                entreprise.setNom(registerRequest.getNomEntreprise());
-                entreprise.setAdresse(registerRequest.getAdresseEntreprise());
-                entreprise = entrepriseRepository.save(entreprise);
-
-                Gestionnaire gestionnaire = new Gestionnaire();
-                gestionnaire.setEntreprise(entreprise);
-                utilisateur = gestionnaire;
-                break;
-
-            case "CHAUFFEUR":
-                utilisateur = new Chauffeur();
-                break;
-            case "AGENT_STATION":
-                utilisateur = new AgentStation();
-                break;
-            case "DEMANDEUR":
-                utilisateur = new Demandeur();
-                break;
-            default:
-                throw new RuntimeException("Rôle inconnu : " + roleStr);
+        // L'inscription publique ne crée que des gestionnaires (chacun avec sa
+        // propre entreprise). Les autres comptes (demandeurs, chauffeurs,
+        // admins et agents de station) sont créés par un utilisateur connecté
+        // qui les rattache à son entreprise ou à sa station.
+        String roleStr = registerRequest.getRole() == null ? "" : registerRequest.getRole().trim().toUpperCase();
+        if (!"GESTIONNAIRE".equals(roleStr)) {
+            throw new RuntimeException("Seul un compte gestionnaire peut être créé par inscription");
         }
+        if (registerRequest.getNomEntreprise() == null || registerRequest.getNomEntreprise().isBlank())
+            throw new RuntimeException("Le nom de l'entreprise est obligatoire");
+        if (registerRequest.getAdresseEntreprise() == null || registerRequest.getAdresseEntreprise().isBlank())
+            throw new RuntimeException("L'adresse de l'entreprise est obligatoire");
+
+        Entreprise entreprise = new Entreprise();
+        entreprise.setNom(registerRequest.getNomEntreprise());
+        entreprise.setAdresse(registerRequest.getAdresseEntreprise());
+        entreprise = entrepriseRepository.save(entreprise);
+
+        Gestionnaire gestionnaire = new Gestionnaire();
+        gestionnaire.setEntreprise(entreprise);
+        Utilisateur utilisateur = gestionnaire;
 
         utilisateur.setEmail(registerRequest.getEmail());
         utilisateur.setMotDePasse(passwordEncoder.encode(registerRequest.getMotDePasse()));
