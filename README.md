@@ -61,6 +61,11 @@ au schéma, mais ne modifie jamais la base. Pour faire évoluer le schéma :
 2. Ajouter une migration `V3__description_courte.sql` (ne jamais modifier une migration déjà appliquée).
 3. Redémarrer : Flyway l'applique et Hibernate valide.
 
+## Déploiement
+
+Neon (PostgreSQL) + Koyeb (API) : voir [DEPLOIEMENT.md](DEPLOIEMENT.md).
+Vérification de santé : `GET /actuator/health`.
+
 ## Configuration
 
 Toute la configuration sensible passe par des variables d'environnement.
