@@ -79,6 +79,18 @@ public abstract class Utilisateur {
         this.nomUtilisateur = email != null ? email.split("@")[0] : "user_" + UUID.randomUUID().toString().substring(0, 8);
     }
 
+    /**
+     * Les écrans de création (station, agent, utilisateurs) ne demandent pas
+     * d'identifiant : on prend alors l'email, déjà unique. La connexion se
+     * fait de toute façon par email.
+     */
+    @PrePersist
+    void renseignerNomUtilisateur() {
+        if (nomUtilisateur == null || nomUtilisateur.isBlank()) {
+            nomUtilisateur = email != null ? email.trim().toLowerCase() : "user_" + UUID.randomUUID().toString().substring(0, 8);
+        }
+    }
+
     public void setRole(String roleStr) {
         if (roleStr == null) {
             log.error("Rôle null reçu.");

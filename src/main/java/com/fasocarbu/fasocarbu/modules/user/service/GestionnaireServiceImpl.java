@@ -145,6 +145,7 @@ public class GestionnaireServiceImpl implements GestionnaireService {
 
     // ------------------- Stations -------------------
     @Override
+    @Transactional
     public Station creerStationAvecAdmin(StationAvecAdminRequest request, UUID gestionnaireId) {
         Gestionnaire gestionnaire = gestionnaireRepository.findById(gestionnaireId)
                 .orElseThrow(() -> new RuntimeException("Gestionnaire non trouvé"));
