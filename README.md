@@ -63,7 +63,7 @@ au schéma, mais ne modifie jamais la base. Pour faire évoluer le schéma :
 
 ## Déploiement
 
-Neon (PostgreSQL) + Koyeb (API) : voir [DEPLOIEMENT.md](DEPLOIEMENT.md).
+Neon (PostgreSQL) + Northflank (API) : voir [DEPLOIEMENT.md](DEPLOIEMENT.md).
 Vérification de santé : `GET /actuator/health`.
 
 ## Configuration
