@@ -118,6 +118,12 @@
             <artifactId>flyway-database-postgresql</artifactId>
         </dependency>
 
+        <!-- Vérification de santé pour l'hébergeur (/actuator/health) -->
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-actuator</artifactId>
+        </dependency>
+
         <!-- Springdoc OpenAPI (Swagger UI) --> 
         <dependency> 
             <groupId>org.springdoc</groupId> 

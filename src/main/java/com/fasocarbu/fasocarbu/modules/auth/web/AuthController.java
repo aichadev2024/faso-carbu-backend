@@ -70,7 +70,7 @@ public class AuthController {
         ));
     }
 
-    @Operation(summary = "Inscription d'un utilisateur", description = "Crée un nouvel utilisateur (Gestionnaire, Demandeur, etc.)")
+    @Operation(summary = "Inscription d'un gestionnaire", description = "Crée un gestionnaire et son entreprise. Les autres rôles sont créés par un utilisateur connecté.")
     @PostMapping("/register")
     public ResponseEntity<?> registerUser(@Valid @RequestBody RegisterRequest registerRequest) {
         try {
